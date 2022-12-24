@@ -1,0 +1,4 @@
+RSGShared.Locations = {
+    -- add here
+
+}

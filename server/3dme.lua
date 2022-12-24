@@ -1,0 +1,6 @@
+RSGCore.Commands.Add('me', 'message', false, function(source, args)
+	local Player = RSGCore.Functions.GetPlayer(tonumber(args[1]))
+	local text = table.concat(args[2], ' ')
+	TriggerClientEvent('QRCore:triggerDisplay', -1, text, Player.PlayerData.source, )
+    TriggerEvent("rsg-log:server:CreateLog", "me", "Me", "white", "**"..GetPlayerName(Player.PlayerData.source).."** (CitizenID: "..Player.PlayerData.citizenid.." | ID: "..Player.PlayerData.source..")** " ..Player.PlayerData.charinfo.firstname.." "..Player.PlayerData.charinfo.lastname.. " **" ..text, false)
+end, "user")
