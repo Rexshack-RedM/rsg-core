@@ -23,7 +23,7 @@ RSGShared.Keybinds = {
     ['Q'] = 0xDE794E3E,
     ['R'] = 0xE30CD707,
     ['S'] = 0xD27782E3,
-    -- Missing T
+    ['T'] = 0x9720FCEE,
     ['U'] = 0xD8F73058,
     ['V'] = 0x7F8D09B8,
     ['W'] = 0x8FD015D8,
