@@ -114,8 +114,8 @@ RSGShared.Jobs = {
             },
         },
     },
-    ['ambulance'] = {
-        label = 'EMS',
+    ['medic'] = {
+        label = 'Medic',
         defaultDuty = true,
         offDutyPay = false,
         grades = {
@@ -124,7 +124,7 @@ RSGShared.Jobs = {
                 payment = 50
             },
             ['1'] = {
-                name = 'Paramedic',
+                name = 'Trainee',
                 payment = 75
             },
             ['2'] = {
@@ -136,7 +136,7 @@ RSGShared.Jobs = {
                 payment = 125
             },
             ['4'] = {
-                name = 'Chief',
+                name = 'Manager',
                 isboss = true,
                 payment = 150
             },
