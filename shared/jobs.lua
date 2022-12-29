@@ -306,6 +306,26 @@ RSGShared.Jobs = {
             },
         },
     },
+    ['wholesaletrader'] = {
+        label = 'Wholesale Trader',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = {
+                name = 'Trainee',
+                payment = 25
+            },
+            ['1'] = {
+                name = 'Trader',
+                payment = 50
+            },
+            ['2'] = {
+                name = 'Manager',
+                isboss = true,
+                payment = 75
+            },
+        },
+    },
     ['railroad'] = {
         label = 'Railroad',
         defaultDuty = true,
