@@ -1,30 +1,30 @@
 RSGShared = RSGShared or {}
 
 RSGShared.Gangs = {
-	['none'] = {
-		label = 'No Gang',
-		grades = {
+    ['none'] = {
+        label = 'No Gang',
+        grades = {
             ['0'] = {
                 name = 'Unaffiliated'
             }
         }
-	},
+    },
     ['example'] = {
-		label = "Example Gang",
-		grades = {
+        label = "Example Gang",
+        grades = {
             ['0'] = {
                 name = 'Recruit'
             },
-			['1'] = {
+            ['1'] = {
                 name = 'Enforcer'
             },
-			['2'] = {
+            ['2'] = {
                 name = 'Shot Caller'
             },
-			['3'] = {
+            ['3'] = {
                 name = 'Boss',
-				isboss = true
+                isboss = true
             },
         }
-	},
+    },
 }

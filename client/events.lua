@@ -4,13 +4,16 @@
 local RDisplaying = 0
 local time = 7000 -- Duration of the display of the text : 1000ms = 1sec
 
-
 RegisterNetEvent('RSGCore:Client:OnPlayerLoaded', function()
     ShutdownLoadingScreenNui()
     LocalPlayer.state:set('isLoggedIn', true, false)
+    if RSGConfig.EnablePVP then
+        Citizen.InvokeNative(0xF808475FA571D823, true)
+        SetRelationshipBetweenGroups(5, `PLAYER`, `PLAYER`)
+    end
     if RSGConfig.Player.RevealMap then
-		SetMinimapHideFow(true)
-	end
+        SetMinimapHideFow(true)
+    end
 end)
 
 RegisterNetEvent('RSGCore:Client:OnPlayerUnload', function()
@@ -126,8 +129,8 @@ RegisterNetEvent('RSGCore:Command:SpawnVehicle', function(WagonName)
 
     local vehicle = CreateVehicle(hash, GetEntityCoords(ped), GetEntityHeading(ped), true, false)
     TaskWarpPedIntoVehicle(ped, vehicle, -1) -- Spawn the player onto "drivers" seat
-	Citizen.InvokeNative(0x283978A15512B2FE, vehicle, true) -- Set random outfit variation / skin
-	NetworkSetEntityInvisibleToNetwork(vehicle, true)
+    Citizen.InvokeNative(0x283978A15512B2FE, vehicle, true) -- Set random outfit variation / skin
+    NetworkSetEntityInvisibleToNetwork(vehicle, true)
 end)
 
 RegisterNetEvent('RSGCore:Command:SpawnHorse', function(HorseName)
@@ -141,8 +144,8 @@ RegisterNetEvent('RSGCore:Command:SpawnHorse', function(HorseName)
 
     local vehicle = CreatePed(hash, GetEntityCoords(ped), GetEntityHeading(ped), true, false)
     TaskWarpPedIntoVehicle(ped, vehicle, -1) -- Spawn the player onto "drivers" seat
-	Citizen.InvokeNative(0x283978A15512B2FE, vehicle, true) -- Set random outfit variation / skin
-	NetworkSetEntityInvisibleToNetwork(vehicle, true)
+    Citizen.InvokeNative(0x283978A15512B2FE, vehicle, true) -- Set random outfit variation / skin
+    NetworkSetEntityInvisibleToNetwork(vehicle, true)
 end)
 
 RegisterNetEvent('RSGCore:Command:DeleteVehicle', function()

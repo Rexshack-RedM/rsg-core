@@ -50,11 +50,11 @@ function RSGCore.Functions.DrawText3D(x, y, z, text)
 end
 
 function RSGCore.Functions.RequestAnimDict(animDict)
-	if HasAnimDictLoaded(animDict) then return end
-	RequestAnimDict(animDict)
-	while not HasAnimDictLoaded(animDict) do
-		Wait(0)
-	end
+    if HasAnimDictLoaded(animDict) then return end
+    RequestAnimDict(animDict)
+    while not HasAnimDictLoaded(animDict) do
+        Wait(0)
+    end
 end
 
 function RSGCore.Functions.PlayAnim(animDict, animName, upperbodyOnly, duration)
@@ -67,10 +67,10 @@ end
 
 function RSGCore.Functions.LoadModel(model)
     if HasModelLoaded(model) then return end
-	RequestModel(model)
-	while not HasModelLoaded(model) do
-		Wait(0)
-	end
+    RequestModel(model)
+    while not HasModelLoaded(model) do
+        Wait(0)
+    end
 end
 
 function RSGCore.Functions.LoadAnimSet(animSet)
@@ -419,7 +419,7 @@ end
 
 function RSGCore.Functions.GetVehicleProperties(vehicle)
     if DoesEntityExist(vehicle) then
-		-- get vehicle stuff here
+        -- get vehicle stuff here
     else
         return
     end
@@ -427,7 +427,7 @@ end
 
 function RSGCore.Functions.SetVehicleProperties(vehicle, props)
     if DoesEntityExist(vehicle) then
-		-- set vehicle stuff here
+        -- set vehicle stuff here
     end
 end
 

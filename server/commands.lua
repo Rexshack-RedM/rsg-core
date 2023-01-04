@@ -250,83 +250,83 @@ RSGCore.Commands.Add('gang', Lang:t("command.gang.help"), {}, false, function(so
 end, 'admin')
 
 RSGCore.Commands.Add("givexp", "Give A Player Xp (Admin Only)", {{name="id", help="Player ID"},{name="skill", help="Type of skill (mining, etc)"}, {name="amount", help="Amount of xp"}}, true, function(source, args)
-	local Player = GetPlayer(tonumber(args[1]))
-	if Player then
-		if Player.PlayerData.metadata["xp"][tostring(args[2])] then
-			Player.Functions.AddXp(tostring(args[2]), tonumber(args[3]))
-			TriggerClientEvent('RSGCore:Notify', source, Lang:t('info.xp_added'), 'primary')
-		else
-			TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.no_skill'), 'error')
-		end
-	else
-		TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.not_online'), 'error')
-	end
+    local Player = GetPlayer(tonumber(args[1]))
+    if Player then
+        if Player.PlayerData.metadata["xp"][tostring(args[2])] then
+            Player.Functions.AddXp(tostring(args[2]), tonumber(args[3]))
+            TriggerClientEvent('RSGCore:Notify', source, Lang:t('info.xp_added'), 'primary')
+        else
+            TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.no_skill'), 'error')
+        end
+    else
+        TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.not_online'), 'error')
+    end
 end, 'admin')
 
 RSGCore.Commands.Add("removexp", "Give A Player Xp (Admin Only)", {{name="id", help="Player ID"},{name="skill", help="Type of skill (mining, etc)"}, {name="amount", help="Amount of xp"}}, true, function(source, args)
-	local Player = GetPlayer(tonumber(args[1]))
-	if Player then
-		if Player.PlayerData.metadata["xp"][tostring(args[2])] then
-			Player.Functions.RemoveXp(tostring(args[2]), tonumber(args[3]))
-			TriggerClientEvent('RSGCore:Notify', Lang:t('info.xp_removed'), 'primary')
-		else
-			TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.no_skill'), 'error')
-		end
-	else
-		TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.not_online'), 'error')
-	end
+    local Player = GetPlayer(tonumber(args[1]))
+    if Player then
+        if Player.PlayerData.metadata["xp"][tostring(args[2])] then
+            Player.Functions.RemoveXp(tostring(args[2]), tonumber(args[3]))
+            TriggerClientEvent('RSGCore:Notify', Lang:t('info.xp_removed'), 'primary')
+        else
+            TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.no_skill'), 'error')
+        end
+    else
+        TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.not_online'), 'error')
+    end
 end, 'admin')
 
 RSGCore.Commands.Add("xp", "Check How Much Xp You Have", {{name="skill", help="Type of skill (mining, etc)"}}, true, function(source, args)
-	local Player = GetPlayer(source)
-	local Xp = Player.PlayerData.metadata["xp"][tostring(args[1])]
-	if Player then
-		if Xp then
-			TriggerClientEvent('RSGCore:Notify', source, Lang:t('info.xp_info', {value = Xp, value2 = tostring(args[1])}), 'primary')
-		else
-			TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.no_skill'), 'error')
-		end
-	end
+    local Player = GetPlayer(source)
+    local Xp = Player.PlayerData.metadata["xp"][tostring(args[1])]
+    if Player then
+        if Xp then
+            TriggerClientEvent('RSGCore:Notify', source, Lang:t('info.xp_info', {value = Xp, value2 = tostring(args[1])}), 'primary')
+        else
+            TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.no_skill'), 'error')
+        end
+    end
 end, 'user')
 
 RSGCore.Commands.Add("givelevel", "Give A Player Level (Admin Only)", {{name="id", help="Player ID"},{name="skill", help="Type of skill (mining, etc)"}, {name="amount", help="Amount of xp"}}, true, function(source, args)
-	local Player = GetPlayer(tonumber(args[1]))
-	if Player then
-		if Player.PlayerData.metadata["levels"][tostring(args[2])] then
-			Player.Functions.AddXp(tostring(args[2]), tonumber(args[3]))
-			TriggerClientEvent('RSGCore:Notify', source, Lang:t('info.xp_added'), 'primary')
-		else
-			TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.no_skill'), 'error')
-		end
-	else
-		TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.not_online'), 'error')
-	end
+    local Player = GetPlayer(tonumber(args[1]))
+    if Player then
+        if Player.PlayerData.metadata["levels"][tostring(args[2])] then
+            Player.Functions.AddXp(tostring(args[2]), tonumber(args[3]))
+            TriggerClientEvent('RSGCore:Notify', source, Lang:t('info.xp_added'), 'primary')
+        else
+            TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.no_skill'), 'error')
+        end
+    else
+        TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.not_online'), 'error')
+    end
 end, 'admin')
 
 RSGCore.Commands.Add("removelevel", "Remove A Player Level (Admin Only)", {{name="id", help="Player ID"},{name="skill", help="Type of skill (mining, etc)"}, {name="amount", help="Amount of xp"}}, true, function(source, args)
-	local Player = GetPlayer(tonumber(args[1]))
-	if Player then
-		if Player.PlayerData.metadata["levels"][tostring(args[2])] then
-			Player.Functions.RemoveXp(tostring(args[2]), tonumber(args[3]))
-			TriggerClientEvent('RSGCore:Notify', source, Lang:t('info.xp_removed'), 'primary')
-		else
-			TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.no_skill'), 'error')
-		end
-	else
-		TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.not_online'), 'error')
-	end
+    local Player = GetPlayer(tonumber(args[1]))
+    if Player then
+        if Player.PlayerData.metadata["levels"][tostring(args[2])] then
+            Player.Functions.RemoveXp(tostring(args[2]), tonumber(args[3]))
+            TriggerClientEvent('RSGCore:Notify', source, Lang:t('info.xp_removed'), 'primary')
+        else
+            TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.no_skill'), 'error')
+        end
+    else
+        TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.not_online'), 'error')
+    end
 end, 'admin')
 
 RSGCore.Commands.Add("level", "Check Which Level You Are", {{name="skill", help="Type of skill (mining, etc)"}}, true, function(source, args)
-	local Player = GetPlayer(source)
-	local Level = Player.PlayerData.metadata["levels"][tostring(args[1])]
-	if Player then
-		if Level then
-			TriggerClientEvent('RSGCore:Notify', source, Lang:t('info.level_info', {value = Level, value2 = tostring(args[1])}), 'primary')
-		else
-			TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.no_skill'), 'error')
-		end
-	end
+    local Player = GetPlayer(source)
+    local Level = Player.PlayerData.metadata["levels"][tostring(args[1])]
+    if Player then
+        if Level then
+            TriggerClientEvent('RSGCore:Notify', source, Lang:t('info.level_info', {value = Level, value2 = tostring(args[1])}), 'primary')
+        else
+            TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.no_skill'), 'error')
+        end
+    end
 end, 'user')
 
 -- Out of Character Chat
@@ -391,10 +391,10 @@ RSGCore.Commands.Add('try', Lang:t("command.me.help"), {{name = Lang:t("command.
     end
     text = text .. ' '
     if random == 1 then
-		text = 'He succeeded in trying'..text
-	else
-		text = 'He has failed trying '..text
-	end
+        text = 'He succeeded in trying'..text
+    else
+        text = 'He has failed trying '..text
+    end
    TriggerClientEvent('RSGCore:triggerDisplay', -1, text, source , "try")
    TriggerClientEvent("sendProximityMessage", -1, source, "Citizen [" .. source .. "]", text, { 32, 151, 247 })
 end, 'user')
@@ -402,13 +402,13 @@ end, 'user')
 -- IDs
 RSGCore.Commands.Add("id", "Check Your ID #", {}, false, function(source)
     local src = source
-	local Player = RSGCore.Functions.GetPlayer(src)
-	TriggerClientEvent('RSGCore:Notify', source, "ID: "..source, 'primary')
+    local Player = RSGCore.Functions.GetPlayer(src)
+    TriggerClientEvent('RSGCore:Notify', source, "ID: "..source, 'primary')
 end, 'user')
 
 RSGCore.Commands.Add("cid", "Check Your Citizen ID #", {}, false, function(source)
     local src = source
-	local Player = RSGCore.Functions.GetPlayer(src)
-	local Playercid = Player.PlayerData.citizenid
-	TriggerClientEvent('RSGCore:Notify', source, "Citizen ID: "..Playercid, 'primary')
+    local Player = RSGCore.Functions.GetPlayer(src)
+    local Playercid = Player.PlayerData.citizenid
+    TriggerClientEvent('RSGCore:Notify', source, "Citizen ID: "..Playercid, 'primary')
 end, 'user')
