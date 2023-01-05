@@ -19,7 +19,7 @@ RSGShared.Items = {
     ['treasure1']    = {['name'] = 'treasure1',    ['label'] = 'Treasure Map',  ['weight'] = 50,  ['type'] = 'item', ['image'] = 'treasuremap.png',  ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'map for finding treasure'},
 
     -- horse training
-    ['horsetrainingbrush'] = {['name'] = 'horsebrush', ['label'] = 'Horse Brush', ['weight'] = 300, ['type'] = 'item', ['image'] = 'horsebrush.png', ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'brush used by a horse trainer'},
+    ['horsetrainingbrush'] = {['name'] = 'horsetrainingbrush', ['label'] = 'Trainer Brush', ['weight'] = 300, ['type'] = 'item', ['image'] = 'horsebrush.png', ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'brush used by a horse trainer'},
 
     -- farming items
     ['cornseed']     = {['name'] = 'cornseed',     ['label'] = 'Corn Seed',     ['weight'] = 0,   ['type'] = 'item', ['image'] = 'seeds.png',       ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used in farming'},
