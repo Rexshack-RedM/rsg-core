@@ -232,9 +232,7 @@ RSGShared.Items = {
     ['indiancigar']    = {['name'] = 'indiancigar',    ['label'] = 'Indian Cigar',   ['weight'] = 50,  ['type'] = 'item', ['image'] = 'indiancigar.png',    ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'indian cigar'},
 
     -- to support moonshiner
-    ['corn']         = {['name'] = 'corn',         ['label'] = 'Corn',          ['weight'] = 100, ['type'] = 'item', ['image'] = 'corn.png',         ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'product from farming'},
     ['moonshinekit'] = {['name'] = 'moonshinekit', ['label'] = 'Moonshine Kit', ['weight'] = 500, ['type'] = 'item', ['image'] = 'moonshinekit.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used to construct a moonshine'},
-    ['moonshine']    = {['name'] = 'moonshine',    ['label'] = 'Moonshine',     ['weight'] = 100, ['type'] = 'item', ['image'] = 'moonshine.png',    ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'made with the moonshine kit'},
 
     -- to support bank heist
     ['dynamite']  = {['name'] = 'dynamite',  ['label'] = 'Dynamite',   ['weight'] = 100, ['type'] = 'item', ['image'] = 'dynamite.png',  ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'for blowing stuff up'},
