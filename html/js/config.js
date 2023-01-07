@@ -22,12 +22,11 @@ export let NOTIFY_CONFIG = null;
  * @param {string} variant
  * @returns NotiVariantData
  **/
-export const determineStyleFromVariant = async () => {
-  NOTIFY_CONFIG = await fetchNui("getNotifyConfig", {}, BrowserMockConfigData);
-  if (isEnvBrowser() || DEV_MODE) {
-    console.log("Fetched Config:");
-    console.dir(NOTIFY_CONFIG);
-  }
+export const determineStyleFromVariant = (variant) => {
+  const variantData = NOTIFY_CONFIG.VariantDefinitions[variant];
+  if (!variantData)
+    throw new Error(`Style of type: ${variant}, does not exist in the config`);
+  return variantData;
 };
 
 // Fetch and set NOTIFY_CONFIG from client script callback
