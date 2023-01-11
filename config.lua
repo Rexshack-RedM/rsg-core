@@ -61,5 +61,9 @@ RSGConfig.Notify.VariantDefinitions = {
     ambulance = {
         classes = 'ambulance',
         icon = 'fas fa-ambulance'
+    },
+    horse = {
+        classes = 'horse',
+        icon = 'fas fa-horse-head'
     }
 }
