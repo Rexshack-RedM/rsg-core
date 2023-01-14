@@ -50,6 +50,7 @@ RSGShared.Keybinds = {
     ['DEL'] = 0x4AF4D473,
     ['PGUP'] = 0x446258B6,
     ['PGDN'] = 0x3C3DD371,
+    ['ESC'] = 0x4A903C11,
     -- Function Keys
     ['F1'] = 0xA8E3F467,
     ['F4'] = 0x1F6D95E5,
