@@ -913,9 +913,8 @@ function RSGCore.Functions.CreateAccountNumber()
     local UniqueFound = false
     local AccountNumber = nil
     while not UniqueFound do
-        AccountNumber = "US0"
+        AccountNumber = "RSG"
             .. math.random(1, 9)
-            .. "RSG"
             .. math.random(1111, 9999)
             .. math.random(1111, 9999)
             .. math.random(11, 99)
