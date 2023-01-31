@@ -354,4 +354,6 @@ RSGShared.Items = {
     ['weapon_kit_binoculars']                  = {['name'] = 'weapon_kit_binoculars',                  ['attachPoint'] = 11, ['label'] = 'Binoculars',           ['weight'] = 100,  ['type'] = 'weapon', ['ammotype'] = nil,             ['image'] = 'weapon_kit_binoculars.png',                  ['unique'] = true,  ['useable'] = true, ['level'] = 0, ['description'] = 'Placeholder'},
     ['weapon_kit_binoculars_improved']         = {['name'] = 'weapon_kit_binoculars_improved',         ['attachPoint'] = 11, ['label'] = 'Binoculars Improved',  ['weight'] = 100,  ['type'] = 'weapon', ['ammotype'] = nil,             ['image'] = 'weapon_kit_binoculars_improved.png',         ['unique'] = true,  ['useable'] = true, ['level'] = 0, ['description'] = 'Placeholder'},
 
+    -- Bird Post
+    ['birdpost'] = {['name'] = 'birdpost', ['label'] = 'Bird Post', ['weight'] = 5, ['type'] = 'item', ['image'] = 'birdpost.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Bird Post for sending letters'},
 }
