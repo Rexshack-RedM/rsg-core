@@ -789,6 +789,7 @@ local playertables = { -- Add tables as needed
     { table = "player_vehicles"},
     { table = "player_horses"},
     { table = "player_weapons"},
+    { table = "player_boats"},
 }
 
 function RSGCore.Player.DeleteCharacter(source, citizenid)
