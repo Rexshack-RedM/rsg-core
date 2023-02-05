@@ -232,7 +232,7 @@ function Display(mePlayer, text, offset, type, custom)
             local coords = GetEntityCoords(PlayerPedId(), false)
             local dist = #(coordsMe - coords)
             if dist < 15.0 then
-                DrawText3D(coordsMe['x'], coordsMe['y'], coordsMe['z'] + offset, text, _typ , custom)
+                DrawText3D(coordsMe['x'], coordsMe['y'], coordsMe['z'] + offset, text, _type , custom)
             else
                 if dist > 25 then
                     Wait(500)
@@ -251,10 +251,10 @@ function DrawTexture(textureStreamed, textureName, x, y, width, height, rotation
     end
 end
 
-function DrawText3D(x, y, z, text, me, custom)
+function DrawText3D(x, y, z, text, _type, custom)
     local onScreen, _x, _y = GetScreenCoordFromWorldCoord(x, y, z)
     local str = CreateVarString(10, "LITERAL_STRING", text, Citizen.ResultAsLong())
-    local _me = me
+    local _me = _type
     if onScreen and ((_x > 0 and _x < 1) or (_y > 0 and _y < 1)) then
         SetTextScale(0.30, 0.30)
         SetTextFontForCurrentCommand(7)
