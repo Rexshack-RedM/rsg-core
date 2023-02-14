@@ -19,6 +19,11 @@ RSGShared.Items = {
     ['stew']         = {['name'] = 'stew',         ['label'] = 'Hot Stew',      ['weight'] = 300, ['type'] = 'item', ['image'] = 'stew.png',         ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'hot homemade stew'},
     ['treasure1']    = {['name'] = 'treasure1',    ['label'] = 'Treasure Map',  ['weight'] = 50,  ['type'] = 'item', ['image'] = 'treasuremap.png',  ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'map for finding treasure'},
 
+    -- beekeeper
+    ['honeyframe']   = {['name'] = 'honeyframe',   ['label'] = 'Honey Frame',   ['weight'] = 100, ['type'] = 'item', ['image'] = 'honeyframe.png',   ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Used for making honey'},
+    ['honeycomb']    = {['name'] = 'honeycomb',    ['label'] = 'Honeycomb',     ['weight'] = 300, ['type'] = 'item', ['image'] = 'honeycomb.png',    ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Used for making honey'},
+    ['honeypot']     = {['name'] = 'honeypot',     ['label'] = 'Honey Pot',     ['weight'] = 300, ['type'] = 'item', ['image'] = 'honeypot.png',     ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Used for making honey'},
+
     -- horse training
     ['horsetrainingbrush']  = {['name'] = 'horsetrainingbrush',  ['label'] = 'Trainer Brush',  ['weight'] = 300, ['type'] = 'item', ['image'] = 'horsebrush.png', ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'brush used by a horse trainer'},
     ['horsetrainingcarrot'] = {['name'] = 'horsetrainingcarrot', ['label'] = 'Trainer Carrot', ['weight'] = 100, ['type'] = 'item', ['image'] = 'carrot.png',     ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'carrot used by a horse trainer'},
