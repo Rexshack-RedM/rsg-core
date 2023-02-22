@@ -511,6 +511,7 @@ RSGShared.Jobs = {
         grades = {
             ['0'] = {
                 name = 'Governor',
+                isboss = true,
                 payment = 100
             },
         },
@@ -522,6 +523,7 @@ RSGShared.Jobs = {
         grades = {
             ['0'] = {
                 name = 'Governor',
+                isboss = true,
                 payment = 100
             },
         },
@@ -533,6 +535,7 @@ RSGShared.Jobs = {
         grades = {
             ['0'] = {
                 name = 'Governor',
+                isboss = true,
                 payment = 100
             },
         },
@@ -544,6 +547,7 @@ RSGShared.Jobs = {
         grades = {
             ['0'] = {
                 name = 'Governor',
+                isboss = true,
                 payment = 100
             },
         },
@@ -555,6 +559,7 @@ RSGShared.Jobs = {
         grades = {
             ['0'] = {
                 name = 'Governor',
+                isboss = true,
                 payment = 100
             },
         },
