@@ -172,6 +172,10 @@ RSGShared.Items = {
     ['legendary_panther_pelt']   = {['name'] = 'legendary_panther_pelt',   ['label'] = 'Leg Panther Pelt',   ['weight'] = 500,  ['type'] = 'item', ['image'] = 'pelt_perfect.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Perfect (* * *)'},
     -- mp_a_c_wolf_01
     ['legendary_wolf_pelt']      = {['name'] = 'legendary_wolf_pelt',      ['label'] = 'Leg Wolf Pelt',      ['weight'] = 500,  ['type'] = 'item', ['image'] = 'pelt_perfect.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Perfect (* * *)'},
+    -- a_c_raccoon_01
+    ['perfect_raccoon_pelt']   = {['name'] = 'perfect_raccoon_pelt',   ['label'] = 'Raccoon Pelt',     ['weight'] = 500,  ['type'] = 'item', ['image'] = 'pelt_perfect.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Perfect (* * *)'},
+    ['good_raccoon_pelt']      = {['name'] = 'good_raccoon_pelt',      ['label'] = 'Raccoon Pelt',     ['weight'] = 500,  ['type'] = 'item', ['image'] = 'pelt_good.png',    ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Good (* *)'},
+    ['poor_raccoon_pelt']      = {['name'] = 'poor_raccoon_pelt',      ['label'] = 'Raccoon Pelt',     ['weight'] = 500,  ['type'] = 'item', ['image'] = 'pelt_poor.png',    ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Poor (*)'},
 
     -- fish
     ['a_c_fishbluegil_01_ms']        = {['name'] = 'a_c_fishbluegil_01_ms',        ['label'] = 'Blue Gil (M)',         ['weight'] = 600,  ['type'] = 'item', ['image'] = 'provision_fish_bluegill.png',         ['unique'] = true, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used for fishing'},
