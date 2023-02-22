@@ -503,5 +503,60 @@ RSGShared.Jobs = {
                 payment = 50
             },
         },
-    }
+    },
+    ['governor1'] = {
+        label = 'Governor New Hanover',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = {
+                name = 'Governor',
+                payment = 100
+            },
+        },
+    },
+    ['governor2'] = {
+        label = 'Governor West Elizabeth',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = {
+                name = 'Governor',
+                payment = 100
+            },
+        },
+    },
+    ['governor3'] = {
+        label = 'Governor New Austin',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = {
+                name = 'Governor',
+                payment = 100
+            },
+        },
+    },
+    ['governor4'] = {
+        label = 'Governor Ambarino',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = {
+                name = 'Governor',
+                payment = 100
+            },
+        },
+    },
+    ['governor5'] = {
+        label = 'Governor Lemoyne',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = {
+                name = 'Governor',
+                payment = 100
+            },
+        },
+    },
 }
