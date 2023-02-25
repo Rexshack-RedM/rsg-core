@@ -1,5 +1,10 @@
 RSGShared = RSGShared or {}
 
+RSGShared.StarterItems = {
+    ['bread'] 			= { amount = 10, item = 'bread' },
+    ['water_bottle'] 	= { amount = 10, item = 'water_bottle' },
+}
+
 local StringCharset = {}
 local NumberCharset = {}
 
@@ -74,11 +79,6 @@ function RSGShared.SetDefaultVehicleExtras(vehicle, config)
         RSGShared.ChangeVehicleExtra(vehicle, tonumber(id), type(enabled) == 'boolean' and enabled or true)
     end
 end
-
-RSGShared.StarterItems = {
-    ['bread'] 			= { amount = 10, item = 'bread' },
-    ['water_bottle'] 	= { amount = 10, item = 'water_bottle' },
-}
 
 RSGShared.MaleNoGloves = {
     [0] = true,
