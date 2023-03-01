@@ -16,7 +16,7 @@ shared_scripts {
     'shared/gangs.lua',
     'shared/weapons.lua',
     'shared/locations.lua',
-	'shared/keybinds.lua'
+    'shared/keybinds.lua'
 }
 
 client_scripts {
@@ -25,7 +25,8 @@ client_scripts {
     'client/loops.lua',
     'client/events.lua',
     'client/drawtext.lua',
-	'client/prompts.lua'
+    'client/prompts.lua',
+    'client/noclip.lua'
 }
 
 server_scripts {
