@@ -45,6 +45,7 @@ local Translations = {
             },
         },
         tpm = { help = 'TP al Marker (solo Admin)' },
+        noclip = { help = 'No Clip (solo Admin)' },
         addpermission = {
             help = 'Concedi i permessi al giocatore (solo God)',
             params = {

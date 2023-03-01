@@ -45,6 +45,7 @@ local Translations = {
             },
         },
         tpm = { help = 'TP al marcador (Sólo para admin)' },
+        noclip = { help = 'No Clip (Sólo para admin)' },
         addpermission = {
             help = 'Dar permisos al jugador (Sólo modo dios)',
             params = {
@@ -73,8 +74,8 @@ local Translations = {
             },
         },
         dv = { help = 'Borrar vehículo (Sólo admin)' },
-		spawnwagon = { help = 'Generar un carro (Sólo admin)' },
-		spawnhorse = { help = 'Generar un caballo (Sólo Admin)' },
+        spawnwagon = { help = 'Generar un carro (Sólo admin)' },
+        spawnhorse = { help = 'Generar un caballo (Sólo Admin)' },
         givemoney = {
             help = 'Dar dinero a un jugador (Sólo admin)',
             params = {

@@ -121,7 +121,7 @@ RSGCore.Commands.Add('tpm', Lang:t("command.tpm.help"), {}, false, function(sour
 end, 'admin')
 
 -- noclip
-RSGCore.Commands.Add('noclip', 'No Clip (Admin Only)', {}, false, function(source)
+RSGCore.Commands.Add('noclip', Lang:t("command.noclip.help"), {}, false, function(source)
     TriggerClientEvent('RSGCore:Command:ToggleNoClip', source)
 end, 'admin')
 
