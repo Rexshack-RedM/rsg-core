@@ -362,9 +362,9 @@ RSGCore.Commands.Add('ooc', Lang:t("command.ooc.help"), {}, false, function(sour
                     multiline = true,
                     args = {'Proxmity OOC | '.. GetPlayerName(source), message}
                 })
-                TriggerEvent('rsg-log:server:CreateLog', 'ooc', 'OOC', 'white', '**' .. GetPlayerName(source) .. '** (CitizenID: ' .. Player.PlayerData.citizenid .. ' | ID: ' .. source .. ') **Message:** ' .. message, false)
             end
         end
+        TriggerEvent('rsg-log:server:CreateLog', 'ooc', 'OOC', 'white', '**' .. GetPlayerName(source) .. '** (CitizenID: ' .. Player.PlayerData.citizenid .. ' | ID: ' .. source .. ') **Message:** ' .. message, false)
     end
 end, 'user')
 
