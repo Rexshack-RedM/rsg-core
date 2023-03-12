@@ -18,6 +18,7 @@ RSGShared.Items = {
     ['horseholster'] = {['name'] = 'horseholster', ['label'] = 'Horse Holster', ['weight'] = 500, ['type'] = 'item', ['image'] = 'horseholster.png', ['unique'] = true,  ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'horse holster'},
     ['stew']         = {['name'] = 'stew',         ['label'] = 'Hot Stew',      ['weight'] = 300, ['type'] = 'item', ['image'] = 'stew.png',         ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'hot homemade stew'},
     ['treasure1']    = {['name'] = 'treasure1',    ['label'] = 'Treasure Map',  ['weight'] = 50,  ['type'] = 'item', ['image'] = 'treasuremap.png',  ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'map for finding treasure'},
+    ['notepad']      = {['name'] = 'notepad',      ['label'] = 'Notepad',       ['weight'] = 50,  ['type'] = 'item', ['image'] = 'notepad.png',      ['unique'] = true,  ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'for sending notes'},
 
     -- beekeeper
     ['honeyframe']   = {['name'] = 'honeyframe',   ['label'] = 'Honey Frame',   ['weight'] = 100, ['type'] = 'item', ['image'] = 'honeyframe.png',   ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Used for making honey'},
