@@ -335,39 +335,6 @@ RSGCore.Commands.Add("level", "Check Which Level You Are", {{name="skill", help=
     end
 end, 'user')
 
--- Out of Character Chat
-
-RSGCore.Commands.Add('ooc', Lang:t("command.ooc.help"), {}, false, function(source, args)
-    local message = table.concat(args, ' ')
-    local Players = RSGCore.Functions.GetPlayers()
-    local Player = RSGCore.Functions.GetPlayer(source)
-    local playerCoords = GetEntityCoords(GetPlayerPed(source))
-    for _, v in pairs(Players) do
-        if v == source then
-            TriggerClientEvent('chat:addMessage', v, {
-                color = { 0, 0, 255},
-                multiline = true,
-                args = {'OOC | '.. GetPlayerName(source), message}
-            })
-        elseif #(playerCoords - GetEntityCoords(GetPlayerPed(v))) < 20.0 then
-            TriggerClientEvent('chat:addMessage', v, {
-                color = { 0, 0, 255},
-                multiline = true,
-                args = {'OOC | '.. GetPlayerName(source), message}
-            })
-        elseif RSGCore.Functions.HasPermission(v, 'admin') then
-            if RSGCore.Functions.IsOptin(v) then
-                TriggerClientEvent('chat:addMessage', v, {
-                    color = { 0, 0, 255},
-                    multiline = true,
-                    args = {'Proxmity OOC | '.. GetPlayerName(source), message}
-                })
-            end
-        end
-        TriggerEvent('rsg-log:server:CreateLog', 'ooc', 'OOC', 'white', '**' .. GetPlayerName(source) .. '** (CitizenID: ' .. Player.PlayerData.citizenid .. ' | ID: ' .. source .. ') **Message:** ' .. message, false)
-    end
-end, 'user')
-
 -- Me command
 RSGCore.Commands.Add('me', Lang:t("command.me.help"), {{name = Lang:t("command.me.params.message.name"), help = Lang:t("command.me.params.message.help")}}, false, function(source, args)
     local text = ''
