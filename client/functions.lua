@@ -374,10 +374,7 @@ function RSGCore.Functions.SpawnVehicle(model, cb, coords, isnetworked, teleport
     local veh = CreateVehicle(model, coords.x, coords.y, coords.z, coords.w, isnetworked, false)
     local netid = NetworkGetNetworkIdFromEntity(veh)
     SetVehicleHasBeenOwnedByPlayer(veh, true)
-    SetNetworkIdCanMigrate(netid, true)
-    SetVehicleNeedsToBeHotwired(veh, false)
-    SetVehRadioStation(veh, 'OFF')
-    SetVehicleFuelLevel(veh, 100.0)
+    NetworkRequestControlOfNetworkId(netid)
     SetModelAsNoLongerNeeded(model)
     if teleportInto then TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1) end
     if cb then cb(veh) end
