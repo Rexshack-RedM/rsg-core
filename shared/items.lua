@@ -28,8 +28,9 @@ RSGShared.Items = {
     ['beeswax']      = {['name'] = 'beeswax',      ['label'] = 'Bees Wax',      ['weight'] = 100, ['type'] = 'item', ['image'] = 'beeswax.png',      ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'product from beehive'},
 
     -- horse training
-    ['horsetrainingbrush']  = {['name'] = 'horsetrainingbrush',  ['label'] = 'Trainer Brush',  ['weight'] = 300, ['type'] = 'item', ['image'] = 'horsebrush.png', ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'brush used by a horse trainer'},
-    ['horsetrainingcarrot'] = {['name'] = 'horsetrainingcarrot', ['label'] = 'Trainer Carrot', ['weight'] = 100, ['type'] = 'item', ['image'] = 'carrot.png',     ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'carrot used by a horse trainer'},
+    ['horsetrainingbrush']  = {['name'] = 'horsetrainingbrush',  ['label'] = 'Trainer Brush',  ['weight'] = 300, ['type'] = 'item', ['image'] = 'horsebrush.png',               ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'brush used by a horse trainer'},
+    ['horsetrainingcarrot'] = {['name'] = 'horsetrainingcarrot', ['label'] = 'Trainer Carrot', ['weight'] = 100, ['type'] = 'item', ['image'] = 'carrot.png',                   ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'carrot used by a horse trainer'},
+    ['horsereviver']        = {['name'] = 'horsereviver',        ['label'] = 'Horse Reviver',  ['weight'] = 100, ['type'] = 'item', ['image'] = 'consumable_horse_reviver.png', ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used to revive a horse'},
 
     -- farming items
     ['cornseed']     = {['name'] = 'cornseed',     ['label'] = 'Corn Seed',     ['weight'] = 0,   ['type'] = 'item', ['image'] = 'seeds.png',       ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used in farming'},
