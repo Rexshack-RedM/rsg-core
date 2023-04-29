@@ -371,4 +371,7 @@ RSGShared.Items = {
 
     -- Bird Post
     ['birdpost'] = {['name'] = 'birdpost', ['label'] = 'Bird Post', ['weight'] = 5, ['type'] = 'item', ['image'] = 'birdpost.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Bird Post for sending letters'},
+
+    -- Money Clip
+    ['moneyclip'] = {['name'] = 'moneyclip', ['label'] = 'Money Clip', ['weight'] = 1, ['type'] = 'item', ['image'] = 'money_moneyclip.png', ['unique'] = true, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Money Clip'},
 }
