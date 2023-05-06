@@ -163,8 +163,14 @@ RSGShared.Items = {
     ['poor_alligator_pelt']      = {['name'] = 'poor_alligator_pelt',      ['label'] = 'Alligator Pelt',     ['weight'] = 500,  ['type'] = 'item', ['image'] = 'pelt_poor.png',    ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Poor (*)'},
     -- mp_a_c_alligator_01
     ['legendary_alligator_pelt'] = {['name'] = 'legendary_alligator_pelt', ['label'] = 'Leg Alligator Pelt', ['weight'] = 500,  ['type'] = 'item', ['image'] = 'pelt_perfect.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Perfect (* * *)'},
-    -- mp_a_c_beaver_01
+    -- A_C_Beaver_01
     ['legendary_beaver_pelt']    = {['name'] = 'legendary_beaver_pelt',    ['label'] = 'Leg Beaver Pelt',    ['weight'] = 500,  ['type'] = 'item', ['image'] = 'pelt_perfect.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Perfect (* * *)'},
+    -- mp_a_c_beaver_01
+    ['legendary_moon_beaver_pelt']    = {['name'] = 'legendary_moon_beaver_pelt',    ['label'] = 'Leg Beaver Pelt',    ['weight'] = 500,  ['type'] = 'item', ['image'] = 'pelt_perfect.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Perfect (* * *)'},
+    -- mp_a_c_beaver_01
+    ['legendary_zizi_beaver_pelt']    = {['name'] = 'legendary_zizi_beaver_pelt',    ['label'] = 'Leg Beaver Pelt',    ['weight'] = 500,  ['type'] = 'item', ['image'] = 'pelt_perfect.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Perfect (* * *)'},
+    -- mp_a_c_beaver_01
+    ['legendary_night_beaver_pelt']    = {['name'] = 'legendary_night_beaver_pelt',    ['label'] = 'Leg Beaver Pelt',    ['weight'] = 500,  ['type'] = 'item', ['image'] = 'pelt_perfect.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Perfect (* * *)'},
     -- mp_a_c_boar_01
     ['legendary_boar_pelt']      = {['name'] = 'legendary_boar_pelt',      ['label'] = 'Leg Boar Pelt',      ['weight'] = 500,  ['type'] = 'item', ['image'] = 'pelt_perfect.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Perfect (* * *)'},
     -- mp_a_c_cougar_01
