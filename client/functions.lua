@@ -1,7 +1,6 @@
 RSGCore.Functions = {}
 
 -- Player
-
 function RSGCore.Functions.GetPlayerData(cb)
     if not cb then return RSGCore.PlayerData end
     cb(RSGCore.PlayerData)
@@ -17,7 +16,6 @@ function RSGCore.Functions.HasItem(items, amount)
 end
 
 -- Utility
-
 function RSGCore.Functions.DrawText(x, y, width, height, scale, r, g, b, a, text)
     -- Use local function instead
     SetTextFont(4)
@@ -110,6 +108,47 @@ function RSGCore.Functions.Notify(text, texttype, length)
     end
 end
 
+-- Use Native Notifications --
+function RSGCore.Functions.LoadTexture(dict)
+    local callback = false
+    if Citizen.InvokeNative(0x7332461FC59EB7EC, dict) then
+        RequestStreamedTextureDict(dict, false)
+        callback = true
+    end
+    return callback
+end
+
+-- Native Notifications --
+function RSGCore.Functions.NativeNotify(id, text, duration, subtext, dict, icon, color)
+    local display = tostring(text) or 'Placeholder'
+	local subdisplay = tostring(subtext) or 'Placeholder'
+	local length = tonumber(duration) or 4000
+	local dictionary = tostring(dict) or 'generic_textures'
+	local image = tostring(icon) or 'tick'
+	local colour = tostring(color) or 'COLOR_WHITE'
+
+    local notifications = {
+        [1] = function() return exports['rsg-core']:ShowTooltip(display, length) end,
+        [2] = function() return exports['rsg-core']:DisplayRightText(display, length) end,
+        [3] = function() return exports['rsg-core']:ShowObjective(display, length) end,
+        [4] = function() return exports['rsg-core']:ShowBasicTopNotification(display, length) end,
+        [5] = function() return exports['rsg-core']:ShowSimpleCenterText(display, length) end,
+        [6] = function() return exports['rsg-core']:ShowLocationNotification(display, subdisplay, length) end,
+        [7] = function() return exports['rsg-core']:ShowTopNotification(display, subdisplay, length) end,
+        [8] = function() if not RSGCore.Functions.LoadTexture(dictionary) then RSGCore.Functions.LoadTexture('generic_textures') end
+            return exports['rsg-core']:ShowAdvancedLeftNotification(display, subdisplay, dictionary, image, length) end,
+        [9] = function() if not RSGCore.Functions.LoadTexture(dictionary) then RSGCore.Functions.LoadTexture('generic_textures') end
+            return exports['rsg-core']:ShowAdvancedRightNotification(display, dictionary, image, colour, length) end
+    }
+
+    if not notifications[id] then
+        print('Invalid Notify ID')
+        return nil
+    else
+        return notifications[id]()
+    end
+end
+
 function RSGCore.Debug(resource, obj, depth)
     TriggerServerEvent('RSGCore:DebugSomething', resource, obj, depth)
 end
@@ -158,7 +197,6 @@ function RSGCore.Functions.Progressbar(name, label, duration, useWhileDead, canC
 end
 
 -- Getters
-
 function RSGCore.Functions.GetVehicles()
     return GetGamePool('CVehicle')
 end
@@ -359,7 +397,6 @@ function RSGCore.Functions.AttachProp(ped, model, boneId, x, y, z, xR, yR, zR, v
 end
 
 -- Vehicle
-
 function RSGCore.Functions.SpawnVehicle(model, cb, coords, isnetworked, teleportInto)
     local ped = PlayerPedId()
     model = type(model) == 'string' and GetHashKey(model) or model
@@ -534,22 +571,31 @@ function RSGCore.Functions.GetCardinalDirection(entity)
 end
 
 function RSGCore.Functions.GetCurrentTime()
-    local obj = {}
-    obj.min = GetClockMinutes()
+	local obj = {}
+	obj.min = GetClockMinutes()
     obj.hour = GetClockHours()
-
-    if obj.hour <= 12 then
-        obj.ampm = "AM"
-    elseif obj.hour >= 13 then
-        obj.ampm = "PM"
-        obj.formattedHour = obj.hour - 12
+	if obj.min <= 9 then
+        obj.min = "0" .. obj.min
     end
+	return obj.hour..':'..obj.min
+end
 
-    if obj.min <= 9 then
-        obj.formattedMin = "0" .. obj.min
-    end
+function RSGCore.Functions.GetTemperature()
+	-- Get Temperatures
+	local UseMetric = ShouldUseMetricTemperature()
+	local temperature
+	local temperatureUnit
+    local playerCoords = GetEntityCoords(PlayerPedId())
 
-    return obj
+	if UseMetric then
+		temperature = math.floor(GetTemperatureAtCoords(playerCoords))
+		temperatureUnit = 'C'
+	else
+		temperature = math.floor(GetTemperatureAtCoords(playerCoords) * 9/5 + 32)
+		temperatureUnit = 'F'
+	end
+
+	return string.format('%d °%s', temperature, temperatureUnit)
 end
 
 function RSGCore.Functions.GetGroundZCoord(coords)
