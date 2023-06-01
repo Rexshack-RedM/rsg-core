@@ -113,3 +113,73 @@ exports('ShowSimpleCenterText', (text, duration) => {
 
 	Citizen.invokeNative("0x893128CDB4B81FBB", struct1, struct2, 1);
 });
+
+/*mrfurquim request https://github.com/Rexshack-RedM/rsg-core/pull/21#issuecomment-1571186546*/
+exports('showBottomRight', (text, duration) =>{
+	const struct1 = new DataView(new ArrayBuffer(48));
+	struct1.setInt32(0, duration, true); // duration
+
+	const string1 = CreateVarString(10, "LITERAL_STRING", text);
+	const struct2 = new DataView (new ArrayBuffer(8 * 5));
+	struct2.setBigInt64(8, BigInt(string1), true);
+	Citizen.InvokeNative("0x2024F4F333095FB1", struct1, struct2, 1);
+});
+
+exports('howFailMissionNotif', (title, subTitle, duration) => {
+	const titleString = CreateVarString(10, "LITERAL_STRING", title);
+	const msgString = CreateVarString(10, "LITERAL_STRING", subTitle);
+
+	const struct1 = new DataView(new ArrayBuffer(8 * 5));
+	struct1.setInt32(0, duration, true);
+
+	const struct2 = new DataView(new ArrayBuffer(8 * 9));
+	struct2.setBigInt64(8 * 1, BigInt(titleString), true);
+	struct2.setBigInt64(8 * 2, BigInt(msgString), true);
+
+	const zz = Citizen.InvokeNative("0x9F2CC2439A04E7BA", struct1, struct2, 1);
+	Citizen.InvokeNative("0x00A15B94CBA4F76F", zz);
+});
+
+exports('showDeathNotif', (title, _audioRef, _audioName, duration) => {
+	const titleString = CreateVarString(10, "LITERAL_STRING", title);
+	const audioStringRef = CreateVarString(10, "LITERAL_STRING", _audioRef);
+	const audioNameString = CreateVarString(10, "LITERAL_STRING", _audioName);
+	const struct1 = new DataView(new ArrayBuffer(8 * 5));
+	struct1.setInt32(0, duration, true);
+	struct1.setBigInt64(8 * 0, BigInt(audioStringRef), true);
+	struct1.setBigInt64(8 * 1, BigInt(audioNameString), true);
+	struct1.setBigInt64(8 * 2, BigInt(4), true);
+	const struct2 = new DataView(new ArrayBuffer(8 * 9));
+	struct2.setBigInt64(8 * 1, BigInt(titleString), true);
+	const zz = Citizen.InvokeNative("0x815C4065AE6E6071", struct1, struct2, 1);
+	Citizen.InvokeNative("0x00A15B94CBA4F76F", zz);
+});
+
+exports('updateMissionNotif', (utitle, umsg, duration) => {
+	const titleString = CreateVarString(10, "LITERAL_STRING", utitle);
+	const msgString = CreateVarString(10, "LITERAL_STRING", umsg);
+	const struct1 = new DataView(new ArrayBuffer(8 * 5));
+	struct1.setInt32(0, duration, true);
+	const struct2 = new DataView(new ArrayBuffer(8 * 9));
+	struct2.setBigInt64(8 * 1, BigInt(titleString), true);
+	struct2.setBigInt64(8 * 2, BigInt(msgString), true);
+	const zz = Citizen.InvokeNative("0x9F2CC2439A04E7BA", struct1, struct2, 1);
+	Citizen.InvokeNative("0x00A15B94CBA4F76F", zz);
+});
+
+exports('warningNotif', (title, msg, _audioRef, _audioName, duration) => {
+	const titleString = CreateVarString(10, "LITERAL_STRING", title);
+	const msgString = CreateVarString(10, "LITERAL_STRING", msg);
+	const audioStringRef = CreateVarString(10, "LITERAL_STRING", _audioRef);
+	const audioNameString = CreateVarString(10, "LITERAL_STRING", _audioName);
+	const struct1 = new DataView(new ArrayBuffer(8 * 5));
+	struct1.setInt32(0, duration, true);
+	struct1.setBigInt64(8 * 0, BigInt(audioStringRef), true);
+	struct1.setBigInt64(8 * 1, BigInt(audioNameString), true);
+	struct1.setInt16(8 * 2, 4, true);
+	const struct2 = new DataView(new ArrayBuffer(8 * 9));
+	struct2.setBigInt64(8 * 2, BigInt(titleString), true);
+	struct2.setBigInt64(8 * 3, BigInt(msgString), true);
+	const zz = Citizen.InvokeNative("0x339E16B41780FC35", struct1, struct2, 1);
+	Citizen.InvokeNative("0x00A15B94CBA4F76F", zz);
+});
