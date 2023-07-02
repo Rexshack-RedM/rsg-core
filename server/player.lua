@@ -330,6 +330,11 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
     self.Functions.AddXp = function(skill, amount)
         local skill = skill:lower()
         local amount = tonumber(amount)
+
+        if not self.PlayerData.metadata['xp'][skill] then
+            self.PlayerData.metadata['xp'][skill] = 0
+        end
+
         if self.PlayerData.metadata['xp'][skill] and amount > 0 then
             self.PlayerData.metadata['xp'][skill] = self.PlayerData.metadata['xp'][skill] + amount
             self.Functions.UpdateLevelData(skill)
@@ -356,6 +361,11 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
     self.Functions.AddLevel = function(level, amount)
         local level = level:lower()
         local amount = tonumber(amount)
+
+        if not self.PlayerData.metadata['levels'][skill] then
+            self.PlayerData.metadata['levels'][skill] = 0
+        end
+
         if self.PlayerData.metadata['levels'][level] and amount > 0 then
             self.PlayerData.metadata['levels'][level] = self.PlayerData.metadata['levels'][level] + amount
             self.Functions.UpdateLevelData(level)
