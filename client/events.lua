@@ -108,18 +108,32 @@ end)
 RegisterNetEvent('RSGCore:Command:DeleteVehicle', function()
     local ped = PlayerPedId()
     local veh = GetVehiclePedIsUsing(ped)
-    if veh ~= 0 then
+    local mount = GetMount(ped)
+
+    if veh and veh ~= 0 then
+        NetworkRequestControlOfEntity(veh)
         SetEntityAsMissionEntity(veh, true, true)
         DeleteVehicle(veh)
+        SetEntityAsNoLongerNeeded(veh)
     else
         local pcoords = GetEntityCoords(ped)
         local vehicles = GetGamePool('CVehicle')
+
         for _, v in pairs(vehicles) do
             if #(pcoords - GetEntityCoords(v)) <= 5.0 then
+                NetworkRequestControlOfEntity(v)
                 SetEntityAsMissionEntity(v, true, true)
                 DeleteVehicle(v)
+                SetEntityAsNoLongerNeeded(v)
             end
         end
+    end
+
+    if mount and mount ~= 0 then
+        NetworkRequestControlOfEntity(mount)
+        SetEntityAsMissionEntity(mount, true, true)
+        DeleteEntity(mount)
+        SetEntityAsNoLongerNeeded(mount)
     end
 end)
 
