@@ -255,43 +255,63 @@ RSGCore.Commands.Add('gang', Lang:t("command.gang.help"), {}, false, function(so
     TriggerClientEvent('RSGCore:Notify', source, Lang:t('info.gang_info', {value = PlayerGang.label, value2 = PlayerGang.grade.name}))
 end, 'admin')
 
-RSGCore.Commands.Add("givexp", "Give A Player Xp (Admin Only)", {{name="id", help="Player ID"},{name="skill", help="Type of skill (mining, etc)"}, {name="amount", help="Amount of xp"}}, true, function(source, args)
-    local Player = GetPlayer(tonumber(args[1]))
-    if Player then
-        if Player.PlayerData.metadata["xp"][tostring(args[2])] then
-            Player.Functions.AddXp(tostring(args[2]), tonumber(args[3]))
-            TriggerClientEvent('RSGCore:Notify', source, Lang:t('info.xp_added'), 'primary')
-        else
-            TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.no_skill'), 'error')
-        end
-    else
-        TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.not_online'), 'error')
+RSGCore.Commands.Add("givexp", "Give EXP Points to Player (Admin Only)", {{name="id", help="Player ID"}, {name="skill", help="Type of skill (mining, etc)"}, {name="amount", help="Amount of xp"}}, true, function(source, args)
+    local Player = RSGCore.Functions.GetPlayer(tonumber(args[1]))
+
+    if not Player then
+        RSGCore.Functions.Notify(source, Lang:t('error.not_online'), 'error')
+
+        return
     end
+
+    local fullname = Player.PlayerData.charinfo.firstname..' '..Player.PlayerData.charinfo.lastname
+    local skill = tostring(args[2])
+    local exp = tonumber(args[3])
+
+    Player.Functions.AddXp(skill, exp)
+
+    RSGCore.Functions.Notify(source, exp..' EXP points added to \''..skill..'\' for '..fullname, 'success', 5000)
 end, 'admin')
 
-RSGCore.Commands.Add("removexp", "Give A Player Xp (Admin Only)", {{name="id", help="Player ID"},{name="skill", help="Type of skill (mining, etc)"}, {name="amount", help="Amount of xp"}}, true, function(source, args)
-    local Player = GetPlayer(tonumber(args[1]))
-    if Player then
-        if Player.PlayerData.metadata["xp"][tostring(args[2])] then
-            Player.Functions.RemoveXp(tostring(args[2]), tonumber(args[3]))
-            TriggerClientEvent('RSGCore:Notify', Lang:t('info.xp_removed'), 'primary')
-        else
-            TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.no_skill'), 'error')
-        end
-    else
-        TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.not_online'), 'error')
+RSGCore.Commands.Add("removexp", "Remove Player EXP (Admin Only)", {{name="id", help="Player ID"}, {name="skill", help="Type of skill (mining, etc)"}, {name="amount", help="Amount of xp"}}, true, function(source, args)
+    local Player = RSGCore.Functions.GetPlayer(tonumber(args[1]))
+
+    if not Player then
+        RSGCore.Functions.Notify(source, Lang:t('error.not_online'), 'error')
+
+        return
     end
+
+    local fullname = Player.PlayerData.charinfo.firstname..' '..Player.PlayerData.charinfo.lastname
+    local skill = tostring(args[2])
+    local exp = tonumber(args[3])
+    local currentEXP = Player.PlayerData.metadata['xp'][skill]
+    local removed = currentEXP - exp
+
+    if removed < 0 then return end
+
+    Player.Functions.RemoveXp(skill, exp)
+
+    RSGCore.Functions.Notify(source, exp..' EXP points removed from \''..skill..'\' for '..fullname, 'success', 5000)
 end, 'admin')
 
 RSGCore.Commands.Add("xp", "Check How Much Xp You Have", {{name="skill", help="Type of skill (mining, etc)"}}, true, function(source, args)
-    local Player = GetPlayer(source)
-    local Xp = Player.PlayerData.metadata["xp"][tostring(args[1])]
-    if Player then
-        if Xp then
-            TriggerClientEvent('RSGCore:Notify', source, Lang:t('info.xp_info', {value = Xp, value2 = tostring(args[1])}), 'primary')
-        else
-            TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.no_skill'), 'error')
-        end
+    local src = source
+    local Player = RSGCore.Functions.GetPlayer(src)
+
+    if not Player then
+        RSGCore.Functions.Notify(source, Lang:t('error.not_online'), 'error')
+
+        return
+    end
+
+    local skill = tostring(args[1])
+    local exp = Player.PlayerData.metadata["xp"][skill]
+
+    if exp then
+        RSGCore.Functions.Notify(source, 'Your EXP points for \''..skill..'\' is '..exp, 'primary', 5000)
+    else
+        RSGCore.Functions.Notify(source, 'Not available!', 'error', 3000)
     end
 end, 'user')
 
