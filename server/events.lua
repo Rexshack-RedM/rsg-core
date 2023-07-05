@@ -11,6 +11,7 @@ AddEventHandler('playerDropped', function(reason)
     local src = source
     if not RSGCore.Players[src] then return end
     local Player = RSGCore.Players[src]
+    TriggerClientEvent('rsg-horses:client:FleeHorse', src)
     TriggerEvent('rsg-log:server:CreateLog', 'joinleave', 'Dropped', 'red', '**' .. GetPlayerName(src) .. '** (' .. Player.PlayerData.license .. ') left..' ..'\n **Reason:** ' .. reason)
     Player.Functions.Save()
     RSGCore.Player_Buckets[Player.PlayerData.license] = nil
