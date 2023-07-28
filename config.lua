@@ -2,7 +2,7 @@ RSGConfig = {}
 
 RSGConfig.MaxPlayers = GetConvarInt('sv_maxclients', 48) -- Gets max players from config file, default 48
 RSGConfig.DefaultSpawn = vector4(-1035.71, -2731.87, 12.86, 0.0)
-RSGConfig.UpdateInterval = 5 -- how often to update player data in minutes
+RSGConfig.UpdateInterval = 1 -- how often to update player data in minutes
 RSGConfig.StatusInterval = 5000 -- how often to check hunger/thirst status in milliseconds
 RSGConfig.EnablePVP = true
 
