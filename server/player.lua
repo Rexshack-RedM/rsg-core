@@ -87,10 +87,9 @@ function RSGCore.Player.CheckPlayerData(source, PlayerData)
     PlayerData.charinfo.lastname = PlayerData.charinfo.lastname or "Lastname"
     PlayerData.charinfo.birthdate = PlayerData.charinfo.birthdate or "00-00-0000"
     PlayerData.charinfo.gender = PlayerData.charinfo.gender or 0
-    PlayerData.charinfo.backstory = PlayerData.charinfo.backstory or "placeholder backstory"
-    PlayerData.charinfo.nationality = PlayerData.charinfo.nationality or "USA"
-    PlayerData.charinfo.phone = PlayerData.charinfo.phone or RSGCore.Functions.CreatePhoneNumber()
+    PlayerData.charinfo.nationality = PlayerData.charinfo.nationality or "British"
     PlayerData.charinfo.account = PlayerData.charinfo.account or RSGCore.Functions.CreateAccountNumber()
+
     -- Metadata
     PlayerData.metadata = PlayerData.metadata or {}
     PlayerData.metadata['house'] = PlayerData.metadata['house'] or 'none'
@@ -99,66 +98,20 @@ function RSGCore.Player.CheckPlayerData(source, PlayerData)
     PlayerData.metadata["thirst"] = PlayerData.metadata["thirst"] or 100
     PlayerData.metadata["stress"] = PlayerData.metadata["stress"] or 0
     PlayerData.metadata["isdead"] = PlayerData.metadata["isdead"] or false
-    PlayerData.metadata["inlaststand"] = PlayerData.metadata["inlaststand"] or false
     PlayerData.metadata["armor"] = PlayerData.metadata["armor"] or 0
     PlayerData.metadata["ishandcuffed"] = PlayerData.metadata["ishandcuffed"] or false
-    PlayerData.metadata["tracker"] = PlayerData.metadata["tracker"] or false
     PlayerData.metadata["injail"] = PlayerData.metadata["injail"] or 0
     PlayerData.metadata["jailitems"] = PlayerData.metadata["jailitems"] or {}
     PlayerData.metadata["status"] = PlayerData.metadata["status"] or {}
-    PlayerData.metadata["phone"] = PlayerData.metadata["phone"] or {}
-    PlayerData.metadata["fitbit"] = PlayerData.metadata["fitbit"] or {}
-    PlayerData.metadata["commandbinds"] = PlayerData.metadata["commandbinds"] or {}
-    PlayerData.metadata["bloodtype"] = PlayerData.metadata["bloodtype"]
-        or RSGCore.Config.Player.Bloodtypes[math.random(1, #RSGCore.Config.Player.Bloodtypes)]
+    PlayerData.metadata["bloodtype"] = PlayerData.metadata["bloodtype"] or RSGCore.Config.Player.Bloodtypes[math.random(1, #RSGCore.Config.Player.Bloodtypes)]
     PlayerData.metadata["dealerrep"] = PlayerData.metadata["dealerrep"] or 0
     PlayerData.metadata["craftingrep"] = PlayerData.metadata["craftingrep"] or 0
     PlayerData.metadata["attachmentcraftingrep"] = PlayerData.metadata["attachmentcraftingrep"] or 0
-    PlayerData.metadata["currentapartment"] = PlayerData.metadata["currentapartment"] or nil
     PlayerData.metadata["jobrep"] = PlayerData.metadata["jobrep"] or {}
-    PlayerData.metadata["jobrep"]["tow"] = PlayerData.metadata["jobrep"]["tow"] or 0
-    PlayerData.metadata["jobrep"]["trucker"] = PlayerData.metadata["jobrep"]["trucker"] or 0
-    PlayerData.metadata["jobrep"]["taxi"] = PlayerData.metadata["jobrep"]["taxi"] or 0
-    PlayerData.metadata["jobrep"]["hotdog"] = PlayerData.metadata["jobrep"]["hotdog"] or 0
-    PlayerData.metadata["callsign"] = PlayerData.metadata["callsign"] or "NO CALLSIGN"
     PlayerData.metadata["fingerprint"] = PlayerData.metadata["fingerprint"] or RSGCore.Player.CreateFingerId()
     PlayerData.metadata["walletid"] = PlayerData.metadata["walletid"] or RSGCore.Player.CreateWalletId()
-    PlayerData.metadata["criminalrecord"] = PlayerData.metadata["criminalrecord"]
-        or {
-            ["hasRecord"] = false,
-            ["date"] = nil,
-        }
-
-    PlayerData.metadata['xp'] = PlayerData.metadata['xp'] or {
-        ['main'] = 0,
-        ['herbalism'] = 0,
-        ['mining'] = 0,
-        ['cooking'] = 0,
-        ['crafting'] = 0,
-    }
-
-    PlayerData.metadata['licences'] = PlayerData.metadata['licences'] or {
-        ['weapon'] = false
-    }
-
-    PlayerData.metadata['levels'] = PlayerData.metadata['levels'] or {
-        ['main'] = 0,
-        ['herbalism'] = 0,
-        ['mining'] = 0,
-        ['cooking'] = 0,
-        ['crafting'] = 0,
-    }
-
-
-    PlayerData.metadata["inside"] = PlayerData.metadata["inside"]
-        or {
-            house = nil,
-            apartment = {
-                apartmentType = nil,
-                apartmentId = nil,
-            },
-        }
-
+    PlayerData.metadata["criminalrecord"] = PlayerData.metadata["criminalrecord"] or { ["hasRecord"] = false, ["date"] = nil,}
+	
     -- Job
     if PlayerData.job and PlayerData.job.name and not RSGCore.Shared.Jobs[PlayerData.job.name] then
         PlayerData.job = nil
@@ -175,6 +128,7 @@ function RSGCore.Player.CheckPlayerData(source, PlayerData)
     PlayerData.job.grade = PlayerData.job.grade or {}
     PlayerData.job.grade.name = PlayerData.job.grade.name or "Freelancer"
     PlayerData.job.grade.level = PlayerData.job.grade.level or 0
+
     -- Gang
     if PlayerData.gang and PlayerData.gang.name and not RSGCore.Shared.Gangs[PlayerData.gang.name] then
         PlayerData.gang = nil
@@ -186,6 +140,7 @@ function RSGCore.Player.CheckPlayerData(source, PlayerData)
     PlayerData.gang.grade = PlayerData.gang.grade or {}
     PlayerData.gang.grade.name = PlayerData.gang.grade.name or "none"
     PlayerData.gang.grade.level = PlayerData.gang.grade.level or 0
+    
     -- Other
     PlayerData.position = PlayerData.position or RSGConfig.DefaultSpawn
     PlayerData.items = GetResourceState("rsg-inventory") ~= "missing"
@@ -327,78 +282,6 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         self.Functions.UpdatePlayerData()
     end
 
-    self.Functions.AddXp = function(skill, amount)
-        local skill = skill:lower()
-        local amount = tonumber(amount)
-
-        if not self.PlayerData.metadata['xp'][skill] then
-            self.PlayerData.metadata['xp'][skill] = 0
-        end
-
-        if self.PlayerData.metadata['xp'][skill] and amount > 0 then
-            self.PlayerData.metadata['xp'][skill] = self.PlayerData.metadata['xp'][skill] + amount
-            self.Functions.UpdateLevelData(skill)
-            self.Functions.UpdatePlayerData()
-            TriggerEvent('rsg-log:server:CreateLog', 'levels', 'AddXp', 'lightgreen', '**'..GetPlayerName(self.PlayerData.source) .. ' (citizenid: '..self.PlayerData.citizenid..' | id: '..self.PlayerData.source..')** has received: '..amount..'xp in the skill: '..skill..'. Their current xp amount is: '..self.PlayerData.metadata['xp'][skill])
-            return true
-        end
-        return false
-    end
-
-    self.Functions.RemoveXp = function(skill, amount)
-        local skill = skill:lower()
-        local amount = tonumber(amount)
-        if self.PlayerData.metadata['xp'][skill] and amount > 0 then
-            self.PlayerData.metadata['xp'][skill] = self.PlayerData.metadata['xp'][skill] - amount
-            self.Functions.UpdateLevelData(skill)
-            self.Functions.UpdatePlayerData()
-            TriggerEvent('rsg-log:server:CreateLog', 'levels', 'RemoveXp', 'lightgreen', '**'..GetPlayerName(self.PlayerData.source) .. ' (citizenid: '..self.PlayerData.citizenid..' | id: '..self.PlayerData.source..')** was stripped of: '..amount..'xp in the skill: '..skill..'. Their current xp amount is: '..self.PlayerData.metadata['xp'][skill])
-            return true
-        end
-        return false
-    end
-
-    self.Functions.AddLevel = function(level, amount)
-        local level = level:lower()
-        local amount = tonumber(amount)
-
-        if not self.PlayerData.metadata['levels'][skill] then
-            self.PlayerData.metadata['levels'][skill] = 0
-        end
-
-        if self.PlayerData.metadata['levels'][level] and amount > 0 then
-            self.PlayerData.metadata['levels'][level] = self.PlayerData.metadata['levels'][level] + amount
-            self.Functions.UpdateLevelData(level)
-            self.Functions.UpdatePlayerData()
-            TriggerEvent('rsg-log:server:CreateLog', 'levels', 'AddXp', 'lightgreen', '**'..GetPlayerName(self.PlayerData.source) .. ' [CitizenID: '..self.PlayerData.citizenid..' | id: '..self.PlayerData.source..']** got '..level..' levels '..amount..' [current level: '..self.PlayerData.metadata['levels'][level])
-            return true
-        end
-        return false
-    end
-
-    self.Functions.RemoveLevel = function(level, amount)
-        local level = level:lower()
-        local amount = tonumber(amount)
-        if self.PlayerData.metadata['levels'][level] and amount > 0 then
-            self.PlayerData.metadata['levels'][level] = self.PlayerData.metadata['levels'][level] - amount
-            self.Functions.UpdateLevelData(level)
-            self.Functions.UpdatePlayerData()
-            TriggerEvent('rsg-log:server:CreateLog', 'levels', 'RemoveXp', 'lightgreen', '**'..GetPlayerName(self.PlayerData.source) .. ' [CitizenID: '..self.PlayerData.citizenid..' | id: '..self.PlayerData.source..']** lost '..level..' levels '..amount..' current level: '..self.PlayerData.metadata['levels'][level])
-            return true
-        end
-        return false
-    end
-
-    self.Functions.UpdateLevelData = function(skill, vall)
-        local skill = skill:lower()
-        if vall ~= nil then
-            self.PlayerData.metadata[skill] = vall
-            self.Functions.UpdatePlayerData()
-        end
-    end
-
-
-
     function self.Functions.AddMoney(moneytype, amount, reason)
         reason = reason or "unknown"
         moneytype = moneytype:lower()
@@ -539,17 +422,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
                 )
             end
             TriggerClientEvent("hud:client:OnMoneyChange", self.PlayerData.source, moneytype, amount, true)
-            if moneytype == "bank" then
-                TriggerClientEvent("rsg-phone:client:RemoveBankMoney", self.PlayerData.source, amount)
-            end
-            TriggerClientEvent(
-                "RSGCore:Client:OnMoneyChange",
-                self.PlayerData.source,
-                moneytype,
-                amount,
-                "remove",
-                reason
-            )
+            TriggerClientEvent("RSGCore:Client:OnMoneyChange", self.PlayerData.source, moneytype, amount, "remove", reason)
             TriggerEvent("RSGCore:Server:OnMoneyChange", self.PlayerData.source, moneytype, amount, "remove", reason)
         end
 
@@ -607,32 +480,12 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         return true
     end
 
-
-
     function self.Functions.GetMoney(moneytype)
         if not moneytype then
             return false
         end
         moneytype = moneytype:lower()
         return self.PlayerData.money[moneytype]
-    end
-
-    function self.Functions.SetCreditCard(cardNumber)
-        self.PlayerData.charinfo.card = cardNumber
-        self.Functions.UpdatePlayerData()
-    end
-
-    function self.Functions.GetCardSlot(cardNumber, cardType)
-        local item = tostring(cardType):lower()
-        local slots = exports["rsg-inventory"]:GetSlotsByItem(self.PlayerData.items, item)
-        for _, slot in pairs(slots) do
-            if slot then
-                if self.PlayerData.items[slot].info.cardNumber == cardNumber then
-                    return slot
-                end
-            end
-        end
-        return nil
     end
 
     function self.Functions.Save()
@@ -938,20 +791,6 @@ function RSGCore.Functions.CreateAccountNumber()
         end
     end
     return AccountNumber
-end
-
-function RSGCore.Functions.CreatePhoneNumber()
-    local UniqueFound = false
-    local PhoneNumber = nil
-    while not UniqueFound do
-        PhoneNumber = math.random(100, 999) .. math.random(1000000, 9999999)
-        local query = "%" .. PhoneNumber .. "%"
-        local result = MySQL.prepare.await("SELECT COUNT(*) as count FROM players WHERE charinfo LIKE ?", { query })
-        if result == 0 then
-            UniqueFound = true
-        end
-    end
-    return PhoneNumber
 end
 
 function RSGCore.Player.CreateFingerId()
