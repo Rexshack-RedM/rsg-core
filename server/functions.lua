@@ -57,15 +57,6 @@ function RSGCore.Functions.GetOfflinePlayerByCitizenId(citizenid)
     return RSGCore.Player.GetOfflinePlayer(citizenid)
 end
 
-function RSGCore.Functions.GetPlayerByPhone(number)
-    for src in pairs(RSGCore.Players) do
-        if RSGCore.Players[src].PlayerData.charinfo.phone == number then
-            return RSGCore.Players[src]
-        end
-    end
-    return nil
-end
-
 function RSGCore.Functions.GetPlayers()
     local sources = {}
     for k in pairs(RSGCore.Players) do
