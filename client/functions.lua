@@ -85,28 +85,45 @@ RegisterNUICallback('getNotifyConfig', function(_, cb)
     cb(RSGCore.Config.Notify)
 end)
 
-function RSGCore.Functions.Notify(text, texttype, length)
+---@alias NotificationPosition 'top' | 'top-right' | 'top-left' | 'bottom' | 'bottom-right' | 'bottom-left'
+---@alias NotificationType 'inform' | 'error' | 'success'
+---@alias DeprecatedNotificationType 'primary'
+
+---@class NotifyProps
+---@field id? string notifications with the same id will not be on the screen at the same time
+---@field title? string displayed to the player
+---@field description? string displayed to the player
+---@field duration? number milliseconds notification is on screen
+---@field position? NotificationPosition
+---@field type? NotificationType
+---@field icon? string https://fontawesome.com icon name
+---@field iconColor? string css color value for the icon
+
+---Text box popup for player which dissappears after a set time.
+---@param props NotifyProps
+function RSGCore.Functions.NotifyV2(props)
+    props.style = nil
+    if not props.position then
+        props.position = RSGConfig.NotifyPosition
+    end
+    lib.notify(props)
+end
+
+---@deprecated in favor of RSGCore.Functions.NotifyV2()
+---@param text table|string text of the notification
+---@param notifyType? NotificationType|DeprecatedNotificationType informs default styling. Defaults to 'inform'.
+---@param duration? integer milliseconds notification will remain on scren. Defaults to 5000.
+function RSGCore.Functions.Notify(text, notifyType, duration)
+    notifyType = notifyType or 'inform'
+    if notifyType == 'primary' then notifyType = 'inform' end
+    duration = duration or 5000
+    local position = RSGConfig.NotifyPosition
     if type(text) == "table" then
-        local ttext = text.text or 'Placeholder'
-        local caption = text.caption or 'Placeholder'
-        texttype = texttype or 'primary'
-        length = length or 5000
-        SendNUIMessage({
-            action = 'notify',
-            type = texttype,
-            length = length,
-            text = ttext,
-            caption = caption
-        })
+        local title = text.text or 'Placeholder'
+        local description = text.caption or 'Placeholder'
+        lib.notify({ title = title, description = description, duration = duration, type = notifyType, position = position})
     else
-        texttype = texttype or 'primary'
-        length = length or 5000
-        SendNUIMessage({
-            action = 'notify',
-            type = texttype,
-            length = length,
-            text = text
-        })
+        lib.notify({ description = text, duration = duration, type = notifyType, position = position})
     end
 end
 
@@ -132,30 +149,66 @@ function RSGCore.Functions.TriggerCallback(name, cb, ...)
     TriggerServerEvent('RSGCore:Server:TriggerCallback', name, ...)
 end
 
+local PROGconversion = {
+    disableMovement = 'move',
+    disableCarMovement = 'car',
+    disableCombat = 'combat',
+    disableMouse = 'mouse'
+}
+
+--- Converts the disableControls table to the correct format for the ox_lib library
+---@param table table the old table
+---@return table the new table
+local function ConvertProgressbar(table)
+    local newTable = {}
+    for k, v in pairs(table) do
+        if PROGconversion[k] then
+            newTable[PROGconversion[k]] = v
+        else
+            newTable[k] = v
+        end
+    end
+    return newTable
+end
+
 function RSGCore.Functions.Progressbar(name, label, duration, useWhileDead, canCancel, disableControls, animation, prop, propTwo, onFinish, onCancel)
-    if GetResourceState('progressbar') ~= 'started' then error('progressbar needs to be started in order for RSGCore.Functions.Progressbar to work') end
-    exports['progressbar']:Progress({
-        name = name:lower(),
-        duration = duration,
+    if lib.progressActive() then 
+        RSGCore.Functions.Notify("You are already doing something", "error", 5000)
+        return
+    end
+
+    local prog = lib.progressCircle({
         label = label,
+        duration = duration,
+        position = 'bottom',
         useWhileDead = useWhileDead,
         canCancel = canCancel,
-        controlDisables = disableControls,
-        animation = animation,
-        prop = prop,
-        propTwo = propTwo,
-    }, function(cancelled)
-        if not cancelled then
-            if onFinish then
-                onFinish()
-            end
-        else
-            if onCancel then
-                onCancel()
-            end
+        disable = ConvertProgressbar(disableControls),
+        anim = {
+            dict = animation.animDict,
+            clip = animation.anim,
+            flag = animation.flags
+        },
+        prop = {
+            model = prop.model and joaat(prop.model) or nil,
+            pos = prop.coords,
+            rot = prop.rotation
+        }
+    })
+
+    if prog then
+        if onFinish then
+            onFinish()
         end
-    end)
+    else
+        if onCancel then
+            onCancel()
+        end
+    end
+
+    return prog
 end
+
 
 -- Getters
 
