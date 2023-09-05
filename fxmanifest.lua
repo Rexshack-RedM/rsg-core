@@ -5,18 +5,12 @@ rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aw
 description 'rsg-core'
 
 shared_scripts {
+    '@ox_lib/init.lua',
     'config.lua',
     'shared/locale.lua',
     'locale/en.lua',
     'locale/*.lua',
-    'shared/main.lua',
-    'shared/items.lua',
-    'shared/jobs.lua',
-    'shared/vehicles.lua',
-    'shared/gangs.lua',
-    'shared/weapons.lua',
-    'shared/locations.lua',
-    'shared/keybinds.lua'
+    'shared/*.lua',
 }
 
 client_scripts {
@@ -40,15 +34,9 @@ server_scripts {
     'server/debug.lua'
 }
 
-ui_page 'html/index.html'
-
-files {
-    'html/index.html',
-    'html/css/style.css',
-    'html/css/drawtext.css',
-    'html/js/*.js'
+dependency {
+    'oxmysql',
+    'ox_lib'
 }
-
-dependency 'oxmysql'
 
 lua54 'yes'
