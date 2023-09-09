@@ -1,8 +1,8 @@
 RSGShared = RSGShared or {}
 
 RSGShared.StarterItems = {
-    ['bread'] 			= { amount = 10, item = 'bread' },
-    ['water_bottle'] 	= { amount = 10, item = 'water_bottle' },
+    ['bread'] = { amount = 5, item = 'bread' },
+    ['water'] = { amount = 5, item = 'water' },
 }
 
 local StringCharset = {}
