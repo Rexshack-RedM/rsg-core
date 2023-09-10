@@ -12,6 +12,7 @@ RSGShared.Items = {
     ['horseholster'] = {['name'] = 'horseholster', ['label'] = 'Horse Holster', ['weight'] = 500, ['type'] = 'item', ['image'] = 'horseholster.png', ['unique'] = true,  ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'horse holster'},
     ['stew']         = {['name'] = 'stew',         ['label'] = 'Hot Stew',      ['weight'] = 300, ['type'] = 'item', ['image'] = 'stew.png',         ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'hot homemade stew'},
     ['fieldbandage'] = {['name'] = 'fieldbandage', ['label'] = 'Field Bandage', ['weight'] = 50,  ['type'] = 'item', ['image'] = 'fieldbandage.png', ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'patching yourself up'},
+    ['carrot']       = {['name'] = 'carrot',       ['label'] = 'Carrot',        ['weight'] = 100, ['type'] = 'item', ['image'] = 'carrot.png',       ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'your horse may like these'},
 
     --ammo
     ['ammo_repeater'] = {['name'] = 'ammo_repeater', ['label'] = 'Repeater (N)', ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_bullet_normal.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Repeater Ammo'},
