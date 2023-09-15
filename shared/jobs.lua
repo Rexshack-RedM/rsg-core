@@ -42,4 +42,36 @@ RSGShared.Jobs = {
             },
         },
     },
+    ['valweaponsmith'] = { --valentine
+        label = 'Valentine Weaponsmith',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = {
+                name = 'Trainee',
+                payment = 25
+            },
+            ['1'] = {
+                name = 'Master',
+                isboss = true,
+                payment = 75
+            },
+        },
+    },
+    ['rhoweaponsmith'] = { -- rhodes
+        label = 'Rhodes Weaponsmith',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = {
+                name = 'Trainee',
+                payment = 25
+            },
+            ['1'] = {
+                name = 'Master',
+                isboss = true,
+                payment = 75
+            },
+        },
+    },
 }
