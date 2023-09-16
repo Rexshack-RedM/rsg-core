@@ -8,10 +8,7 @@ RSGShared.Jobs = {
         defaultDuty = true,
         offDutyPay = false,
         grades = {
-            ['0'] = {
-                name = 'Freelancer',
-                payment = 10
-            },
+            ['0'] = { name = 'Freelancer', payment = 5 },
         },
     },
     ['medic'] = {
@@ -19,27 +16,11 @@ RSGShared.Jobs = {
         defaultDuty = true,
         offDutyPay = false,
         grades = {
-            ['0'] = {
-                name = 'Recruit',
-                payment = 50
-            },
-            ['1'] = {
-                name = 'Trainee',
-                payment = 75
-            },
-            ['2'] = {
-                name = 'Doctor',
-                payment = 100
-            },
-            ['3'] = {
-                name = 'Surgeon',
-                payment = 125
-            },
-            ['4'] = {
-                name = 'Manager',
-                isboss = true,
-                payment = 150
-            },
+            ['0'] = { name = 'Recruit', payment = 5 },
+            ['1'] = { name = 'Trainee', payment = 25 },
+            ['2'] = { name = 'Doctor', payment = 50 },
+            ['3'] = { name = 'Surgeon', payment = 75 },
+            ['4'] = { name = 'Manager', isboss = true, payment = 100 },
         },
     },
     ['valweaponsmith'] = { --valentine
@@ -47,15 +28,8 @@ RSGShared.Jobs = {
         defaultDuty = true,
         offDutyPay = false,
         grades = {
-            ['0'] = {
-                name = 'Trainee',
-                payment = 25
-            },
-            ['1'] = {
-                name = 'Master',
-                isboss = true,
-                payment = 75
-            },
+            ['0'] = { name = 'Trainee', payment = 25 },
+            ['1'] = { name = 'Master', isboss = true, payment = 75 },
         },
     },
     ['rhoweaponsmith'] = { -- rhodes
@@ -63,15 +37,8 @@ RSGShared.Jobs = {
         defaultDuty = true,
         offDutyPay = false,
         grades = {
-            ['0'] = {
-                name = 'Trainee',
-                payment = 25
-            },
-            ['1'] = {
-                name = 'Master',
-                isboss = true,
-                payment = 75
-            },
+            ['0'] = { name = 'Trainee', payment = 25 },
+            ['1'] = { name = 'Master', isboss = true, payment = 75 },
         },
     },
 }
