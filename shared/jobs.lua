@@ -18,7 +18,7 @@ RSGShared.Jobs = {
         grades = {
             ['0'] = { name = 'Recruit', payment = 5 },
             ['1'] = { name = 'Trainee', payment = 25 },
-            ['2'] = { name = 'Doctor', payment = 50 },
+            ['2'] = { name = 'Doctor',  payment = 50 },
             ['3'] = { name = 'Surgeon', payment = 75 },
             ['4'] = { name = 'Manager', isboss = true, payment = 100 },
         },
@@ -29,7 +29,7 @@ RSGShared.Jobs = {
         offDutyPay = false,
         grades = {
             ['0'] = { name = 'Trainee', payment = 25 },
-            ['1'] = { name = 'Master', isboss = true, payment = 75 },
+            ['1'] = { name = 'Master',  isboss = true, payment = 75 },
         },
     },
     ['rhoweaponsmith'] = { -- rhodes
@@ -38,7 +38,7 @@ RSGShared.Jobs = {
         offDutyPay = false,
         grades = {
             ['0'] = { name = 'Trainee', payment = 25 },
-            ['1'] = { name = 'Master', isboss = true, payment = 75 },
+            ['1'] = { name = 'Master',  isboss = true, payment = 75 },
         },
     },
 }
