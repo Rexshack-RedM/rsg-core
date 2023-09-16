@@ -3,7 +3,7 @@ RSGShared = RSGShared or {}
 RSGShared.ForceJobDefaultDutyAtLogin = true -- true: Force duty state to jobdefaultDuty | false: set duty state from database last saved
 
 RSGShared.Jobs = {
-        ['unemployed'] = {
+    ['unemployed'] = {
         label = 'Civilian',
         defaultDuty = true,
         offDutyPay = false,
