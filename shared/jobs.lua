@@ -41,4 +41,31 @@ RSGShared.Jobs = {
             ['1'] = { name = 'Master',  isboss = true, payment = 75 },
         },
     },
+    ['stdweaponsmith'] = { -- stdenis
+        label = 'Staint Denis Weaponsmith',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = { name = 'Trainee', payment = 25 },
+            ['1'] = { name = 'Master',  isboss = true, payment = 75 },
+        },
+    },
+    ['tumweaponsmith'] = { -- tumbleweed
+        label = 'Tumbleweed Weaponsmith',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = { name = 'Trainee', payment = 25 },
+            ['1'] = { name = 'Master',  isboss = true, payment = 75 },
+        },
+    },
+    ['annweaponsmith'] = { -- annesburg
+        label = 'Annesburg Weaponsmith',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = { name = 'Trainee', payment = 25 },
+            ['1'] = { name = 'Master',  isboss = true, payment = 75 },
+        },
+    },
 }
