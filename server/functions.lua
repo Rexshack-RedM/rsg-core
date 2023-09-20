@@ -199,13 +199,13 @@ function PaycheckInterval()
                 if not payment then payment = Player.PlayerData.job.payment end
                 if Player.PlayerData.job and payment > 0 and (RSGShared.Jobs[Player.PlayerData.job.name].offDutyPay or Player.PlayerData.job.onduty) then
                     if RSGCore.Config.Money.PayCheckSociety then
-                        local account = exports['rsg-management']:GetAccount(Player.PlayerData.job.name)
+                        local account = exports['rsg-bossmenu']:GetAccount(Player.PlayerData.job.name)
                         if account ~= 0 then -- Checks if player is employed by a society
                             if account < payment then -- Checks if company has enough money to pay society
                                 TriggerClientEvent('RSGCore:Notify', Player.PlayerData.source, Lang:t('error.company_too_poor'), 'error')
                             else
                                 Player.Functions.AddMoney('bank', payment)
-                                exports['rsg-management']:RemoveMoney(Player.PlayerData.job.name, payment)
+                                exports['rsg-bossmenu']:RemoveMoney(Player.PlayerData.job.name, payment)
                                 TriggerClientEvent('RSGCore:Notify', Player.PlayerData.source, Lang:t('info.received_paycheck', {value = payment}))
                             end
                         else
