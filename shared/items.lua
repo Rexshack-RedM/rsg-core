@@ -36,8 +36,10 @@ RSGShared.Items = {
     ['wood']     = {['name'] = 'wood',     ['label'] = 'Wood',     ['weight'] = 100, ['type'] = 'item', ['image'] = 'wood.png',     ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'crafting material'},
 
     -- horse training
-    ['horsetrainingbrush']  = {['name'] = 'horsetrainingbrush',  ['label'] = 'Trainer Brush',  ['weight'] = 300, ['type'] = 'item', ['image'] = 'horsebrush.png', ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'brush used by a horse trainer'},
-    ['horsetrainingcarrot'] = {['name'] = 'horsetrainingcarrot', ['label'] = 'Trainer Carrot', ['weight'] = 100, ['type'] = 'item', ['image'] = 'carrot.png',     ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'carrot used by a horse trainer'},
+    ['horsetrainingbrush']  = {['name'] = 'horsetrainingbrush',  ['label'] = 'Trainer Brush',  ['weight'] = 300, ['type'] = 'item', ['image'] = 'horsebrush.png',               ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true,  ['combinable'] = nil, ['level'] = 0, ['description'] = 'brush used by a horse trainer'},
+    ['horsetrainingcarrot'] = {['name'] = 'horsetrainingcarrot', ['label'] = 'Trainer Carrot', ['weight'] = 100, ['type'] = 'item', ['image'] = 'carrot.png',                   ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true,  ['combinable'] = nil, ['level'] = 0, ['description'] = 'carrot used by a horse trainer'},
+    ['horsereviver']        = {['name'] = 'horsereviver',        ['label'] = 'Horse Reviver',  ['weight'] = 100, ['type'] = 'item', ['image'] = 'consumable_horse_reviver.png', ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true,  ['combinable'] = nil, ['level'] = 0, ['description'] = 'used to revive a horse'},
+    ['saddlebag']           = {['name'] = 'saddlebag',           ['label'] = 'Saddlebag',      ['weight'] = 650, ['type'] = 'item', ['image'] = 'saddlebag.png',                ['unique'] = true,  ['useable'] = true,  ['shouldClose'] = false, ['combinable'] = nil, ['level'] = 0, ['description'] = ''},
 
     --ammo
     ['ammo_repeater'] = {['name'] = 'ammo_repeater', ['label'] = 'Repeater (N)', ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_bullet_normal.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Repeater Ammo'},
