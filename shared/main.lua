@@ -1,10 +1,5 @@
 RSGShared = RSGShared or {}
 
-RSGShared.StarterItems = {
-    ['bread'] = { amount = 5, item = 'bread' },
-    ['water'] = { amount = 5, item = 'water' },
-}
-
 local StringCharset = {}
 local NumberCharset = {}
 
