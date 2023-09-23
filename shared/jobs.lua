@@ -105,4 +105,13 @@ RSGShared.Jobs = {
             },
         },
     },
+    ['farmer'] = {
+        label = 'Farmer',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = { name = 'Farm Hand', payment = 25 },
+            ['1'] = { name = 'Farm Owner', isboss = true, payment = 75 },
+        },
+    },
 }
