@@ -2,7 +2,6 @@ RSGShared = RSGShared or {}
 
 RSGShared.Items = {
     -- Items
-    ['water']        = {['name'] = 'water',        ['label'] = 'Water',         ['weight'] = 500, ['type'] = 'item', ['image'] = 'water.png',        ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Drinking Water'},
     ['bread']        = {['name'] = 'bread',        ['label'] = 'Bread Roll',    ['weight'] = 125, ['type'] = 'item', ['image'] = 'bread.png',        ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Bread Roll', ["created"] = nil, ["decay"] = 1.0, ["delete"] = true},
     ['horsebrush']   = {['name'] = 'horsebrush',   ['label'] = 'Horse Brush',   ['weight'] = 10,  ['type'] = 'item', ['image'] = 'horsebrush.png',   ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'brush used to clean your horse'},
     ['boatticket']   = {['name'] = 'boatticket',   ['label'] = 'Boat Ticket',   ['weight'] = 0,   ['type'] = 'item', ['image'] = 'boatticket.png',   ['unique'] = false, ['useable'] = false, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used for boat travel'},
@@ -25,6 +24,13 @@ RSGShared.Items = {
     ['canteen50']    = {['name'] = 'canteen50',    ['label'] = 'Canteen',       ['weight'] = 300, ['type'] = 'item', ['image'] = 'canteen.png',      ['unique'] = true,  ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Canteen 50% Full'},
     ['canteen25']    = {['name'] = 'canteen25',    ['label'] = 'Canteen',       ['weight'] = 200, ['type'] = 'item', ['image'] = 'canteen.png',      ['unique'] = true,  ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Canteen 25% Full'},
     ['canteen0']     = {['name'] = 'canteen0',     ['label'] = 'Empty Canteen', ['weight'] = 100, ['type'] = 'item', ['image'] = 'canteenempty.png', ['unique'] = true,  ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Empty Canteen'},
+
+    -- saloon
+    ['malt']   = {['name'] = 'malt',   ['label'] = 'Malt',   ['weight'] = 50, ['type'] = 'item', ['image'] = 'malt.png',   ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used by saloons'},
+    ['hops']   = {['name'] = 'hops',   ['label'] = 'Hops',   ['weight'] = 50, ['type'] = 'item', ['image'] = 'hops.png',   ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used by saloons'},
+    ['yeast']  = {['name'] = 'yeast',  ['label'] = 'Yeast',  ['weight'] = 50, ['type'] = 'item', ['image'] = 'yeast.png',  ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used by saloons'},
+    ['water']  = {['name'] = 'water',  ['label'] = 'Water',  ['weight'] = 50, ['type'] = 'item', ['image'] = 'water.png',  ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used by saloons'},
+    ['bottle'] = {['name'] = 'bottle', ['label'] = 'Bottle', ['weight'] = 50, ['type'] = 'item', ['image'] = 'bottle.png', ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used by saloons'},
 
     -- beekeeper
     ['honeyframe']   = {['name'] = 'honeyframe',   ['label'] = 'Honey Frame',   ['weight'] = 100, ['type'] = 'item', ['image'] = 'honeyframe.png',   ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Used for making honey'},
