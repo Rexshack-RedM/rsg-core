@@ -293,6 +293,7 @@ RSGShared.Items = {
     ['iron']     = {['name'] = 'iron',     ['label'] = 'Iron',     ['weight'] = 100, ['type'] = 'item', ['image'] = 'iron.png',     ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'crafting material'},
     ['steel']    = {['name'] = 'steel',    ['label'] = 'Steel',    ['weight'] = 100, ['type'] = 'item', ['image'] = 'steel.png',    ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'crafting material'},
     ['wood']     = {['name'] = 'wood',     ['label'] = 'Wood',     ['weight'] = 100, ['type'] = 'item', ['image'] = 'wood.png',     ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'crafting material'},
+    ['coal']     = {['name'] = 'coal',     ['label'] = 'Coal',     ['weight'] = 100, ['type'] = 'item', ['image'] = 'coal.png',     ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'crafting material'},
 
     -- weapon crafting parts
     ['trigger']  = { ['name'] = 'trigger',  ['label'] = 'Trigger',  ['weight'] = 100, ['type'] = 'item', ['image'] = 'weaponpart.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'weapon crafting part'},
