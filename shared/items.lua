@@ -299,6 +299,7 @@ RSGShared.Items = {
     ['tent']        = {['name'] = 'tent',        ['label'] = 'Tent',            ['weight'] = 100, ['type'] = 'item', ['image'] = 'tent.png',        ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
     ['hitchpost']   = {['name'] = 'hitchpost',   ['label'] = 'Hitching Post',   ['weight'] = 100, ['type'] = 'item', ['image'] = 'hitchpost.png',   ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
     ['cookstation'] = {['name'] = 'cookstation', ['label'] = 'Cooking Station', ['weight'] = 100, ['type'] = 'item', ['image'] = 'cookstation.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
+    ['camptorch']   = {['name'] = 'camptorch',   ['label'] = 'Campsite Torch',  ['weight'] = 100, ['type'] = 'item', ['image'] = 'camptorch.png',   ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
 
     -- weapon crafting parts
     ['trigger']  = { ['name'] = 'trigger',  ['label'] = 'Trigger',  ['weight'] = 100, ['type'] = 'item', ['image'] = 'weaponpart.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'weapon crafting part'},
