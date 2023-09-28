@@ -296,7 +296,7 @@ RSGShared.Items = {
     ['coal']     = {['name'] = 'coal',     ['label'] = 'Coal',     ['weight'] = 100, ['type'] = 'item', ['image'] = 'coal.png',     ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'crafting material'},
 
     -- gangcamp items
-    ['tent']        = {['name'] = 'tent',        ['label'] = 'Tent',            ['weight'] = 100, ['type'] = 'item', ['image'] = 'tent.png',        ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
+    ['gangtent']    = {['name'] = 'gangtent',    ['label'] = 'Gang Tent',       ['weight'] = 100, ['type'] = 'item', ['image'] = 'gangtent.png',    ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
     ['hitchpost']   = {['name'] = 'hitchpost',   ['label'] = 'Hitching Post',   ['weight'] = 100, ['type'] = 'item', ['image'] = 'hitchpost.png',   ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
     ['cookstation'] = {['name'] = 'cookstation', ['label'] = 'Cooking Station', ['weight'] = 100, ['type'] = 'item', ['image'] = 'cookstation.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
     ['camptorch']   = {['name'] = 'camptorch',   ['label'] = 'Campsite Torch',  ['weight'] = 100, ['type'] = 'item', ['image'] = 'camptorch.png',   ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
