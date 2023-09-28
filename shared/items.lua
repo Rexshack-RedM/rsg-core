@@ -295,6 +295,11 @@ RSGShared.Items = {
     ['wood']     = {['name'] = 'wood',     ['label'] = 'Wood',     ['weight'] = 100, ['type'] = 'item', ['image'] = 'wood.png',     ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'crafting material'},
     ['coal']     = {['name'] = 'coal',     ['label'] = 'Coal',     ['weight'] = 100, ['type'] = 'item', ['image'] = 'coal.png',     ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'crafting material'},
 
+    -- gangcamp items
+    ['tent']        = {['name'] = 'tent',        ['label'] = 'Tent',            ['weight'] = 100, ['type'] = 'item', ['image'] = 'tent.png',        ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
+    ['hitchpost']   = {['name'] = 'hitchpost',   ['label'] = 'Hitching Post',   ['weight'] = 100, ['type'] = 'item', ['image'] = 'hitchpost.png',   ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
+    ['cookstation'] = {['name'] = 'cookstation', ['label'] = 'Cooking Station', ['weight'] = 100, ['type'] = 'item', ['image'] = 'cookstation.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
+
     -- weapon crafting parts
     ['trigger']  = { ['name'] = 'trigger',  ['label'] = 'Trigger',  ['weight'] = 100, ['type'] = 'item', ['image'] = 'weaponpart.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'weapon crafting part'},
     ['hammer']   = { ['name'] = 'hammer',   ['label'] = 'Hammer',   ['weight'] = 100, ['type'] = 'item', ['image'] = 'weaponpart.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'weapon crafting part'},
