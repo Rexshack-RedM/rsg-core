@@ -37,6 +37,7 @@ RSGShared.Items = {
     ['honeycomb']    = {['name'] = 'honeycomb',    ['label'] = 'Honeycomb',     ['weight'] = 300, ['type'] = 'item', ['image'] = 'honeycomb.png',    ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Used for making honey'},
     ['honeypot']     = {['name'] = 'honeypot',     ['label'] = 'Honey Pot',     ['weight'] = 300, ['type'] = 'item', ['image'] = 'honeypot.png',     ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Used for making honey'},
     ['beeswax']      = {['name'] = 'beeswax',      ['label'] = 'Bees Wax',      ['weight'] = 100, ['type'] = 'item', ['image'] = 'beeswax.png',      ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'product from beehive'},
+    ['honey']        = {['name'] = 'honey',        ['label'] = 'Honey',         ['weight'] = 100, ['type'] = 'item', ['image'] = 'honey.png',        ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'product from beehive'},
 
     -- horse training
     ['horsetrainingbrush']  = {['name'] = 'horsetrainingbrush',  ['label'] = 'Trainer Brush',  ['weight'] = 300, ['type'] = 'item', ['image'] = 'horsebrush.png',               ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true,  ['combinable'] = nil, ['level'] = 0, ['description'] = 'brush used by a horse trainer'},
