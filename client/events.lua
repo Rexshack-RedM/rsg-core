@@ -268,3 +268,15 @@ RegisterNetEvent('RSGCore:Client:OnSharedUpdateMultiple', function(tableName, va
     end
     TriggerEvent('RSGCore:Client:UpdateObject')
 end)
+
+if RSGConfig.HidePlayerNames then
+    CreateThread(function()
+        while true do
+            Wait(5000)
+            for _, player in ipairs(GetActivePlayers()) do
+                local ped = GetPlayerPed(player)
+                SetPedPromptName(ped, "Stranger (" .. tostring(GetPlayerServerId(player))..")")
+            end
+        end
+    end)
+end
