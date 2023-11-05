@@ -5,6 +5,7 @@ RSGConfig.DefaultSpawn = vector4(-1035.71, -2731.87, 12.86, 0.0)
 RSGConfig.UpdateInterval = 1 -- how often to update player data in minutes
 RSGConfig.StatusInterval = 5000 -- how often to check hunger/thirst status in milliseconds
 RSGConfig.EnablePVP = true
+RSGConfig.HidePlayerNames = true
 
 RSGConfig.Money = {}
 RSGConfig.Money.MoneyTypes = { cash = 50, bank = 500, bloodmoney = 0 } -- type = startamount - Add or remove money types for your server (for ex. blackmoney = 0), remember once added it will not be removed from the database!
