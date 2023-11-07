@@ -39,11 +39,13 @@ RSGShared.Items = {
     ['beeswax']      = {['name'] = 'beeswax',      ['label'] = 'Bees Wax',      ['weight'] = 100, ['type'] = 'item', ['image'] = 'beeswax.png',      ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'product from beehive'},
     ['honey']        = {['name'] = 'honey',        ['label'] = 'Honey',         ['weight'] = 100, ['type'] = 'item', ['image'] = 'honey.png',        ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'product from beehive'},
 
-    -- horse training
+    -- horse items
     ['horsetrainingbrush']  = {['name'] = 'horsetrainingbrush',  ['label'] = 'Trainer Brush',  ['weight'] = 300, ['type'] = 'item', ['image'] = 'horsebrush.png',               ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true,  ['combinable'] = nil, ['level'] = 0, ['description'] = 'brush used by a horse trainer'},
     ['horsetrainingcarrot'] = {['name'] = 'horsetrainingcarrot', ['label'] = 'Trainer Carrot', ['weight'] = 100, ['type'] = 'item', ['image'] = 'carrot.png',                   ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true,  ['combinable'] = nil, ['level'] = 0, ['description'] = 'carrot used by a horse trainer'},
     ['horsereviver']        = {['name'] = 'horsereviver',        ['label'] = 'Horse Reviver',  ['weight'] = 100, ['type'] = 'item', ['image'] = 'consumable_horse_reviver.png', ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true,  ['combinable'] = nil, ['level'] = 0, ['description'] = 'used to revive a horse'},
     ['saddlebag']           = {['name'] = 'saddlebag',           ['label'] = 'Saddlebag',      ['weight'] = 650, ['type'] = 'item', ['image'] = 'saddlebag.png',                ['unique'] = true,  ['useable'] = true,  ['shouldClose'] = false, ['combinable'] = nil, ['level'] = 0, ['description'] = ''},
+    ['apple']               = {['name'] = 'apple',               ['label'] = 'Apple',          ['weight'] = 500, ['type'] = 'item', ['image'] = 'apple.png',                    ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true,  ['combinable'] = nil, ['level'] = 0, ['description'] = 'Apple'},
+    ['stimulantcheval']     = {['name'] = 'stimulantcheval',     ['label'] = 'Horse Stim',     ['weight'] = 100, ['type'] = 'item', ['image'] = 'stimulantcheval.png',          ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true,  ['combinable'] = nil, ['level'] = 0, ['description'] = 'Horse Stimulant'},
 
     -- ranch items
     ['animalfeed'] = {['name'] = 'animalfeed', ['label'] = 'Animal Feed', ['weight'] = 100, ['type'] = 'item', ['image'] = 'animalfeed.png', ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'ranch'},
