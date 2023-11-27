@@ -47,6 +47,13 @@ RSGShared.Items = {
     ['apple']               = {['name'] = 'apple',               ['label'] = 'Apple',          ['weight'] = 500, ['type'] = 'item', ['image'] = 'apple.png',                    ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true,  ['combinable'] = nil, ['level'] = 0, ['description'] = 'Apple'},
     ['stimulantcheval']     = {['name'] = 'stimulantcheval',     ['label'] = 'Horse Stim',     ['weight'] = 100, ['type'] = 'item', ['image'] = 'stimulantcheval.png',          ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true,  ['combinable'] = nil, ['level'] = 0, ['description'] = 'Horse Stimulant'},
 
+    -- horse xp tokens
+    ['horsexp5']   = {['name'] = 'horsexp5',   ['label'] = '5 Horse XP',   ['weight'] = 0,    ['type'] = 'item', ['image'] = 'horsexp.png', ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used to add xp to for horses'},
+    ['horsexp10']  = {['name'] = 'horsexp10',  ['label'] = '10 Horse XP',  ['weight'] = 0,    ['type'] = 'item', ['image'] = 'horsexp.png', ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used to add xp to for horses'},
+    ['horsexp25']  = {['name'] = 'horsexp25',  ['label'] = '25 Horse XP',  ['weight'] = 0,    ['type'] = 'item', ['image'] = 'horsexp.png', ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used to add xp to for horses'},
+    ['horsexp50']  = {['name'] = 'horsexp50',  ['label'] = '50 Horse XP',  ['weight'] = 0,    ['type'] = 'item', ['image'] = 'horsexp.png', ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used to add xp to for horses'},
+    ['horsexp100'] = {['name'] = 'horsexp100', ['label'] = '100 Horse XP', ['weight'] = 0,    ['type'] = 'item', ['image'] = 'horsexp.png', ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used to add xp to for horses'},
+
     -- ranch items
     ['animalfeed'] = {['name'] = 'animalfeed', ['label'] = 'Animal Feed', ['weight'] = 100, ['type'] = 'item', ['image'] = 'animalfeed.png', ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'ranch'},
     ['milk']       = {['name'] = 'milk',       ['label'] = 'Milk',        ['weight'] = 100, ['type'] = 'item', ['image'] = 'milk.png',       ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'ranch'},
