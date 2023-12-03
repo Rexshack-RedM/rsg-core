@@ -17,6 +17,7 @@ RSGConfig.Player = {}
 RSGConfig.Player.RevealMap = true
 RSGConfig.Player.HungerRate = 1.0 -- Rate at which hunger goes down.
 RSGConfig.Player.ThirstRate = 1.0 -- Rate at which thirst goes down.
+RSGConfig.Player.CleanlinessRate = 1.0 -- Rate at which cleanliness goes down.
 RSGConfig.Player.Bloodtypes = {
     "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-",
 }

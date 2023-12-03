@@ -127,15 +127,20 @@ RegisterNetEvent('RSGCore:UpdatePlayer', function()
     if not Player then return end
     local newHunger = Player.PlayerData.metadata['hunger'] - RSGCore.Config.Player.HungerRate
     local newThirst = Player.PlayerData.metadata['thirst'] - RSGCore.Config.Player.ThirstRate
+    local newCleanliness = Player.PlayerData.metadata['cleanliness'] - RSGCore.Config.Player.CleanlinessRate
     if newHunger <= 0 then
         newHunger = 0
     end
     if newThirst <= 0 then
         newThirst = 0
     end
+    if newCleanliness <= 0 then
+        newCleanliness = 0
+    end
     Player.Functions.SetMetaData('thirst', newThirst)
     Player.Functions.SetMetaData('hunger', newHunger)
-    TriggerClientEvent('hud:client:UpdateNeeds', src, newHunger, newThirst)
+    Player.Functions.SetMetaData('cleanliness', newCleanliness)
+    TriggerClientEvent('hud:client:UpdateNeeds', src, newHunger, newThirst, newCleanliness)
     Player.Functions.Save()
 end)
 
@@ -143,13 +148,13 @@ RegisterNetEvent('RSGCore:Server:SetMetaData', function(meta, data)
     local src = source
     local Player = RSGCore.Functions.GetPlayer(src)
     if not Player then return end
-    if meta == 'hunger' or meta == 'thirst' then
+    if meta == 'hunger' or meta == 'thirst' or meta == 'cleanliness' then
         if data > 100 then
             data = 100
         end
     end
     Player.Functions.SetMetaData(meta, data)
-    TriggerClientEvent('hud:client:UpdateNeeds', src, Player.PlayerData.metadata['hunger'], Player.PlayerData.metadata['thirst'])
+    TriggerClientEvent('hud:client:UpdateNeeds', src, Player.PlayerData.metadata['hunger'], Player.PlayerData.metadata['thirst'], Player.PlayerData.metadata['cleanliness'])
 end)
 
 RegisterNetEvent('RSGCore:ToggleDuty', function()

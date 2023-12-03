@@ -96,6 +96,7 @@ function RSGCore.Player.CheckPlayerData(source, PlayerData)
     PlayerData.metadata["health"] = PlayerData.metadata["health"] or 600
     PlayerData.metadata["hunger"] = PlayerData.metadata["hunger"] or 100
     PlayerData.metadata["thirst"] = PlayerData.metadata["thirst"] or 100
+    PlayerData.metadata["cleanliness"] = PlayerData.metadata["cleanliness"] or 100
     PlayerData.metadata["stress"] = PlayerData.metadata["stress"] or 0
     PlayerData.metadata["isdead"] = PlayerData.metadata["isdead"] or false
     PlayerData.metadata["armor"] = PlayerData.metadata["armor"] or 0
