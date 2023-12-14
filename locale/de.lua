@@ -120,7 +120,7 @@ local Translations = {
     },
 }
 
-if GetConvar('rsg_locale', 'de') == 'it' then
+if GetConvar('rsg_locale', 'en') == 'de' then
     Lang = Locale:new({
         phrases = Translations,
         warnOnMissing = true,
