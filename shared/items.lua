@@ -332,6 +332,7 @@ RSGShared.Items = {
     ['iron_ore']     = {['name'] = 'iron_ore',     ['label'] = 'Iron Ore',     ['weight'] = 1000, ['type'] = 'item', ['image'] = 'iron_ore.png',     ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'mining output'},
     ['steel_ore']    = {['name'] = 'steel_ore',    ['label'] = 'Steel Ore',    ['weight'] = 1000, ['type'] = 'item', ['image'] = 'steel_ore.png',    ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'mining output'},
     ['silver_ore']   = {['name'] = 'silver_ore',   ['label'] = 'Silver Ore',   ['weight'] = 1000, ['type'] = 'item', ['image'] = 'silver_ore.png',   ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'mining output'},
+    ['gold_ore']     = {['name'] = 'gold_ore',     ['label'] = 'Gold Ore',     ['weight'] = 1000, ['type'] = 'item', ['image'] = 'gold_ore.png',     ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'mining output'},
 
     -- gangcamp items
     ['gangtent']    = {['name'] = 'gangtent',    ['label'] = 'Gang Tent',       ['weight'] = 100, ['type'] = 'item', ['image'] = 'gangtent.png',    ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
