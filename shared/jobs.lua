@@ -11,7 +11,7 @@ RSGShared.Jobs = {
             ['0'] = { name = 'Freelancer', payment = 5 },
         },
     },
-    ['police'] = {
+    ['police'] = { -- << marked for removal
         label = 'Law Enforcement',
         defaultDuty = true,
         offDutyPay = false,
@@ -21,6 +21,56 @@ RSGShared.Jobs = {
             ['2'] = { name = 'Sergeant', payment = 100 },
             ['3'] = { name = 'Lieutenant', payment = 125 },
             ['4'] = { name = 'Chief', isboss = true, payment = 150 },
+        },
+    },
+    ['vallaw'] = {
+        label = 'Valentine Law Enforcement',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = { name = 'Recruit', payment = 10 },
+            ['1'] = { name = 'Deputy', payment = 25 },
+            ['2'] = { name = 'Sheriff', isboss = true, payment = 50 },
+        },
+    },
+    ['rholaw'] = {
+        label = 'Rhodes Law Enforcement',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = { name = 'Recruit', payment = 10 },
+            ['1'] = { name = 'Deputy', payment = 25 },
+            ['2'] = { name = 'Sheriff', isboss = true, payment = 50 },
+        },
+    },
+    ['blklaw'] = {
+        label = 'Blackwater Law Enforcement',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = { name = 'Recruit', payment = 10 },
+            ['1'] = { name = 'Deputy', payment = 25 },
+            ['2'] = { name = 'Sheriff', isboss = true, payment = 50 },
+        },
+    },
+    ['strlaw'] = {
+        label = 'Strawberry Law Enforcement',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = { name = 'Recruit', payment = 10 },
+            ['1'] = { name = 'Deputy', payment = 25 },
+            ['2'] = { name = 'Sheriff', isboss = true, payment = 50 },
+        },
+    },
+    ['stdenlaw'] = {
+        label = 'Saint Denis Law Enforcement',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = { name = 'Recruit', payment = 10 },
+            ['1'] = { name = 'Deputy', payment = 25 },
+            ['2'] = { name = 'Sheriff', isboss = true, payment = 50 },
         },
     },
     ['medic'] = {
