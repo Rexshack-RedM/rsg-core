@@ -25,6 +25,9 @@ RSGShared.Items = {
     ['canteen25']    = {['name'] = 'canteen25',    ['label'] = 'Canteen',       ['weight'] = 200, ['type'] = 'item', ['image'] = 'canteen.png',      ['unique'] = true,  ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Canteen 25% Full'},
     ['canteen0']     = {['name'] = 'canteen0',     ['label'] = 'Empty Canteen', ['weight'] = 100, ['type'] = 'item', ['image'] = 'canteenempty.png', ['unique'] = true,  ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Empty Canteen'},
 
+	-- lawmen
+    ['handcuffs'] = {['name'] = 'handcuffs', ['label'] = 'Handcuffs', ['weight'] = 100, ['type'] = 'item', ['image'] = 'handcuffs.png', ['unique'] = true, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used to handcuff people'},
+
     -- saloon
     ['malt']   = {['name'] = 'malt',   ['label'] = 'Malt',   ['weight'] = 50, ['type'] = 'item', ['image'] = 'malt.png',   ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used by saloons'},
     ['hops']   = {['name'] = 'hops',   ['label'] = 'Hops',   ['weight'] = 50, ['type'] = 'item', ['image'] = 'hops.png',   ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used by saloons'},
