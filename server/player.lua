@@ -101,6 +101,7 @@ function RSGCore.Player.CheckPlayerData(source, PlayerData)
     PlayerData.metadata["isdead"] = PlayerData.metadata["isdead"] or false
     PlayerData.metadata["armor"] = PlayerData.metadata["armor"] or 0
     PlayerData.metadata["ishandcuffed"] = PlayerData.metadata["ishandcuffed"] or false
+    PlayerData.metadata["isescorted"] = PlayerData.metadata["isescorted"] or false
     PlayerData.metadata["injail"] = PlayerData.metadata["injail"] or 0
     PlayerData.metadata["jailitems"] = PlayerData.metadata["jailitems"] or {}
     PlayerData.metadata["status"] = PlayerData.metadata["status"] or {}
