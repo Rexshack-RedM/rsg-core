@@ -13,7 +13,8 @@ RSGShared.Jobs = {
     },
     ['vallaw'] = {
         label = 'Valentine Law Enforcement',
-        defaultDuty = true,
+        type = 'leo',
+        defaultDuty = false,
         offDutyPay = false,
         grades = {
             ['0'] = { name = 'Recruit', payment = 10 },
@@ -23,7 +24,8 @@ RSGShared.Jobs = {
     },
     ['rholaw'] = {
         label = 'Rhodes Law Enforcement',
-        defaultDuty = true,
+        type = 'leo',
+        defaultDuty = false,
         offDutyPay = false,
         grades = {
             ['0'] = { name = 'Recruit', payment = 10 },
@@ -33,7 +35,8 @@ RSGShared.Jobs = {
     },
     ['blklaw'] = {
         label = 'Blackwater Law Enforcement',
-        defaultDuty = true,
+        type = 'leo',
+        defaultDuty = false,
         offDutyPay = false,
         grades = {
             ['0'] = { name = 'Recruit', payment = 10 },
@@ -43,7 +46,8 @@ RSGShared.Jobs = {
     },
     ['strlaw'] = {
         label = 'Strawberry Law Enforcement',
-        defaultDuty = true,
+        type = 'leo',
+        defaultDuty = false,
         offDutyPay = false,
         grades = {
             ['0'] = { name = 'Recruit', payment = 10 },
@@ -53,7 +57,8 @@ RSGShared.Jobs = {
     },
     ['stdenlaw'] = {
         label = 'Saint Denis Law Enforcement',
-        defaultDuty = true,
+        type = 'leo',
+        defaultDuty = false,
         offDutyPay = false,
         grades = {
             ['0'] = { name = 'Recruit', payment = 10 },
@@ -63,7 +68,7 @@ RSGShared.Jobs = {
     },
     ['medic'] = {
         label = 'Medic',
-        defaultDuty = true,
+        defaultDuty = false,
         offDutyPay = false,
         grades = {
             ['0'] = { name = 'Recruit', payment = 5 },
