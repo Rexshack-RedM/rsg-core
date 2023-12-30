@@ -1,7 +1,7 @@
 RSGShared = RSGShared or {}
 
 RSGShared.Items = {
-    -- Items
+    -- general items
     ['bread']        = {['name'] = 'bread',        ['label'] = 'Bread Roll',    ['weight'] = 125, ['type'] = 'item', ['image'] = 'bread.png',        ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Bread Roll', ["created"] = nil, ["decay"] = 1.0, ["delete"] = true},
     ['horsebrush']   = {['name'] = 'horsebrush',   ['label'] = 'Horse Brush',   ['weight'] = 10,  ['type'] = 'item', ['image'] = 'horsebrush.png',   ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'brush used to clean your horse'},
     ['boatticket']   = {['name'] = 'boatticket',   ['label'] = 'Boat Ticket',   ['weight'] = 0,   ['type'] = 'item', ['image'] = 'boatticket.png',   ['unique'] = false, ['useable'] = false, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used for boat travel'},
@@ -24,6 +24,7 @@ RSGShared.Items = {
     ['canteen50']    = {['name'] = 'canteen50',    ['label'] = 'Canteen',       ['weight'] = 300, ['type'] = 'item', ['image'] = 'canteen.png',      ['unique'] = true,  ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Canteen 50% Full'},
     ['canteen25']    = {['name'] = 'canteen25',    ['label'] = 'Canteen',       ['weight'] = 200, ['type'] = 'item', ['image'] = 'canteen.png',      ['unique'] = true,  ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Canteen 25% Full'},
     ['canteen0']     = {['name'] = 'canteen0',     ['label'] = 'Empty Canteen', ['weight'] = 100, ['type'] = 'item', ['image'] = 'canteenempty.png', ['unique'] = true,  ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Empty Canteen'},
+    ['nails']        = {['name'] = 'nails',        ['label'] = 'Nails',         ['weight'] = 100, ['type'] = 'item', ['image'] = 'nails.png',        ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used with crafting'},
 
     -- lawmen
     ['handcuffs'] = {['name'] = 'handcuffs', ['label'] = 'Handcuffs', ['weight'] = 100, ['type'] = 'item', ['image'] = 'handcuffs.png', ['unique'] = true, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used to handcuff people'},
@@ -339,10 +340,12 @@ RSGShared.Items = {
     ['gold_ore']     = {['name'] = 'gold_ore',     ['label'] = 'Gold Ore',     ['weight'] = 1000, ['type'] = 'item', ['image'] = 'gold_ore.png',     ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'mining output'},
 
     -- camping camp items
-    ['camptent']        = {['name'] = 'camptent',        ['label'] = 'Camping Tent',    ['weight'] = 100, ['type'] = 'item', ['image'] = 'tent.png',        ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
-    ['camphitchpost']   = {['name'] = 'camphitchpost',   ['label'] = 'Hitching Post',   ['weight'] = 100, ['type'] = 'item', ['image'] = 'hitchpost.png',   ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
-    ['campcookstation'] = {['name'] = 'campcookstation', ['label'] = 'Cooking Station', ['weight'] = 100, ['type'] = 'item', ['image'] = 'cookstation.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
-    ['camptorch']       = {['name'] = 'camptorch',       ['label'] = 'Campsite Torch',  ['weight'] = 100, ['type'] = 'item', ['image'] = 'camptorch.png',   ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
+    ['camptent']        = {['name'] = 'camptent',        ['label'] = 'Camping Tent',      ['weight'] = 100, ['type'] = 'item', ['image'] = 'tent.png',        ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
+    ['camphitchpost']   = {['name'] = 'camphitchpost',   ['label'] = 'Hitching Post',     ['weight'] = 100, ['type'] = 'item', ['image'] = 'hitchpost.png',   ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
+    ['campcookstation'] = {['name'] = 'campcookstation', ['label'] = 'Cooking Station',   ['weight'] = 100, ['type'] = 'item', ['image'] = 'cookstation.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
+    ['camptorch']       = {['name'] = 'camptorch',       ['label'] = 'Campsite Torch',    ['weight'] = 100, ['type'] = 'item', ['image'] = 'camptorch.png',   ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
+    ['campcrafting']    = {['name'] = 'campcrafting',    ['label'] = 'Campsite Crafting', ['weight'] = 100, ['type'] = 'item', ['image'] = 'campcrafting.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
+
 	-- gang camp items
     ['gangtent']        = {['name'] = 'gangtent',        ['label'] = 'Gang Tent',       ['weight'] = 100, ['type'] = 'item', ['image'] = 'tent.png',        ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
     ['ganghitchpost']   = {['name'] = 'ganghitchpost',   ['label'] = 'Hitching Post',   ['weight'] = 100, ['type'] = 'item', ['image'] = 'hitchpost.png',   ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Campsite Item'},
