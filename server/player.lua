@@ -284,8 +284,9 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         self.Functions.UpdatePlayerData()
     end
 
-    function self.Functions.AddMoney(moneytype, amount, reason)
+    function self.Functions.AddMoney(moneytype, amount, reason, showhud)
         reason = reason or "unknown"
+		showhud = showhud or true
         moneytype = moneytype:lower()
         amount = tonumber(amount)
         if amount < 0 then
@@ -346,7 +347,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
                         .. reason
                 )
             end
-            TriggerClientEvent("hud:client:OnMoneyChange", self.PlayerData.source, moneytype, amount, false)
+            if showhud then TriggerClientEvent("hud:client:OnMoneyChange", self.PlayerData.source, moneytype, amount, false) end
             TriggerClientEvent("RSGCore:Client:OnMoneyChange", self.PlayerData.source, moneytype, amount, "add", reason)
             TriggerEvent("RSGCore:Server:OnMoneyChange", self.PlayerData.source, moneytype, amount, "add", reason)
         end
@@ -354,8 +355,9 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         return true
     end
 
-    function self.Functions.RemoveMoney(moneytype, amount, reason)
+    function self.Functions.RemoveMoney(moneytype, amount, reason, showhud)
         reason = reason or "unknown"
+		showhud = showhud or true
         moneytype = moneytype:lower()
         amount = tonumber(amount)
         if amount < 0 then
@@ -423,7 +425,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
                         .. reason
                 )
             end
-            TriggerClientEvent("hud:client:OnMoneyChange", self.PlayerData.source, moneytype, amount, true)
+            if showhud then TriggerClientEvent("hud:client:OnMoneyChange", self.PlayerData.source, moneytype, amount, true) end
             TriggerClientEvent("RSGCore:Client:OnMoneyChange", self.PlayerData.source, moneytype, amount, "remove", reason)
             TriggerEvent("RSGCore:Server:OnMoneyChange", self.PlayerData.source, moneytype, amount, "remove", reason)
         end
