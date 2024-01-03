@@ -113,7 +113,7 @@ function RSGCore.Player.CheckPlayerData(source, PlayerData)
     PlayerData.metadata["fingerprint"] = PlayerData.metadata["fingerprint"] or RSGCore.Player.CreateFingerId()
     PlayerData.metadata["walletid"] = PlayerData.metadata["walletid"] or RSGCore.Player.CreateWalletId()
     PlayerData.metadata["criminalrecord"] = PlayerData.metadata["criminalrecord"] or { ["hasRecord"] = false, ["date"] = nil,}
-	
+
     -- Job
     if PlayerData.job and PlayerData.job.name and not RSGCore.Shared.Jobs[PlayerData.job.name] then
         PlayerData.job = nil
@@ -286,7 +286,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
 
     function self.Functions.AddMoney(moneytype, amount, reason, showhud)
         reason = reason or "unknown"
-		showhud = showhud or true
+        showhud = showhud or true
         moneytype = moneytype:lower()
         amount = tonumber(amount)
         if amount < 0 then
@@ -357,7 +357,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
 
     function self.Functions.RemoveMoney(moneytype, amount, reason, showhud)
         reason = reason or "unknown"
-		showhud = showhud or true
+        showhud = showhud or true
         moneytype = moneytype:lower()
         amount = tonumber(amount)
         if amount < 0 then
