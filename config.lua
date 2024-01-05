@@ -12,6 +12,7 @@ RSGConfig.Money.MoneyTypes = { cash = 50, bank = 500, bloodmoney = 0 } -- type =
 RSGConfig.Money.DontAllowMinus = { 'cash', 'bloodmoney' } -- Money that is not allowed going in minus
 RSGConfig.Money.PayCheckTimeOut = 30 -- The time in minutes that it will give the paycheck
 RSGConfig.Money.PayCheckSociety = false -- If true paycheck will come from the society account that the player is employed at, requires qb-management
+RSGConfig.Money.PayCheckEnabled = true -- If false payments will be disabled.
 
 RSGConfig.Player = {}
 RSGConfig.Player.RevealMap = true
