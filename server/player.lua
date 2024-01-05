@@ -845,5 +845,5 @@ function RSGCore.Player.CreateSerialNumber()
 end
 
 if RSGConfig.Money.PayCheckEnabled then
-	PaycheckInterval() -- This starts the paycheck system end
+    PaycheckInterval() -- This starts the paycheck system end
 end
