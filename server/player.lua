@@ -286,7 +286,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
 
     function self.Functions.AddMoney(moneytype, amount, reason, showhud)
         reason = reason or "unknown"
-        showhud = showhud or true
+        if showhud == nil then showhud = true end
         moneytype = moneytype:lower()
         amount = tonumber(amount)
         if amount < 0 then
@@ -357,7 +357,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
 
     function self.Functions.RemoveMoney(moneytype, amount, reason, showhud)
         reason = reason or "unknown"
-        showhud = showhud or true
+        if showhud == nil then showhud = true end
         moneytype = moneytype:lower()
         amount = tonumber(amount)
         if amount < 0 then
