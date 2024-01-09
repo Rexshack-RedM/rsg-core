@@ -15,14 +15,14 @@ local Translations = {
         server_already_open = 'Le serveur est déjà ouvert',
         server_already_closed = 'Le serveur est déjà fermé',
         no_permission = 'Vous n\'avez pas les autorisations pour cela..',
-        no_waypoint = 'Aucun point de repère défini.',
+        no_waypoint = 'Aucun marqueur défini.',
         tp_error = 'Erreur durant la téléportation.'
 
     },
     success = {
         server_opened = 'Le serveur a été ouvert',
         server_closed = 'Le serveur a été fermé',
-        teleported_waypoint = 'Téléporté au point de repère.',
+        teleported_waypoint = 'Téléporté sur le marqueur.',
     },
     info = {
         received_paycheck = 'Vous avez reçu votre salaire de $%{value}',
@@ -45,8 +45,8 @@ local Translations = {
                 z = { name = 'z', help = 'position Z'},
             },
         },
-        tpm = { help = 'TP To Marker (Admin Only)' },
-        noclip = { help = 'No Clip (Admin Only)' },
+        tpm = { help = 'TP vers le marqueur (Admins uniquement)' },
+        noclip = { help = 'No Clip (Admins uniquement)' },
         addpermission = {
             help = 'Donner des permissions au joueur (Dieu seulement)',
             params = {
@@ -61,24 +61,24 @@ local Translations = {
                 permission = { name = 'permission', help = 'Niveau de permission' },
             },
         },
-        openserver = { help = 'Ouvrir le serveur à tout le monde (Admin seulement)' },
+        openserver = { help = 'Ouvrir le serveur à tout le monde (Admins uniquement)' },
         closeserver = {
-            help = 'Fermer le serveur aux personnes sans permissions (Admin seulement)',
+            help = 'Fermer le serveur aux personnes sans permissions (Admins uniquement)',
             params = {
                 reason = { name = 'reason', help = 'Raison de la fermeture (optionnel)' },
             },
         },
         car = {
-            help = 'Faire apparaître un véhicule (Admin seulement)',
+            help = 'Faire apparaître un véhicule (Admins uniquement)',
             params = {
                 model = { name = 'model', help = 'Nom du modèle du véhicule' },
             },
         },
-       dv = { help = 'Supprimer un véhicule (Admin seulement)' },
-       spawnwagon = { help = 'Faire apparaître un chariot (Admin seulement)' },
-       spawnhorse = { help = 'Faire apparaître un cheval (Admin seulement)' },
+       dv = { help = 'Supprimer un véhicule (Admins uniquement)' },
+       spawnwagon = { help = 'Faire apparaître un chariot (Admins uniquement)' },
+       spawnhorse = { help = 'Faire apparaître un cheval (Admins uniquement)' },
        givemoney = {
-           help = 'Donner de l\'argent à un joueur (Admin seulement)',
+           help = 'Donner de l\'argent à un joueur (Admins uniquement)',
            params = {
                id = { name = 'id', help = 'ID du joueur' },
                moneytype = { name = 'moneytype', help = 'Type d\'argent (espèces, banque, argent sale)' },
@@ -86,7 +86,7 @@ local Translations = {
            },
        },
        setmoney = {
-           help = 'Définir le montant de l\'argent d\'un joueur (Admin seulement)',
+           help = 'Définir le montant de l\'argent d\'un joueur (Admins uniquement)',
            params = {
                id = { name = 'id', help = 'ID du joueur' },
                moneytype = { name = 'moneytype', help = 'Type d\'argent (espèces, banque, argent sale)' },
@@ -95,7 +95,7 @@ local Translations = {
        },
        job = { help = 'Vérifier votre emploi' },
        setjob = {
-           help = 'Définir l\'emploi d\'un joueur (Admin seulement)',
+           help = 'Définir l\'emploi d\'un joueur (Admins uniquement)',
            params = {
                id = { name = 'id', help = 'ID du joueur' },
                job = { name = 'job', help = 'Nom de l\'emploi' },
@@ -104,14 +104,14 @@ local Translations = {
        },
        gang = { help = 'Vérifier votre gang' },
        setgang = {
-           help = 'Définir le gang d\'un joueur (Admin seulement)',
+           help = 'Définir le gang d\'un joueur (Admins uniquement)',
            params = {
                id = { name = 'id', help = 'ID du joueur' },
                gang = { name = 'gang', help = 'Nom du gang' },
                grade = { name = 'grade', help = 'Grade du gang' },
            },
        },
-       ooc = { help = 'Message de chat HRP (hors rôle)' },
+       ooc = { help = 'Message de chat HRP (hors jeu de rôle)' },
        me = {
            help = 'Afficher un message local',
            params = {
