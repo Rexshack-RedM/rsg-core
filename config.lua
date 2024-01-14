@@ -45,3 +45,6 @@ RSGConfig.Notify.NotificationStyling = {
 -- The "color" key is background of the notification
 -- The "icon" key is the css-icon code, this project uses `Material Icons` & `Font Awesome`
 RSGConfig.NotifyPosition = 'top-right' -- 'top' | 'top-right' | 'top-left' | 'bottom' | 'bottom-right' | 'bottom-left'
+
+-- other settings
+RSGConfig.PromptDistance = 1.5 -- distance for prompt to trigger (default = 1.5)
