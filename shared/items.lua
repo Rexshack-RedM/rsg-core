@@ -25,6 +25,7 @@ RSGShared.Items = {
     ['canteen25']    = {['name'] = 'canteen25',    ['label'] = 'Canteen',       ['weight'] = 200, ['type'] = 'item', ['image'] = 'canteen.png',      ['unique'] = true,  ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Canteen 25% Full'},
     ['canteen0']     = {['name'] = 'canteen0',     ['label'] = 'Empty Canteen', ['weight'] = 100, ['type'] = 'item', ['image'] = 'canteenempty.png', ['unique'] = true,  ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Empty Canteen'},
     ['nails']        = {['name'] = 'nails',        ['label'] = 'Nails',         ['weight'] = 100, ['type'] = 'item', ['image'] = 'nails.png',        ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used with crafting'},
+    ['carrot']       = {['name'] = 'carrot',       ['label'] = 'Carrot',        ['weight'] = 100, ['type'] = 'item', ['image'] = 'carrot.png',       ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'product from farming'},
 
     -- lawmen
     ['handcuffs'] = {['name'] = 'handcuffs', ['label'] = 'Handcuffs', ['weight'] = 100, ['type'] = 'item', ['image'] = 'handcuffs.png', ['unique'] = true, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used to handcuff people'},
