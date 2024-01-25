@@ -39,6 +39,8 @@ RSGShared.Keybinds = {
     ['MOUSE2'] = 0xF84FA74F,
     ['MOUSE3'] = 0xCEE12B50,
     ['MWUP'] = 0x3076E97C,
+    ['MWSCROLLUP'] = 0xCC1075A7,
+    ['MWSCROLLDOWN'] = 0xFD0F0C2C,
     -- Modifier Keys
     ['CTRL'] = 0xDB096B85,
     ['TAB'] = 0xB238FE0B,
