@@ -83,7 +83,7 @@ local function setupPrompt(prompt)
     Citizen.InvokeNative(0x5DD02A8318420DD7, prompt.prompt, str)
     Citizen.InvokeNative(0x8A0FB4D03A630D21, prompt.prompt, false)
     Citizen.InvokeNative(0x71215ACCFDE075EE, prompt.prompt, false)
-    Citizen.InvokeNative(0x94073D5CA3F16B7B, prompt.prompt, true)
+    Citizen.InvokeNative(0x94073D5CA3F16B7B, prompt.prompt, 1000)
     Citizen.InvokeNative(0xF7AA2696A22AD8B9, prompt.prompt)
 end
 
@@ -95,7 +95,7 @@ local function setupPromptGroup(prompt)
         Citizen.InvokeNative(0x5DD02A8318420DD7, v.prompt, str)
         Citizen.InvokeNative(0x8A0FB4D03A630D21, v.prompt, true)
         Citizen.InvokeNative(0x71215ACCFDE075EE, v.prompt, true)
-        Citizen.InvokeNative(0x94073D5CA3F16B7B, v.prompt, true)
+        Citizen.InvokeNative(0x94073D5CA3F16B7B, v.prompt, 1000)
         Citizen.InvokeNative(0x2F11D3A254169EA4, v.prompt, prompt.group, 0)
         Citizen.InvokeNative(0xF7AA2696A22AD8B9, v.prompt)
     end
