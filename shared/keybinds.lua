@@ -75,4 +75,6 @@ RSGShared.Keybinds = {
     -- other
     ["HorseCommandFlee"] = 0x4216AF06,
     ["Loot"] = 0x41AC83D1,
+    ["INPUT_CURSOR_SCROLL_DOWN"] = 0x8BDE7443,
+    ["INPUT_CURSOR_SCROLL_UP"] = 0x62800C92,
 }
