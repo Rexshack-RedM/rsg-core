@@ -648,7 +648,6 @@ end
 
 local playertables = { -- Add tables as needed
     { table = "players"},
-    { table = "playerclothe"},
     { table = "playeroutfit"},
     { table = "playerskins"},
     { table = "player_horses"},
