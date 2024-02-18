@@ -27,6 +27,9 @@ RSGShared.Items = {
     ['nails']        = {['name'] = 'nails',        ['label'] = 'Nails',         ['weight'] = 100, ['type'] = 'item', ['image'] = 'nails.png',        ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used with crafting'},
     ['carrot']       = {['name'] = 'carrot',       ['label'] = 'Carrot',        ['weight'] = 100, ['type'] = 'item', ['image'] = 'carrot.png',       ['unique'] = false, ['useable'] = true,  ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'product from farming'},
 
+    -- weapon accessories
+    ['weapon_repair_kit'] = {['name'] = 'weapon_repair_kit', ['label'] = 'Repair Kit', ['weight'] = 500, ['type'] = 'item', ['image'] = 'weapon_repair_kit.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used for repairing weapons'},
+
     -- lawmen
     ['handcuffs'] = {['name'] = 'handcuffs', ['label'] = 'Handcuffs', ['weight'] = 100, ['type'] = 'item', ['image'] = 'handcuffs.png', ['unique'] = true, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used to handcuff people'},
 
