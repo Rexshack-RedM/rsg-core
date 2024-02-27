@@ -80,7 +80,7 @@ RSGShared.Items = {
     ['p_lgoc_spinner_v4']              = {['name'] = 'p_lgoc_spinner_v4',              ['label'] = 'Spinner',                  ['weight'] = 10, ['type'] = 'item', ['image'] = 'p_lgoc_spinner_v4.png',              ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used for fishing'},
     ['p_lgoc_spinner_v6']              = {['name'] = 'p_lgoc_spinner_v6',              ['label'] = 'Improved Spinner',         ['weight'] = 10, ['type'] = 'item', ['image'] = 'p_lgoc_spinner_v6.png',              ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used for fishing'},
 
-    -- revolver ammo
+    --ammo revolver
     ['ammo_revolver']                   = {['name'] = 'ammo_revolver',                   ['label'] = 'Revolver (N)',  ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_bullet_normal.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Revolver Ammo'},
     ['ammo_revolver_express']           = {['name'] = 'ammo_revolver_express',           ['label'] = 'Revolver (E)',  ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_bullet_normal.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Revolver Express Ammo'},
     ['ammo_revolver_express_explosive'] = {['name'] = 'ammo_revolver_express_explosive', ['label'] = 'Revolver (EE)', ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_bullet_normal.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Revolver Express Explosive Ammo'},
@@ -108,11 +108,24 @@ RSGShared.Items = {
     ['ammo_rifle_high_velocity']     = {['name'] = 'ammo_rifle_high_velocity',     ['label'] = 'Rifle (HV)', ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_bullet_normal.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Rifle High Velocity Ammo'},
     ['ammo_rifle_split_point']       = {['name'] = 'ammo_rifle_split_point',       ['label'] = 'Rifle (SP)', ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_bullet_normal.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Rifle Split Point Ammo'},
 
-    --ammo
+    --ammo shotgun
+    ['ammo_shotgun']                     = {['name'] = 'ammo_shotgun',                     ['label'] = 'Shotgun (N)',  ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_shotgun.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Shotgun Ammo'},
+    ['ammo_shotgun_buckshot_incendiary'] = {['name'] = 'ammo_shotgun_buckshot_incendiary', ['label'] = 'Shotgun (BI)', ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_shotgun.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Shotgun Ammo'},
+    ['ammo_shotgun_slug']                = {['name'] = 'ammo_shotgun_slug',                ['label'] = 'Shotgun (S)',  ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_shotgun.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Shotgun Ammo'},
+    ['ammo_shotgun_slug_explosive']      = {['name'] = 'ammo_shotgun_slug_explosive',      ['label'] = 'Shotgun (SE)', ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_shotgun.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Shotgun Ammo'},
+
+    -- elephant rifle ammo
     ['ammo_rifle_elephant'] = {['name'] = 'ammo_rifle_elephant', ['label'] = 'Elephant Rifle (N)', ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_bullet_normal.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Elephant Rifle Ammo'},
-    ['ammo_shotgun']        = {['name'] = 'ammo_shotgun',        ['label'] = 'Shotgun (N)',        ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_shotgun.png',       ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Shotgun Ammo'},
-    ['ammo_arrow']          = {['name'] = 'ammo_arrow',          ['label'] = 'Arrow (N)',          ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_arrow.png',         ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Arrow'},
-    ['ammo_varmint']        = {['name'] = 'ammo_varmint',        ['label'] = 'Varmint (N)',        ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_bullet_normal.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Varmint Ammo'},
+
+    --ammo varmint
+    ['ammo_varmint']              = {['name'] = 'ammo_varmint',              ['label'] = 'Varmint (N)', ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_bullet_normal.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Varmint Ammo'},
+    ['ammo_varmint_tranquilizer'] = {['name'] = 'ammo_varmint_tranquilizer', ['label'] = 'Varmint (T)', ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_bullet_normal.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Varmint Ammo'},
+
+    --ammo arrow
+    ['ammo_arrow']          = {['name'] = 'ammo_arrow',          ['label'] = 'Arrow (N)', ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_arrow.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Arrow'},
+    ['ammo_arrow_fire']     = {['name'] = 'ammo_arrow_fire',     ['label'] = 'Arrow (F)', ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_arrow.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Arrow'},
+    ['ammo_arrow_poison']   = {['name'] = 'ammo_arrow_poison',   ['label'] = 'Arrow (P)', ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_arrow.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Arrow'},
+    ['ammo_arrow_dynamite'] = {['name'] = 'ammo_arrow_dynamite', ['label'] = 'Arrow (D)', ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_arrow.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Arrow'},
     
     -- revolver
     ['weapon_revolver_cattleman']              = {['name'] = 'weapon_revolver_cattleman',              ['attachPoint'] = 2,  ['label'] = 'Cattleman',            ['weight'] = 1000, ['type'] = 'weapon', ['ammotype'] = 'AMMO_REVOLVER', ['image'] = 'weapon_revolver_cattleman.png',              ['unique'] = true,  ['useable'] = true, ['level'] = 0, ['description'] = 'Takes Revolver Ammo'},
