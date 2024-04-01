@@ -3,7 +3,8 @@
 RSG-Core is a fundamental script for RedM servers, providing essential functionalities and ensuring smooth performance with low latency. It is designed to work seamlessly with RedM, offering stability and reliability.
 
 # Dependencies
-ox_lib
+- [oxmysql](https://github.com/overextended/oxmysql)
+- [ox_lib](https://github.com/overextended/ox_lib)
 
 # Discord
 Join the community
