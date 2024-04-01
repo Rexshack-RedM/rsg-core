@@ -34,6 +34,8 @@ local Translations = {
         checking_whitelisted = 'Ciao %s. We are checking your allowance.',
         exploit_banned = 'Sei stato bannato per cheating. Controlla la nostra Discord per ulteriori informazioni: %{discord}',
         exploit_dropped = 'Sei stato cacciato per Exploitation',
+        pvp_on = 'PVP : À',
+        pvp_off = 'PVP : Fuori',
     },
     command = {
         tp = {

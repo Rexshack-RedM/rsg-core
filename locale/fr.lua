@@ -35,6 +35,8 @@ local Translations = {
         checking_whitelisted = 'Bonjour %s. Nous vérifions si vous êtes sur la liste blanche.',
         exploit_banned = 'Vous avez été banni pour tricherie. Consultez notre Discord pour plus d\'informations : %{discord}',
         exploit_dropped = 'Vous avez été expulsé pour exploitation',
+        pvp_on = 'PVP : À',
+        pvp_off = 'PVP : Dehors',
     },
     command = {
         tp = {

@@ -80,6 +80,13 @@ function RSGCore.Commands.Refresh(source)
     end
 end
 
+
+---------- pvp on or off
+RSGCore.Commands.Add("pvp", Lang:t('commands.toggle_pvp'), {}, false, function(source)
+    local src = source
+    TriggerClientEvent('rsg-core:client:pvpToggle', src)
+end)
+
 -- Teleport
 RSGCore.Commands.Add('tp', Lang:t("command.tp.help"), { { name = Lang:t("command.tp.params.x.name"), help = Lang:t("command.tp.params.x.help") }, { name = Lang:t("command.tp.params.y.name"), help = Lang:t("command.tp.params.y.help") }, { name = Lang:t("command.tp.params.z.name"), help = Lang:t("command.tp.params.z.help") } }, false, function(source, args)
     if args[1] and not args[2] and not args[3] then
