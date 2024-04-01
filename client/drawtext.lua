@@ -25,6 +25,7 @@ end
 
 local function keyPressed()
     CreateThread(function() -- Not sure if a thread is needed but why not eh?
+        Wait(500)
         lib.hideTextUI()
     end)
 end
