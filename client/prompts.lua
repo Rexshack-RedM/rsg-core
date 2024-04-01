@@ -115,8 +115,7 @@ CreateThread(function()
     while true do
         local sleep = 1000
         if (next(Prompts) ~= nil) then
-            local ped = PlayerPedId()
-            local coords = GetEntityCoords(ped, true)
+            local coords = GetEntityCoords(cache.ped, true)
             for k,v in pairs(Prompts) do
                 local distance = #(coords - v.coords)
                 if (distance < RSGConfig.PromptDistance) then
@@ -154,8 +153,7 @@ CreateThread(function()
     while true do
         local sleep = 1000
         if (next(PromptGroups) ~= nil) then
-            local ped = PlayerPedId()
-            local coords = GetEntityCoords(ped, true)
+            local coords = GetEntityCoords(cache.ped, true)
             for k,v in pairs(PromptGroups) do
                 local distance = #(coords - v.coords)
                 local promptGroup = PromptGroups[k].group

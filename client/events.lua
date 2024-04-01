@@ -33,40 +33,35 @@ end)
 -- Teleport Commands
 
 RegisterNetEvent('RSGCore:Command:TeleportToPlayer', function(coords) -- #MoneSuer | Fixed Teleport Command
-    local ped = PlayerPedId()
-    SetEntityCoords(ped, coords.x, coords.y, coords.z) 
+    SetEntityCoords(cache.ped, coords.x, coords.y, coords.z) 
 end)
 
 RegisterNetEvent('RSGCore:Command:TeleportToCoords', function(x, y, z, h) -- #MoneSuer | Fixed Teleport Command
-    local ped = PlayerPedId()
-    SetEntityCoords(ped, x, y, z) 
+    SetEntityCoords(cache.ped, x, y, z) 
 end)
 
 RegisterNetEvent('RSGCore:Command:GoToMarker', function()
-    local ped = PlayerPedId()
     local coords = GetWaypointCoords()
     local groundZ = GetHeightmapBottomZForPosition(coords.x, coords.y)
-    local vehicle = GetVehiclePedIsIn(ped, false)
-    local mount = GetMount(ped)
-
+    local vehicle = GetVehiclePedIsIn(cache.ped, false)
     if not IsWaypointActive() then
         RSGCore.Functions.Notify(Lang:t("error.no_waypoint"), "error", 3000)
         return
     end
 
-    SetEntityCoords(ped, coords.x, coords.y, groundZ + 3.0)
-    PlacePedOnGroundProperly(ped, coords)
+    SetEntityCoords(cache.ped, coords.x, coords.y, groundZ + 3.0)
+    PlacePedOnGroundProperly(cache.ped, coords)
 
-    if mount then
-        SetEntityCoords(mount, coords.x, coords.y, groundZ + 3.0)
-        PlacePedOnGroundProperly(mount, coords)
-        Citizen.InvokeNative(0x028F76B6E78246EB, ped, mount, -1)
+    if cache.mount then
+        SetEntityCoords(cache.mount, coords.x, coords.y, groundZ + 3.0)
+        PlacePedOnGroundProperly(cache.mount, coords)
+        Citizen.InvokeNative(0x028F76B6E78246EB, cache.ped, cache.mount, -1)
     end
 
     if vehicle then
         SetEntityCoords(vehicle, coords.x, coords.y, groundZ + 3.0)
         PlacePedOnGroundProperly(vehicle, coords)
-        Citizen.InvokeNative(0x028F76B6E78246EB, ped, vehicle, -1)
+        Citizen.InvokeNative(0x028F76B6E78246EB, cache.ped, vehicle, -1)
     end
 
     RSGCore.Functions.Notify(Lang:t("success.teleported_waypoint"), "success", 3000)
@@ -76,7 +71,6 @@ end)
 -- HORSE / WAGON
 
 RegisterNetEvent('RSGCore:Command:SpawnVehicle', function(WagonName)
-    local ped = PlayerPedId()
     local hash = GetHashKey(WagonName)
     if not IsModelInCdimage(hash) then return end
     RequestModel(hash)
@@ -84,14 +78,13 @@ RegisterNetEvent('RSGCore:Command:SpawnVehicle', function(WagonName)
         Wait(0)
     end
 
-    local vehicle = CreateVehicle(hash, GetEntityCoords(ped), GetEntityHeading(ped), true, false)
-    TaskWarpPedIntoVehicle(ped, vehicle, -1) -- Spawn the player onto "drivers" seat
+    local vehicle = CreateVehicle(hash, GetEntityCoords(cache.ped), GetEntityHeading(cache.ped), true, false)
+    TaskWarpPedIntoVehicle(cache.ped, vehicle, -1) -- Spawn the player onto "drivers" seat
     Citizen.InvokeNative(0x283978A15512B2FE, vehicle, true) -- Set random outfit variation / skin
     NetworkSetEntityInvisibleToNetwork(vehicle, true)
 end)
 
 RegisterNetEvent('RSGCore:Command:SpawnHorse', function(HorseName)
-    local ped = PlayerPedId()
     local hash = GetHashKey(HorseName)
     if not IsModelInCdimage(hash) then return end
     RequestModel(hash)
@@ -99,24 +92,22 @@ RegisterNetEvent('RSGCore:Command:SpawnHorse', function(HorseName)
         Wait(0)
     end
 
-    local vehicle = CreatePed(hash, GetEntityCoords(ped), GetEntityHeading(ped), true, false)
-    TaskWarpPedIntoVehicle(ped, vehicle, -1) -- Spawn the player onto "drivers" seat
+    local vehicle = CreatePed(hash, GetEntityCoords(cache.ped), GetEntityHeading(cache.ped), true, false)
+    TaskWarpPedIntoVehicle(cache.ped, vehicle, -1) -- Spawn the player onto "drivers" seat
     Citizen.InvokeNative(0x283978A15512B2FE, vehicle, true) -- Set random outfit variation / skin
     NetworkSetEntityInvisibleToNetwork(vehicle, true)
 end)
 
 RegisterNetEvent('RSGCore:Command:DeleteVehicle', function()
-    local ped = PlayerPedId()
-    local veh = GetVehiclePedIsUsing(ped)
-    local mount = GetMount(ped)
+    local Getveh = GetVehiclePedIsUsing(cache.ped)
 
-    if veh and veh ~= 0 then
-        NetworkRequestControlOfEntity(veh)
-        SetEntityAsMissionEntity(veh, true, true)
-        DeleteVehicle(veh)
-        SetEntityAsNoLongerNeeded(veh)
+    if Getveh and Getveh ~= 0 then
+        NetworkRequestControlOfEntity(Getveh)
+        SetEntityAsMissionEntity(Getveh, true, true)
+        DeleteVehicle(Getveh)
+        SetEntityAsNoLongerNeeded(Getveh)
     else
-        local pcoords = GetEntityCoords(ped)
+        local pcoords = GetEntityCoords(cache.ped)
         local vehicles = GetGamePool('CVehicle')
 
         for _, v in pairs(vehicles) do
@@ -129,11 +120,11 @@ RegisterNetEvent('RSGCore:Command:DeleteVehicle', function()
         end
     end
 
-    if mount and mount ~= 0 then
-        NetworkRequestControlOfEntity(mount)
-        SetEntityAsMissionEntity(mount, true, true)
-        DeleteEntity(mount)
-        SetEntityAsNoLongerNeeded(mount)
+    if cache.mount and cache.mount ~= 0 then
+        NetworkRequestControlOfEntity(cache.mount)
+        SetEntityAsMissionEntity(cache.mount, true, true)
+        DeleteEntity(cache.mount)
+        SetEntityAsNoLongerNeeded(cache.mount)
     end
 end)
 
@@ -153,7 +144,7 @@ end)
 
 -- This event is exploitable and should not be used. It has been deprecated, and will be removed soon.
 RegisterNetEvent('RSGCore:Client:UseItem', function(item)
-    RSGCore.Debug(string.format("%s triggered RSGCore:Client:UseItem by ID %s with the following data. This event is deprecated due to exploitation, and will be removed soon. Check rsg-inventory for the right use on this event.", GetInvokingResource(), GetPlayerServerId(PlayerId())))
+    RSGCore.Debug(string.format("%s triggered RSGCore:Client:UseItem by ID %s with the following data. This event is deprecated due to exploitation, and will be removed soon. Check rsg-inventory for the right use on this event.", GetInvokingResource(), GetPlayerServerId(cache.playerId)))
     RSGCore.Debug(item)
 end)
 
@@ -200,7 +191,7 @@ function Display(mePlayer, text, offset, type, custom)
         while displaying do
             Wait(1)
             local coordsMe = GetPedBoneCoords(GetPlayerPed(mePlayer), 53684, 0.0, 0.0, 0.0)
-            local coords = GetEntityCoords(PlayerPedId(), false)
+            local coords = GetEntityCoords(cache.ped, false)
             local dist = #(coordsMe - coords)
             if dist < 15.0 then
                 DrawText3D(coordsMe['x'], coordsMe['y'], coordsMe['z'] + offset, text, _type , custom)
