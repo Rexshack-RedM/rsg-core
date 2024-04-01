@@ -1,4 +1,5 @@
 #RSG-Core
+
 RSG-Core is a fundamental script for RedM servers, providing essential functionalities and ensuring smooth performance with low latency. It is designed to work seamlessly with RedM, offering stability and reliability.
 
 #Dependencies
