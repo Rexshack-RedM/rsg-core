@@ -4,7 +4,7 @@ RSGConfig.MaxPlayers = GetConvarInt('sv_maxclients', 48) -- Gets max players fro
 RSGConfig.DefaultSpawn = vector4(-1035.71, -2731.87, 12.86, 0.0)
 RSGConfig.UpdateInterval = 1 -- how often to update player data in minutes
 RSGConfig.StatusInterval = 5000 -- how often to check hunger/thirst status in milliseconds
-RSGConfig.EnablePVP = true
+RSGConfig.EnablePVP = true   --- PvP always enabled.  You can use the command /pvp to temporarily disable and re-enable it.
 RSGConfig.HidePlayerNames = true
 
 RSGConfig.Money = {}
