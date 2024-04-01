@@ -90,30 +90,32 @@ function RSGCore.Player.CheckPlayerData(source, PlayerData)
     PlayerData.charinfo.nationality = PlayerData.charinfo.nationality or "British"
     PlayerData.charinfo.account = PlayerData.charinfo.account or RSGCore.Functions.CreateAccountNumber()
 
-    -- Metadata
+    -- Metadata   
     PlayerData.metadata = PlayerData.metadata or {}
-    PlayerData.metadata['house'] = PlayerData.metadata['house'] or 'none'
-    PlayerData.metadata["health"] = PlayerData.metadata["health"] or 600
-    PlayerData.metadata["hunger"] = PlayerData.metadata["hunger"] or 100
-    PlayerData.metadata["thirst"] = PlayerData.metadata["thirst"] or 100
-    PlayerData.metadata["cleanliness"] = PlayerData.metadata["cleanliness"] or 100
-    PlayerData.metadata["stress"] = PlayerData.metadata["stress"] or 0
-    PlayerData.metadata["isdead"] = PlayerData.metadata["isdead"] or false
-    PlayerData.metadata["armor"] = PlayerData.metadata["armor"] or 0
-    PlayerData.metadata["ishandcuffed"] = PlayerData.metadata["ishandcuffed"] or false
-    PlayerData.metadata["isescorted"] = PlayerData.metadata["isescorted"] or false
-    PlayerData.metadata["injail"] = PlayerData.metadata["injail"] or 0
-    PlayerData.metadata["jailitems"] = PlayerData.metadata["jailitems"] or {}
-    PlayerData.metadata["status"] = PlayerData.metadata["status"] or {}
-    PlayerData.metadata["bloodtype"] = PlayerData.metadata["bloodtype"] or RSGCore.Config.Player.Bloodtypes[math.random(1, #RSGCore.Config.Player.Bloodtypes)]
-    PlayerData.metadata["dealerrep"] = PlayerData.metadata["dealerrep"] or 0
-    PlayerData.metadata["craftingrep"] = PlayerData.metadata["craftingrep"] or 0
-    PlayerData.metadata["attachmentcraftingrep"] = PlayerData.metadata["attachmentcraftingrep"] or 0
-    PlayerData.metadata["jobrep"] = PlayerData.metadata["jobrep"] or {}
-    PlayerData.metadata["fingerprint"] = PlayerData.metadata["fingerprint"] or RSGCore.Player.CreateFingerId()
-    PlayerData.metadata["walletid"] = PlayerData.metadata["walletid"] or RSGCore.Player.CreateWalletId()
-    PlayerData.metadata["criminalrecord"] = PlayerData.metadata["criminalrecord"] or { ["hasRecord"] = false, ["date"] = nil,}
-
+    PlayerData.metadata.house = PlayerData.metadata.house or 'none'
+    PlayerData.metadata.health = PlayerData.metadata.health or 600
+    PlayerData.metadata.hunger = PlayerData.metadata.hunger or 100
+    PlayerData.metadata.thirst = PlayerData.metadata.thirst or 100
+    PlayerData.metadata.cleanliness = PlayerData.metadata.cleanliness or 100
+    PlayerData.metadata.stress = PlayerData.metadata.stress or 0
+    PlayerData.metadata.isdead = PlayerData.metadata.isdead or false
+    PlayerData.metadata.armor = PlayerData.metadata.armor or 0
+    PlayerData.metadata.ishandcuffed = PlayerData.metadata.ishandcuffed or false
+    PlayerData.metadata.isescorted = PlayerData.metadata.isescorted or false
+    PlayerData.metadata.injail = PlayerData.metadata.injail or 0
+    PlayerData.metadata.jailitems = PlayerData.metadata.jailitems or {}
+    PlayerData.metadata.status = PlayerData.metadata.status or {}
+    PlayerData.metadata.bloodtype = PlayerData.metadata.bloodtype or RSGCore.Config.Player.Bloodtypes[math.random(1, #RSGCore.Config.Player.Bloodtypes)]
+    PlayerData.metadata.dealerrep = PlayerData.metadata.dealerrep or 0
+    PlayerData.metadata.craftingrep = PlayerData.metadata.craftingrep or 0
+    PlayerData.metadata.attachmentcraftingrep = PlayerData.metadata.attachmentcraftingrep or 0
+    PlayerData.metadata.jobrep = PlayerData.metadata.jobrep or {}
+    PlayerData.metadata.fingerprint = PlayerData.metadata.fingerprint or RSGCore.Player.CreateFingerId()
+    PlayerData.metadata.walletid = PlayerData.metadata.walletid or RSGCore.Player.CreateWalletId()
+    PlayerData.metadata.criminalrecord = PlayerData.metadata.criminalrecord or {
+        hasRecord = false,
+        date = nil
+    }
     -- Job
     if PlayerData.job and PlayerData.job.name and not RSGCore.Shared.Jobs[PlayerData.job.name] then
         PlayerData.job = nil
@@ -279,7 +281,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
             return
         end
         amount = tonumber(amount)
-        self.PlayerData.metadata["jobrep"][self.PlayerData.job.name] = self.PlayerData.metadata["jobrep"][self.PlayerData.job.name]
+        self.PlayerData.metadata.jobrep[self.PlayerData.job.name] = self.PlayerData.metadata.jobrep[self.PlayerData.job.name]
             + amount
         self.Functions.UpdatePlayerData()
     end

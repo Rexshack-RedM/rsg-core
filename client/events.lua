@@ -41,7 +41,8 @@ RegisterNetEvent('RSGCore:Command:TeleportToCoords', function(x, y, z, h) -- #Mo
 end)
 
 RegisterNetEvent('RSGCore:Command:GoToMarker', function()
-    local coords = GetWaypointCoords()
+    local blipMarker <const> = GetFirstBlipInfoId(8)
+    local coords = GetBlipInfoIdCoord(blipMarker)
     local groundZ = GetHeightmapBottomZForPosition(coords.x, coords.y)
     local vehicle = GetVehiclePedIsIn(cache.ped, false)
     if not IsWaypointActive() then
@@ -73,11 +74,7 @@ end)
 RegisterNetEvent('RSGCore:Command:SpawnVehicle', function(WagonName)
     local hash = GetHashKey(WagonName)
     if not IsModelInCdimage(hash) then return end
-    RequestModel(hash)
-    while not HasModelLoaded(hash) do
-        Wait(0)
-    end
-
+    lib.requestModel(hash)
     local vehicle = CreateVehicle(hash, GetEntityCoords(cache.ped), GetEntityHeading(cache.ped), true, false)
     TaskWarpPedIntoVehicle(cache.ped, vehicle, -1) -- Spawn the player onto "drivers" seat
     Citizen.InvokeNative(0x283978A15512B2FE, vehicle, true) -- Set random outfit variation / skin
@@ -87,11 +84,7 @@ end)
 RegisterNetEvent('RSGCore:Command:SpawnHorse', function(HorseName)
     local hash = GetHashKey(HorseName)
     if not IsModelInCdimage(hash) then return end
-    RequestModel(hash)
-    while not HasModelLoaded(hash) do
-        Wait(0)
-    end
-
+    lib.requestModel(hash) 
     local vehicle = CreatePed(hash, GetEntityCoords(cache.ped), GetEntityHeading(cache.ped), true, false)
     TaskWarpPedIntoVehicle(cache.ped, vehicle, -1) -- Spawn the player onto "drivers" seat
     Citizen.InvokeNative(0x283978A15512B2FE, vehicle, true) -- Set random outfit variation / skin

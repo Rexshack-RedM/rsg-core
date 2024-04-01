@@ -157,7 +157,7 @@ local function ConvertProgressbar(table)
     return newTable
 end
 
-function RSGCore.Functions.Progressbar(name, label, duration, useWhileDead, canCancel, disableControls, animation, prop, propTwo, onFinish, onCancel)
+function RSGCore.Functions.progressCircle(name, label, duration, useWhileDead, canCancel, disableControls, animation, prop, propTwo, onFinish, onCancel) ---circle
     if lib.progressActive() then 
         RSGCore.Functions.Notify("You are already doing something", "error", 5000)
         return
@@ -195,8 +195,83 @@ function RSGCore.Functions.Progressbar(name, label, duration, useWhileDead, canC
     return prog
 end
 
+function RSGCore.Functions.Progressbar(name, label, duration, useWhileDead, canCancel, disableControls, animation, prop, propTwo, onFinish, onCancel) --- progressBar
+    if lib.progressActive() then 
+        RSGCore.Functions.Notify("You are already doing something", "error", 5000)
+        return
+    end
 
--- Getters
+    local prog = lib.progressBar({
+        label = label,
+        duration = duration,
+        position = 'bottom',
+        useWhileDead = useWhileDead,
+        canCancel = canCancel,
+        disable = ConvertProgressbar(disableControls),
+        anim = {
+            dict = animation.animDict,
+            clip = animation.anim,
+            flag = animation.flags
+        },
+        prop = {
+            model = prop.model and joaat(prop.model) or nil,
+            pos = prop.coords,
+            rot = prop.rotation
+        }
+    })
+
+    if prog then
+        if onFinish then
+            onFinish()
+        end
+    else
+        if onCancel then
+            onCancel()
+        end
+    end
+
+    return prog
+end
+--------------------------------------thanks qbox for this function
+
+local function getClosestEntity(entities, coords) -- luacheck: ignore
+    coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords or GetEntityCoords(cache.ped)
+    local closestDistance = -1
+    local closestEntity = -1
+    for i = 1, #entities do
+        local entity = entities[i]
+        local entityCoords = GetEntityCoords(entity)
+        local distance = #(entityCoords - coords)
+        if closestDistance == -1 or closestDistance > distance then
+            closestEntity = entity
+            closestDistance = distance
+        end
+    end
+    return closestEntity, closestDistance
+end
+
+---@param pool string
+---@param ignoreList? integer[]
+---@return integer[]
+local function getEntities(pool, ignoreList) -- luacheck: ignore
+    ignoreList = ignoreList or {}
+    local ents = GetGamePool(pool)
+    local entities = {}
+    local ignoreMap = {}
+    for i = 1, #ignoreList do
+        ignoreMap[ignoreList[i]] = true
+    end
+
+    for i = 1, #ents do
+        local entity = ents[i]
+        if not ignoreMap[entity] then
+            entities[#entities + 1] = entity
+        end
+    end
+    return entities
+end
+--------------------------------------
+
 
 function RSGCore.Functions.GetVehicles()
     return GetGamePool('CVehicle')
@@ -211,45 +286,14 @@ function RSGCore.Functions.GetPlayers()
 end
 
 function RSGCore.Functions.GetPeds(ignoreList)
-    local pedPool = GetGamePool('CPed')
-    local peds = {}
-    ignoreList = ignoreList or {}
-    for i = 1, #pedPool, 1 do
-        local found = false
-        for j = 1, #ignoreList, 1 do
-            if ignoreList[j] == pedPool[i] then
-                found = true
-            end
-        end
-        if not found then
-            peds[#peds + 1] = pedPool[i]
-        end
-    end
-    return peds
+    return getEntities('CPed', ignoreList)
 end
 
+---@deprecated use lib.getClosestPed from ox_lib
 function RSGCore.Functions.GetClosestPed(coords, ignoreList)
-    if coords then
-        coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
-    else
-        coords = GetEntityCoords(cache.ped)
-    end
-    local ignoreList = ignoreList or {}
-    local peds = RSGCore.Functions.GetPeds(ignoreList)
-    local closestDistance = -1
-    local closestPed = -1
-    for i = 1, #peds, 1 do
-        local pedCoords = GetEntityCoords(peds[i])
-        local distance = #(pedCoords - coords)
-        if peds[i] ~= cache.ped then
-            if closestDistance == -1 or closestDistance > distance then
-                closestPed = peds[i]
-                closestDistance = distance
-            end
-        end
-    end
-    return closestPed, closestDistance
+    return getClosestEntity(getEntities('CPed', ignoreList), coords)
 end
+
 
 function RSGCore.Functions.IsWearingGloves()
     local armIndex = GetPedDrawableVariation(cache.ped, 3)
@@ -289,65 +333,24 @@ function RSGCore.Functions.GetClosestPlayer(coords)
     return closestPlayer, closestDistance
 end
 
-function RSGCore.Functions.GetPlayersFromCoords(coords, distance)
-    local players = GetActivePlayers()
-    if coords then
-        coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
-    else
-        coords = GetEntityCoords(cache.ped)
+function RSGCore.Functions.GetPlayersFromCoords(coords, radius)
+    coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords or GetEntityCoords(cache.ped)
+    local players = lib.getNearbyPlayers(coords, radius or 5, true)
+    for i = 1, #players do
+        players[i] = players[i].id
     end
-    distance = distance or 5
-    local closePlayers = {}
-    for _, player in pairs(players) do
-        local target = GetPlayerPed(player)
-        local targetCoords = GetEntityCoords(target)
-        local targetdistance = #(targetCoords - coords)
-        if targetdistance <= distance then
-            closePlayers[#closePlayers + 1] = player
-        end
-    end
-    return closePlayers
+
+    return players
 end
 
+---@deprecated use lib.getClosestObject from ox_lib
 function RSGCore.Functions.GetClosestVehicle(coords)
-    local vehicles = GetGamePool('CVehicle')
-    local closestDistance = -1
-    local closestVehicle = -1
-    if coords then
-        coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
-    else
-        coords = GetEntityCoords(cache.ped)
-    end
-    for i = 1, #vehicles, 1 do
-        local vehicleCoords = GetEntityCoords(vehicles[i])
-        local distance = #(vehicleCoords - coords)
-
-        if closestDistance == -1 or closestDistance > distance then
-            closestVehicle = vehicles[i]
-            closestDistance = distance
-        end
-    end
-    return closestVehicle, closestDistance
+    return getClosestEntity(GetGamePool('CVehicle'), coords)
 end
 
+---@deprecated use lib.getClosestObject from ox_lib
 function RSGCore.Functions.GetClosestObject(coords)
-    local objects = GetGamePool('CObject')
-    local closestDistance = -1
-    local closestObject = -1
-    if coords then
-        coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
-    else
-        coords = GetEntityCoords(cache.ped)
-    end
-    for i = 1, #objects, 1 do
-        local objectCoords = GetEntityCoords(objects[i])
-        local distance = #(objectCoords - coords)
-        if closestDistance == -1 or closestDistance > distance then
-            closestObject = objects[i]
-            closestDistance = distance
-        end
-    end
-    return closestObject, closestDistance
+    return getClosestEntity(GetGamePool('CObject'), coords)
 end
 
 function RSGCore.Functions.GetClosestBone(entity, list)
