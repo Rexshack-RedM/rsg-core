@@ -34,6 +34,8 @@ local Translations = {
         checking_whitelisted = 'Ciao %s. We are checking your allowance.',
         exploit_banned = 'Sei stato bannato per cheating. Controlla la nostra Discord per ulteriori informazioni: %{discord}',
         exploit_dropped = 'Sei stato cacciato per Exploitation',
+        pvp_on = 'PVP : À',
+        pvp_off = 'PVP : Fuori',
     },
     command = {
         tp = {
@@ -43,6 +45,9 @@ local Translations = {
                 y = { name = 'y', help = 'coordinata Y'},
                 z = { name = 'z', help = 'coordinata Z'},
             },
+        },
+        pvp = {
+            help = 'PvP À/Fuori)',
         },
         tpm = { help = 'TP al Marker (solo Admin)' },
         noclip = { help = 'No Clip (solo Admin)' },

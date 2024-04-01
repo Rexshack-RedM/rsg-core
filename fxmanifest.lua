@@ -21,7 +21,8 @@ client_scripts {
     'client/events.lua',
     'client/drawtext.lua',
     'client/prompts.lua',
-    'client/noclip.lua'
+     'client/noclip.lua',
+    'client/pvp.lua'
 }
 
 server_scripts {

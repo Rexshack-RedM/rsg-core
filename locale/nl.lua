@@ -34,6 +34,8 @@ local Translations = {
         checking_whitelisted = 'Hallo %s. We controleren je toelating.',
         exploit_banned = 'Je bent verbannen wegens vals spelen. Check onze Discord voor meer informatie: %{discord}',
         exploit_dropped = 'Je bent gekickt wegens misbruik',
+        pvp_on = 'PVP : Aan',
+        pvp_off = 'PVP : Uit',
     },
     command = {
         tp = {
@@ -43,6 +45,9 @@ local Translations = {
                 y = { name = 'y', help = 'Y-coördinaat'},
                 z = { name = 'z', help = 'Z-coördinaat'},
             },
+        },
+        pvp = {
+            help = 'PvP Aan/Uit)',
         },
         tpm = { help = 'TP naar Marker (alleen Admin)' },
         noclip = { help = 'No Clip (alleen Admin)' },

@@ -34,6 +34,8 @@ local Translations = {
         checking_whitelisted = 'Olá %s. Estamos verificando sua permissão.',
         exploit_banned = 'Você foi banido por trapaça. Verifique o nosso Discord para mais informações: %{discord}',
         exploit_dropped = 'Você foi expulso por exploração',
+        pvp_on = 'PVP : No',
+        pvp_off = 'PVP : Fora',
     },
     command = {
         tp = {
@@ -43,6 +45,9 @@ local Translations = {
                 y = { name = 'y', help = 'Posição Y' },
                 z = { name = 'z', help = 'Posição Z' },
             },
+        },
+        pvp = {
+            help = 'PvP ON/OFF)',
         },
         tpm = { help = 'Teleportar para marcador (Apenas para administradores)' },
         noclip = { help = 'Modo de voo (Apenas para administradores)' },

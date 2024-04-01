@@ -49,37 +49,23 @@ function RSGCore.Functions.DrawText3D(x, y, z, text)
     ClearDrawOrigin()
 end
 
-function RSGCore.Functions.RequestAnimDict(animDict)
-    if HasAnimDictLoaded(animDict) then return end
-    RequestAnimDict(animDict)
-    while not HasAnimDictLoaded(animDict) do
-        Wait(0)
-    end
-end
+
+
+RSGCore.Functions.RequestAnimDict = lib.requestAnimDict
+
+RSGCore.Functions.LoadModel = lib.requestModel
+
+RSGCore.Functions.LoadAnimSet = lib.requestAnimSet
 
 function RSGCore.Functions.PlayAnim(animDict, animName, upperbodyOnly, duration)
     local flags = upperbodyOnly and 16 or 0
     local runTime = duration or -1
-    RSGCore.Functions.RequestAnimDict(animDict)
-    TaskPlayAnim(PlayerPedId(), animDict, animName, 8.0, 1.0, runTime, flags, 0.0, false, false, true)
+    lib.requestAnimDict(animDict)
+    TaskPlayAnim(cache.ped, animDict, animName, 8.0, 3.0, runTime, flags, 0.0, false, false, true)
     RemoveAnimDict(animDict)
 end
 
-function RSGCore.Functions.LoadModel(model)
-    if HasModelLoaded(model) then return end
-    RequestModel(model)
-    while not HasModelLoaded(model) do
-        Wait(0)
-    end
-end
 
-function RSGCore.Functions.LoadAnimSet(animSet)
-    if HasAnimSetLoaded(animSet) then return end
-    RequestAnimSet(animSet)
-    while not HasAnimSetLoaded(animSet) do
-        Wait(0)
-    end
-end
 
 RegisterNUICallback('getNotifyConfig', function(_, cb)
     cb(RSGCore.Config.Notify)
@@ -243,11 +229,10 @@ function RSGCore.Functions.GetPeds(ignoreList)
 end
 
 function RSGCore.Functions.GetClosestPed(coords, ignoreList)
-    local ped = PlayerPedId()
     if coords then
         coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
     else
-        coords = GetEntityCoords(ped)
+        coords = GetEntityCoords(cache.ped)
     end
     local ignoreList = ignoreList or {}
     local peds = RSGCore.Functions.GetPeds(ignoreList)
@@ -256,7 +241,7 @@ function RSGCore.Functions.GetClosestPed(coords, ignoreList)
     for i = 1, #peds, 1 do
         local pedCoords = GetEntityCoords(peds[i])
         local distance = #(pedCoords - coords)
-        if peds[i] ~= ped then
+        if peds[i] ~= cache.ped then
             if closestDistance == -1 or closestDistance > distance then
                 closestPed = peds[i]
                 closestDistance = distance
@@ -267,9 +252,8 @@ function RSGCore.Functions.GetClosestPed(coords, ignoreList)
 end
 
 function RSGCore.Functions.IsWearingGloves()
-    local ped = PlayerPedId()
-    local armIndex = GetPedDrawableVariation(ped, 3)
-    local model = GetEntityModel(ped)
+    local armIndex = GetPedDrawableVariation(cache.ped, 3)
+    local model = GetEntityModel(cache.ped)
     if model == `mp_m_freemode_01` then
         if RSGCore.Shared.MaleNoGloves[armIndex] then
             return false
@@ -283,17 +267,16 @@ function RSGCore.Functions.IsWearingGloves()
 end
 
 function RSGCore.Functions.GetClosestPlayer(coords)
-    local ped = PlayerPedId()
     if coords then
         coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
     else
-        coords = GetEntityCoords(ped)
+        coords = GetEntityCoords(cache.ped)
     end
     local closestPlayers = RSGCore.Functions.GetPlayersFromCoords(coords)
     local closestDistance = -1
     local closestPlayer = -1
     for i = 1, #closestPlayers, 1 do
-        if closestPlayers[i] ~= PlayerId() and closestPlayers[i] ~= -1 then
+        if closestPlayers[i] ~= cache.playerId and closestPlayers[i] ~= -1 then
             local pos = GetEntityCoords(GetPlayerPed(closestPlayers[i]))
             local distance = #(pos - coords)
 
@@ -308,11 +291,10 @@ end
 
 function RSGCore.Functions.GetPlayersFromCoords(coords, distance)
     local players = GetActivePlayers()
-    local ped = PlayerPedId()
     if coords then
         coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
     else
-        coords = GetEntityCoords(ped)
+        coords = GetEntityCoords(cache.ped)
     end
     distance = distance or 5
     local closePlayers = {}
@@ -328,14 +310,13 @@ function RSGCore.Functions.GetPlayersFromCoords(coords, distance)
 end
 
 function RSGCore.Functions.GetClosestVehicle(coords)
-    local ped = PlayerPedId()
     local vehicles = GetGamePool('CVehicle')
     local closestDistance = -1
     local closestVehicle = -1
     if coords then
         coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
     else
-        coords = GetEntityCoords(ped)
+        coords = GetEntityCoords(cache.ped)
     end
     for i = 1, #vehicles, 1 do
         local vehicleCoords = GetEntityCoords(vehicles[i])
@@ -350,14 +331,13 @@ function RSGCore.Functions.GetClosestVehicle(coords)
 end
 
 function RSGCore.Functions.GetClosestObject(coords)
-    local ped = PlayerPedId()
     local objects = GetGamePool('CObject')
     local closestDistance = -1
     local closestObject = -1
     if coords then
         coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
     else
-        coords = GetEntityCoords(ped)
+        coords = GetEntityCoords(cache.ped)
     end
     for i = 1, #objects, 1 do
         local objectCoords = GetEntityCoords(objects[i])
@@ -371,7 +351,7 @@ function RSGCore.Functions.GetClosestObject(coords)
 end
 
 function RSGCore.Functions.GetClosestBone(entity, list)
-    local playerCoords, bone, coords, distance = GetEntityCoords(PlayerPedId())
+    local playerCoords, bone, coords, distance = GetEntityCoords(cache.ped)
     for _, element in pairs(list) do
         local boneCoords = GetWorldPositionOfEntityBone(entity, element.id or element)
         local boneDistance = #(playerCoords - boneCoords)
@@ -397,14 +377,14 @@ function RSGCore.Functions.GetBoneDistance(entity, boneType, boneIndex)
         bone = GetEntityBoneIndexByName(entity, boneIndex)
     end
     local boneCoords = GetWorldPositionOfEntityBone(entity, bone)
-    local playerCoords = GetEntityCoords(PlayerPedId())
+    local playerCoords = GetEntityCoords(cache.ped)
     return #(boneCoords - playerCoords)
 end
 
 function RSGCore.Functions.AttachProp(ped, model, boneId, x, y, z, xR, yR, zR, vertex)
     local modelHash = type(model) == 'string' and GetHashKey(model) or model
     local bone = GetPedBoneIndex(ped, boneId)
-    RSGCore.Functions.LoadModel(modelHash)
+    lib.requestModel(modelHash)
     local prop = CreateObject(modelHash, 1.0, 1.0, 1.0, 1, 1, 0)
     AttachEntityToEntity(prop, ped, bone, x, y, z, xR, yR, zR, 1, 1, 0, 1, not vertex and 2 or 0, 1)
     SetModelAsNoLongerNeeded(modelHash)
@@ -414,16 +394,15 @@ end
 -- Vehicle
 
 function RSGCore.Functions.SpawnVehicle(model, cb, coords, isnetworked, teleportInto)
-    local ped = PlayerPedId()
     model = type(model) == 'string' and GetHashKey(model) or model
     if not IsModelInCdimage(model) then return end
     if coords then
         coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
     else
-        coords = GetEntityCoords(ped)
+        coords = GetEntityCoords(cache.ped)
     end
     isnetworked = isnetworked == nil or isnetworked
-    RSGCore.Functions.LoadModel(model)
+    lib.requestModel(model)
     local veh = CreateVehicle(model, coords.x, coords.y, coords.z, coords.w, isnetworked, false)
     local netid = NetworkGetNetworkIdFromEntity(veh)
     SetVehicleHasBeenOwnedByPlayer(veh, true)
@@ -452,7 +431,7 @@ function RSGCore.Functions.SpawnClear(coords, radius)
     if coords then
         coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
     else
-        coords = GetEntityCoords(PlayerPedId())
+        coords = GetEntityCoords(cache.ped)
     end
     local vehicles = GetGamePool('CVehicle')
     local closeVeh = {}
@@ -493,7 +472,7 @@ function RSGCore.Functions.StartParticleAtCoord(dict, ptName, looped, coords, ro
     if coords then
         coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
     else
-        coords = GetEntityCoords(PlayerPedId())
+        coords = GetEntityCoords(cache.ped)
     end
     RSGCore.Functions.LoadParticleDictionary(dict)
     UseParticleFxAssetNextCall(dict)
