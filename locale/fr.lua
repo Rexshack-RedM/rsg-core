@@ -47,6 +47,9 @@ local Translations = {
                 z = { name = 'z', help = 'position Z'},
             },
         },
+        pvp = {
+            help = 'PvP À/Dehors)',
+        },
         tpm = { help = 'TP vers le marqueur (Admins uniquement)' },
         noclip = { help = 'No Clip (Admins uniquement)' },
         addpermission = {

@@ -46,6 +46,9 @@ local Translations = {
                 z = { name = 'z', help = 'coordinata Z'},
             },
         },
+        pvp = {
+            help = 'PvP À/Fuori)',
+        },
         tpm = { help = 'TP al Marker (solo Admin)' },
         noclip = { help = 'No Clip (solo Admin)' },
         addpermission = {

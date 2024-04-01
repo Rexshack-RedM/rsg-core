@@ -82,7 +82,7 @@ end
 
 
 ---------- pvp on or off
-RSGCore.Commands.Add("pvp", Lang:t('commands.toggle_pvp'), {}, false, function(source)
+RSGCore.Commands.Add("pvp", Lang:t('command.pvp.help'), {}, false, function(source)
     local src = source
     TriggerClientEvent('rsg-core:client:pvpToggle', src)
 end)

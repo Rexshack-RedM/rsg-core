@@ -46,6 +46,9 @@ local Translations = {
                 z = { name = 'z', help = 'Posição Z' },
             },
         },
+        pvp = {
+            help = 'PvP ON/OFF)',
+        },
         tpm = { help = 'Teleportar para marcador (Apenas para administradores)' },
         noclip = { help = 'Modo de voo (Apenas para administradores)' },
         addpermission = {
