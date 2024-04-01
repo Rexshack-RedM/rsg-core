@@ -41,8 +41,7 @@ RegisterNetEvent('RSGCore:Command:TeleportToCoords', function(x, y, z, h) -- #Mo
 end)
 
 RegisterNetEvent('RSGCore:Command:GoToMarker', function()
-    local blipMarker <const> = GetFirstBlipInfoId(8)
-    local coords = GetBlipInfoIdCoord(blipMarker)
+    local coords = GetWaypointCoords()
     local groundZ = GetHeightmapBottomZForPosition(coords.x, coords.y)
     local vehicle = GetVehiclePedIsIn(cache.ped, false)
     if not IsWaypointActive() then
