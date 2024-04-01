@@ -1,6 +1,6 @@
 local pvp = true
 
-RegisterNetEvent('rgs-core:client:pvpToggle',function()
+RegisterNetEvent('rsg-core:client:pvpToggle',function()
 
   if pvp == true then
         SetRelationshipBetweenGroups(1,`PLAYER`, `PLAYER`)
@@ -31,7 +31,7 @@ CreateThread(function()
         DisableControlAction(0, 0x1F6D95E5, true) -- Disable F4 HUD menu
 
         if Citizen.InvokeNative(0x91AEF906BCA88877, 0, 0x1F6D95E5) then
-            TriggerEvent('rgs-core:client:pvpToggle')
+            TriggerEvent('rsg-core:client:pvpToggle')
         end
 
         Wait(5)
