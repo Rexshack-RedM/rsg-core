@@ -1,11 +1,11 @@
-#RSG-Core
+# RSG-Core
 
 RSG-Core is a fundamental script for RedM servers, providing essential functionalities and ensuring smooth performance with low latency. It is designed to work seamlessly with RedM, offering stability and reliability.
 
-#Dependencies
+# Dependencies
 ox_lib
 
-#Discord
+# Discord
 Join the community
 https://discord.gg/rsg-redm-framework-914413479157448744
 
