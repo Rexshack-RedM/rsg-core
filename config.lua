@@ -30,7 +30,7 @@ RSGConfig.Server.Uptime = 0 -- Time the server has been up.
 RSGConfig.Server.Whitelist = false -- Enable or disable whitelist on the server
 RSGConfig.Server.WhitelistPermission = 'admin' -- Permission that's able to enter the server when the whitelist is on
 RSGConfig.Server.Discord = "" -- Discord invite link
-RSGConfig.Server.CheckDuplicateLicense = false -- Check for duplicate rockstar license on join
+RSGConfig.Server.CheckDuplicateLicense = true -- Check for duplicate rockstar license on join
 RSGConfig.Server.Permissions = { 'god', 'admin', 'mod' } -- Add as many groups as you want here after creating them in your server.cfg
 
 RSGConfig.Notify = {}
