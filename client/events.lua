@@ -24,6 +24,8 @@ RegisterNetEvent('RSGCore:Client:OnPlayerLoaded', function()
     if RSGConfig.Player.RevealMap then
         SetMinimapHideFow(true)
     end
+    Citizen.InvokeNative(0x8899C244EBCF70DE, PlayerPedId(), 0.0) -- SetPlayerHealthRechargeMultiplier
+    Citizen.InvokeNative(0xDE1B1907A83A1550, PlayerPedId(), 0.0) -- SetHealthRechargeMultiplier
 end)
 
 RegisterNetEvent('RSGCore:Client:OnPlayerUnload', function()
