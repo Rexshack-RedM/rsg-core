@@ -155,3 +155,7 @@ RSGShared.FemaleNoGloves = {
     [161] = true,
     [165] = true
 }
+
+exports('GetWeapons', function()
+    return RSGShared.Weapons
+end)
