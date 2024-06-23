@@ -108,6 +108,7 @@ function RSGCore.Player.CheckPlayerData(source, PlayerData)
     PlayerData.metadata["bloodtype"] = PlayerData.metadata["bloodtype"] or RSGCore.Config.Player.Bloodtypes[math.random(1, #RSGCore.Config.Player.Bloodtypes)]
     PlayerData.metadata["dealerrep"] = PlayerData.metadata["dealerrep"] or 0
     PlayerData.metadata["craftingrep"] = PlayerData.metadata["craftingrep"] or 0
+    PlayerData.metadata["outlawstatus"] = PlayerData.metadata["outlawstatus"] or 0
     PlayerData.metadata["attachmentcraftingrep"] = PlayerData.metadata["attachmentcraftingrep"] or 0
     PlayerData.metadata["jobrep"] = PlayerData.metadata["jobrep"] or {}
     PlayerData.metadata["fingerprint"] = PlayerData.metadata["fingerprint"] or RSGCore.Player.CreateFingerId()
