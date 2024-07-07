@@ -198,6 +198,7 @@ RSGShared.Items = {
     ['repeaterparts'] = {['name'] = 'repeaterparts', ['label'] = 'Repeater Parts', ['weight'] = 100, ['type'] = 'item', ['image'] = 'weaponparts.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'weapon parts'},
     ['rifleparts']    = {['name'] = 'rifleparts',    ['label'] = 'Rifle Parts',    ['weight'] = 100, ['type'] = 'item', ['image'] = 'weaponparts.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'weapon parts'},
     ['shotgunparts']  = {['name'] = 'shotgunparts',  ['label'] = 'Shotgun Parts',  ['weight'] = 100, ['type'] = 'item', ['image'] = 'weaponparts.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'weapon parts'},
+    ['ammoparts']     = {['name'] = 'ammoparts',     ['label'] = 'Ammo Parts',     ['weight'] = 100, ['type'] = 'item', ['image'] = 'ammoparts.png',   ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'ammo parts'},
 
     --ammo revolver
     ['ammo_revolver']                   = {['name'] = 'ammo_revolver',                   ['label'] = 'Revolver (N)',  ['weight'] = 200, ['type'] = 'item', ['image'] = 'ammo_bullet_normal.png',        ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Revolver Ammo'},
