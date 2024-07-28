@@ -50,7 +50,6 @@ local Translations = {
             help = 'PvP ON/OFF)',
         },
         tpm = { help = 'Teleportar para marcador (Apenas para administradores)' },
-        noclip = { help = 'Modo de voo (Apenas para administradores)' },
         addpermission = {
             help = 'Dar permissões ao jogador (Apenas para administradores)',
             params = {

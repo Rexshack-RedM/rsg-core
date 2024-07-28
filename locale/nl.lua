@@ -50,7 +50,6 @@ local Translations = {
             help = 'PvP Aan/Uit)',
         },
         tpm = { help = 'TP naar Marker (alleen Admin)' },
-        noclip = { help = 'No Clip (alleen Admin)' },
         addpermission = {
             help = 'Geef speler toestemmingen (alleen God)',
             params = {
