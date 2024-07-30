@@ -50,6 +50,7 @@ local Translations = {
             help = 'PvP En/Afuera)',
         },
         tpm = { help = 'TP al marcador (Sólo para admin)' },
+        noclip = { help = 'No Clip (Sólo para admin)' },
         addpermission = {
             help = 'Dar permisos al jugador (Sólo modo dios)',
             params = {

@@ -33,6 +33,11 @@ RegisterNetEvent('RSGCore:Client:OnPlayerUnload', function()
     LocalPlayer.state:set('isLoggedIn', false, false)
 end)
 
+-- Noclip Command
+RegisterNetEvent('RSGCore:Command:ToggleNoClip', function()
+    ExecuteCommand('txAdmin:menu:noClipToggle')
+end)
+
 -- Teleport Commands
 
 RegisterNetEvent('RSGCore:Command:TeleportToPlayer', function(coords) -- #MoneSuer | Fixed Teleport Command

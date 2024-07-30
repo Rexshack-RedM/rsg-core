@@ -122,6 +122,11 @@ RSGCore.Commands.Add('tp', Lang:t("command.tp.help"), { { name = Lang:t("command
     end
 end, 'admin')
 
+-- admin noclip
+RSGCore.Commands.Add('noclip', Lang:t("command.noclip.help"), {}, false, function(source)
+    TriggerClientEvent('RSGCore:Command:ToggleNoClip', source)
+end, 'admin')
+
 -- teleport to marker
 RSGCore.Commands.Add('tpm', Lang:t("command.tpm.help"), {}, false, function(source)
     TriggerClientEvent('RSGCore:Command:GoToMarker', source)
