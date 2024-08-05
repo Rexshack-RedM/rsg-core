@@ -14,9 +14,8 @@ CreateThread(function()
         if LocalPlayer.state.isLoggedIn then
             if (RSGCore.PlayerData.metadata['hunger'] <= 0 or RSGCore.PlayerData.metadata['thirst'] <= 0) and not RSGCore.PlayerData.metadata['isdead'] then
                 local currentHealth = GetEntityHealth(cache.ped)
-                if currentHealth < 5 then
-                    local decreaseThreshold = 1
-                    SetEntityHealth(cache.ped, currentHealth - decreaseThreshold)
+                if currentHealth < 10 then
+                    SetEntityHealth(cache.ped, 0)
                 else
                     local decreaseThreshold = math.random(5, 10)
                     SetEntityHealth(cache.ped, currentHealth - decreaseThreshold)
