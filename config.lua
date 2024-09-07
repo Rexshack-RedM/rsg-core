@@ -10,8 +10,9 @@ RSGConfig.HidePlayerNames = true
 RSGConfig.Money = {}
 RSGConfig.Money.MoneyTypes = { cash = 50, bank = 0, valbank = 0, rhobank = 0, blkbank = 0, armbank = 0, bloodmoney = 0 } -- type = startamount - Add or remove money types for your server (for ex. blackmoney = 0), remember once added it will not be removed from the database!
 RSGConfig.Money.DontAllowMinus = { 'cash', 'bloodmoney' } -- Money that is not allowed going in minus
+RSGConfig.Money.PayCheckBank = 'valbank'
 RSGConfig.Money.PayCheckTimeOut = 30 -- The time in minutes that it will give the paycheck
-RSGConfig.Money.PayCheckSociety = false -- If true paycheck will come from the society account that the player is employed at, requires qb-management
+RSGConfig.Money.PayCheckSociety = false -- If true paycheck will come from the society account that the player is employed at, requires rsg-bossmenu
 RSGConfig.Money.PayCheckEnabled = true -- If false payments will be disabled.
 
 RSGConfig.Player = {}
