@@ -29,8 +29,8 @@ RSGShared.Items = {
     ['birdpost'] = {['name'] = 'birdpost', ['label'] = 'Bird Post', ['weight'] = 5, ['type'] = 'item', ['image'] = 'birdpost.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Bird Post for sending letters'},
 
     -- Money Clip
-    ['moneyclip']      = {['name'] = 'moneyclip',      ['label'] = 'Money Clip',       ['weight'] = 1, ['type'] = 'item', ['image'] = 'money_moneyclip.png',      ['unique'] = true, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Money Clip'},
-    ['bloodmoneyclip'] = {['name'] = 'bloodmoneyclip', ['label'] = 'Blood Money Clip', ['weight'] = 1, ['type'] = 'item', ['image'] = 'bloodmoney_moneyclip.png', ['unique'] = true, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Blood Money Clip'},
+    ['money_clip']       = {['name'] = 'money_clip',       ['label'] = 'Money Clip',       ['weight'] = 1, ['type'] = 'item', ['image'] = 'money_clip.png',       ['unique'] = true, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Money Clip'},
+    ['blood_money_clip'] = {['name'] = 'blood_money_clip', ['label'] = 'Blood Money Clip', ['weight'] = 1, ['type'] = 'item', ['image'] = 'blood_money_clip.png', ['unique'] = true, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Blood Money Clip'},
 
     -- fishing
     ['a_c_fishbluegil_01_ms']        = {['name'] = 'a_c_fishbluegil_01_ms',        ['label'] = 'Blue Gil (M)',         ['weight'] = 600,  ['type'] = 'item', ['image'] = 'a_c_fishbluegil_01_ms.png',        ['unique'] = true, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used for fishing'},
