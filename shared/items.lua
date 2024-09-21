@@ -68,7 +68,7 @@ RSGShared.Items = {
     ['p_baitworm01x']    = {['name'] = 'p_baitworm01x',    ['label'] = 'Worm Bait',     ['weight'] = 10, ['type'] = 'item', ['image'] = 'p_baitworm01x.png',    ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used for fishing'},
     ['p_baitcricket01x'] = {['name'] = 'p_baitcricket01x', ['label'] = 'Cricket Bait',  ['weight'] = 10, ['type'] = 'item', ['image'] = 'p_baitcricket01x.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used for fishing'},
     ['p_crawdad01x']     = {['name'] = 'p_crawdad01x',     ['label'] = 'Crawfish Bait', ['weight'] = 10, ['type'] = 'item', ['image'] = 'p_crawdad01x.png',     ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used for fishing'},
-    
+
     -- fishing lures
     ['p_finishedragonfly01x']          = {['name'] = 'p_finishedragonfly01x',          ['label'] = 'Dragonfly Lure',           ['weight'] = 10, ['type'] = 'item', ['image'] = 'p_finishedragonfly01x.png',          ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used for fishing'},
     ['p_finisdfishlure01x']            = {['name'] = 'p_finisdfishlure01x',            ['label'] = 'Fish Lure',                ['weight'] = 10, ['type'] = 'item', ['image'] = 'p_finisdfishlure01x.png',            ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'used for fishing'},
