@@ -2,13 +2,15 @@ RSGShared = RSGShared or {}
 
 RSGShared.Items = {
 
-    -- [consumable]
-    ['consumable_bread_roll']     = {['name'] = 'consumable_bread_roll',     ['label'] = 'Bread Roll',     ['weight'] = 100, ['type'] = 'item', ['image'] = 'consumable_bread_roll.png',     ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Bread Roll', ['created'] = nil, ['decay'] = 1.0, ['delete'] = true},
-    ['consumable_water_filtered'] = {['name'] = 'consumable_water_filtered', ['label'] = 'Filtered Water', ['weight'] = 100, ['type'] = 'item', ['image'] = 'consumable_water_filtered.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Drinkable Water'},
-    ['consumable_sugarcube']      = {['name'] = 'consumable_sugarcube',      ['label'] = 'Sugar Cube',     ['weight'] = 100, ['type'] = 'item', ['image'] = 'consumable_sugarcube.png',      ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Horses like these'},
+    -- general items
+    ['consumable_bread_roll']      = {['name'] = 'consumable_bread_roll',      ['label'] = 'Bread Roll',      ['weight'] = 100, ['type'] = 'item', ['image'] = 'consumable_bread_roll.png',      ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Bread Roll', ['created'] = nil, ['decay'] = 1.0, ['delete'] = true},
+    ['consumable_water_filtered']  = {['name'] = 'consumable_water_filtered',  ['label'] = 'Filtered Water',  ['weight'] = 100, ['type'] = 'item', ['image'] = 'consumable_water_filtered.png',  ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Drinkable Water'},
 
-    -- equipment
-    ['horse_brush'] = {['name'] = 'horse_brush', ['label'] = 'Horse Brush', ['weight'] = 100, ['type'] = 'item', ['image'] = 'horse_brush.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'brush used to clean your horse'},
+    -- horse items
+    ['horse_brush']                = {['name'] = 'horse_brush',                ['label'] = 'Horse Brush',     ['weight'] = 100, ['type'] = 'item', ['image'] = 'horse_brush.png',                ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'brush used to clean your horse'},
+    ['horse_lantern']              = {['name'] = 'horse_lantern',              ['label'] = 'Horse Lantern',   ['weight'] = 100, ['type'] = 'item', ['image'] = 'horse_lantern.png',              ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'to see in the dark'},
+    ['consumable_horse_stimulant'] = {['name'] = 'consumable_horse_stimulant', ['label'] = 'Horse Stimulant', ['weight'] = 100, ['type'] = 'item', ['image'] = 'consumable_horse_stimulant.png', ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Stimulant for horses'},
+    ['consumable_sugarcube']       = {['name'] = 'consumable_sugarcube',       ['label'] = 'Sugar Cube',      ['weight'] = 100, ['type'] = 'item', ['image'] = 'consumable_sugarcube.png',       ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Horses like these'},
 
     -- animal items
     ['legendary_pelt']     = {['name'] = 'legendary_pelt',     ['label'] = 'Legendary Pelt',      ['weight'] = 100, ['type'] = 'item', ['image'] = 'legendary_pelt.png',   ['unique'] = false, ['useable'] = true, ['shouldClose'] = true, ['combinable'] = nil, ['level'] = 0, ['description'] = 'Legendary'},
