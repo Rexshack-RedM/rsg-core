@@ -69,6 +69,7 @@ RSGShared.Jobs = {
     },
     ['medic'] = {
         label = 'Medic',
+        type = 'medic',
         defaultDuty = false,
         offDutyPay = false,
         grades = {
