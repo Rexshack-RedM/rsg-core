@@ -1,148 +1,33 @@
 RSGShared = RSGShared or {}
+RSGShared.Vehicles = RSGShared.Vehicles or {}
 
-RSGShared.Vehicles = {
-    ['CART01'] = {
-        ['name'] = 'Wooden Cart 1',
-        ['brand'] = '?',
-        ['model'] = 'CART01',
-        ['price'] = 10,
-        ['category'] = 'carts',
-        ['hash'] = '-824257932',
-        ['shop'] = 'cart',
+local Vehicles = {
+
+--[[
+    --- Compacts (0)
+    {
+        model = 'asbo',        -- This has to match the spawn code of the vehicle
+        name = 'Asbo',         -- This is the display of the vehicle
+        brand = 'Maxwell',     -- This is the vehicle's brand
+        price = 4000,          -- The price that the vehicle sells for
+        category = 'compacts', -- Catgegory of the vehilce, stick with GetVehicleClass() options https://docs.fivem.net/natives/?_0x29439776AAA00A62
+        type = 'automobile',   -- Vehicle type, refer here https://docs.fivem.net/natives/?_0x6AE51D4B & here https://docs.fivem.net/natives/?_0xA273060E
+        shop = 'pdm',          -- Can be a single shop or multiple shops. For multiple shops for example {'shopname1','shopname2','shopname3'}
     },
-    ['CART02'] = {
-        ['name'] = 'Wooden Cart 2',
-        ['brand'] = '?',
-        ['model'] = 'CART02',
-        ['price'] = 10,
-        ['category'] = 'carts',
-        ['hash'] = '-2053881888',
-        ['shop'] = 'cart',
-    },
-    ['CART03'] = {
-        ['name'] = 'Wooden Cart 3',
-        ['brand'] = '?',
-        ['model'] = 'CART03',
-        ['price'] = 10,
-        ['category'] = 'carts',
-        ['hash'] = '-1347283941',
-        ['shop'] = 'cart',
-    },
-    ['CART04'] = {
-        ['name'] = 'Wooden Cart 4',
-        ['brand'] = '?',
-        ['model'] = 'CART04',
-        ['price'] = 10,
-        ['category'] = 'carts',
-        ['hash'] = '-570691410',
-        ['shop'] = 'cart',
-    },
-    ['CART05'] = {
-        ['name'] = 'Wooden Cart 5',
-        ['brand'] = '?',
-        ['model'] = 'CART05',
-        ['price'] = 10,
-        ['category'] = 'carts',
-        ['hash'] = '374792535',
-        ['shop'] = 'cart',
-    },
-    ['CART06'] = {
-        ['name'] = 'Wooden Cart 6',
-        ['brand'] = '?',
-        ['model'] = 'CART06',
-        ['price'] = 10,
-        ['category'] = 'carts',
-        ['hash'] = '219205323',
-        ['shop'] = 'cart',
-    },
-    ['CART07'] = {
-        ['name'] = 'Wooden Cart 7',
-        ['brand'] = '?',
-        ['model'] = 'CART07',
-        ['price'] = 10,
-        ['category'] = 'carts',
-        ['hash'] = '47200842',
-        ['shop'] = 'cart',
-    },
-    ['CART08'] = {
-        ['name'] = 'Wooden Cart 8',
-        ['brand'] = '?',
-        ['model'] = 'CART08',
-        ['price'] = 10,
-        ['category'] = 'carts',
-        ['hash'] = '-377157708',
-        ['shop'] = 'cart',
-    },
-    ['BUGGY01'] = {
-        ['name'] = 'Luxurious Buggy 1',
-        ['brand'] = '?',
-        ['model'] = 'BUGGY01',
-        ['price'] = 10,
-        ['category'] = 'Buggies',
-        ['hash'] = '-1278978750',
-        ['shop'] = 'cart',
-    },
-    ['BUGGY02'] = {
-        ['name'] = 'Luxurious Buggy 2',
-        ['brand'] = '?',
-        ['model'] = 'BUGGY02',
-        ['price'] = 10,
-        ['category'] = 'Buggies',
-        ['hash'] = '-1100387700',
-        ['shop'] = 'cart',
-    },
-    ['BUGGY03'] = {
-        ['name'] = 'Luxurious Buggy 3',
-        ['brand'] = '?',
-        ['model'] = 'BUGGY03',
-        ['price'] = 10,
-        ['category'] = 'Buggies',
-        ['hash'] = '-1861840953',
-        ['shop'] = 'cart',
-    },
-    ['COACH2'] = {
-        ['name'] = 'Special Transport 1',
-        ['brand'] = '?',
-        ['model'] = 'COACH2',
-        ['price'] = 10,
-        ['category'] = 'Specials',
-        ['hash'] = '1761016051',
-        ['shop'] = 'cart',
-    },
-    ['COACH3'] = {
-        ['name'] = 'Special Transport 2',
-        ['brand'] = '?',
-        ['model'] = 'COACH3',
-        ['price'] = 10,
-        ['category'] = 'Specials',
-        ['hash'] = '-136833353',
-        ['shop'] = 'cart',
-    },
-    ['COACH4'] = {
-        ['name'] = 'Special Transport 3',
-        ['brand'] = '?',
-        ['model'] = 'COACH4',
-        ['price'] = 10,
-        ['category'] = 'Specials',
-        ['hash'] = '93893176',
-        ['shop'] = 'cart',
-    },
-    ['COACH5'] = {
-        ['name'] = 'Special Transport 4',
-        ['brand'] = '?',
-        ['model'] = 'COACH5',
-        ['price'] = 10,
-        ['category'] = 'Specials',
-        ['hash'] = '-1826304690',
-        ['shop'] = 'cart',
-    },
-    ['COACH6'] = {
-        ['name'] = 'Special Transport 5',
-        ['brand'] = '?',
-        ['model'] = 'COACH6',
-        ['price'] = 10,
-        ['category'] = 'Specials',
-        ['hash'] = '-1544786211',
-        ['shop'] = 'cart',
-    }
+--]]
+
 }
+
+for i = 1, #Vehicles do
+    RSGShared.Vehicles[Vehicles[i].model] = {
+        spawncode = Vehicles[i].model,
+        name = Vehicles[i].name,
+        brand = Vehicles[i].brand,
+        model = Vehicles[i].model,
+        price = Vehicles[i].price,
+        category = Vehicles[i].category,
+        hash = joaat(Vehicles[i].model),
+        type = Vehicles[i].type,
+        shop = Vehicles[i].shop
+    }
+end

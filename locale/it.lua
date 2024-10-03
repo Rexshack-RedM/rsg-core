@@ -1,131 +1,129 @@
 local Translations = {
-    error = {
-        not_online = 'Player non online',
-        wrong_format = 'Formato non corretto',
-        missing_args = 'Non tutti gli argomenti sono stati inseriti (x, y, z)',
+error = {
+        not_online = 'Giocatore Offline',
+        wrong_format = 'Formato sbagliato',
+        missing_args = 'Devi inserire ancora qualcosa(x, y, z)',
         missing_args2 = 'Tutti gli argomenti devono essere compilati!',
-        no_access = 'Nessun accesso a questo comando',
-        company_too_poor = 'Il tuo datore di lavoro è al verde',
-        item_not_exist = 'L\'oggetto non esiste',
-        too_heavy = 'Inventario troppo pieno',
-        location_not_exist = 'La posizione non esiste',
-        duplicate_license = 'Trovata una licenza Rockstar duplicata',
-        no_valid_license  = 'Nessuna licenza Rockstar valida trovata',
-        not_whitelisted = 'Non sei nella whitelist di questo server',
+        no_access = 'Non hai accesso a questo comando',
+        company_too_poor = 'La tua azienda è povera',
+        item_not_exist = 'Oggetto inesistente',
+        too_heavy = 'Inventario pieno',
+        location_not_exist = 'Destinazione Inesistente',
+        duplicate_license = 'Licenza Rockstar Duplicata',
+        no_valid_license = 'Licenza Rockstar non Valida',
+        not_whitelisted = 'Non sei nella Allowlist',
         server_already_open = 'Il server è già aperto',
         server_already_closed = 'Il server è già chiuso',
-        no_permission = 'Non hai le autorizzazioni per questo..',
-        no_waypoint = 'Nessun waypoint impostato.',
-        tp_error = 'Errore durante il teletrasporto.',
+        no_permission = 'Non hai i permessi necessari..',
+        no_waypoint = 'Nessun marker impostato.',
+        tp_error = 'Errore durante il TP.'
     },
     success = {
-        server_opened = 'Il server è stato aperto',
-        server_closed = 'Il server è stato chiuso',
-        teleported_waypoint = 'Teletrasportato al waypoint.',
+        server_opened = 'Il server ora è aperto',
+        server_closed = 'Il server ora è chiuso',
+        teleported_waypoint = 'TP al marker.'
     },
     info = {
-        received_paycheck = 'Hai ricevuto lo stipendio di $%{value}',
-        job_info = 'Lavoro: %{value} | Grado: %{value2} | Servizio: %{value3}',
+        received_paycheck = 'Hai ricevuto la paga di $%{value}',
+        job_info = 'Lavoro: %{value} | Grado: %{value2} | Stato: %{value3}',
         gang_info = 'Gang: %{value} | Grado: %{value2}',
-        on_duty = 'Ora sei in servizio!',
-        off_duty = 'Ora sei fuori servizio!',
-        checking_ban = 'Ciao %s. Stiamo controllando se sei bannato.',
+        on_duty = 'Sei in servizio!',
+        off_duty = 'Sei fuori servizio!',
+        checking_ban = 'Ciao %s. Sto controllando che tu non sia bannato!',
         join_server = 'Benvenuto %s su {Server Name}.',
-        checking_whitelisted = 'Ciao %s. We are checking your allowance.',
-        exploit_banned = 'Sei stato bannato per cheating. Controlla la nostra Discord per ulteriori informazioni: %{discord}',
-        exploit_dropped = 'Sei stato cacciato per Exploitation',
-        pvp_on = 'PVP : À',
-        pvp_off = 'PVP : Fuori',
+        checking_whitelisted = 'Ciao %s. Sto controllando la allowlist.',
+        exploit_banned = 'Sei stato bannato per Cheating o Exploit. Apri un ticket per maggiori informazioni: %{discord}',
+        exploit_dropped = 'Sei stato espulso per Exploit'
     },
     command = {
         tp = {
-            help = 'TP al giocatore o coordinate (solo Admin)',
+            help = 'TP su ID Gioctore o Coordinate (Solo Admin)',
             params = {
-                x = { name = 'id/x', help = 'ID del player o coordinata X'},
-                y = { name = 'y', help = 'coordinata Y'},
-                z = { name = 'z', help = 'coordinata Z'},
-            },
+                x = {name = 'id/x', help = 'ID Giocatore o Posizione X'},
+                y = {name = 'y', help = 'Posizione Y'},
+                z = {name = 'z', help = 'Posizione Z'}
+            }
         },
-        pvp = {
-            help = 'PvP À/Fuori)',
-        },
-        tpm = { help = 'TP al Marker (solo Admin)' },
-        noclip = { help = 'No Clip (solo Admin)' },
+        tpm = {help = 'TP al Marker (Solo Admin)'},
+        togglepvp = {help = 'Togli PVP al server (Solo Admin)'},
         addpermission = {
-            help = 'Concedi i permessi al giocatore (solo God)',
+            help = 'Dai i permessi ad un Giocatore (Solo God)',
             params = {
-                id = { name = 'id', help = 'ID del player' },
-                permission = { name = 'permission', help = 'Livello di permesso' },
-            },
+                id = {name = 'id', help = 'ID Giocatore'},
+                permission = {name = 'permessi', help = 'Livello Permessi'}
+            }
         },
         removepermission = {
-            help = 'Rimuovi i permessi al giocatore(solo God)',
+            help = 'Rimuovi i permessi ad un Giocatore (Solo God)',
             params = {
-                id = { name = 'id', help = 'ID of player' },
-                permission = { name = 'permission', help = 'Livello di permesso' },
-            },
+                id = {name = 'id', help = 'ID Giocatore'},
+                permission = {name = 'permessi', help = 'Livello Permessi'}
+            }
         },
-        openserver = { help = 'Apri il server per tutti (solo Admin)' },
+        openserver = {help = 'Apri il server a tutti (Solo Admin)'},
         closeserver = {
-            help = 'Chiudi il server per le persone senza autorizzazioni (solo Admin)',
+            help = 'Chidi il server e rendilo accessibile solo a chi ha i permessi (Solo Admin)',
             params = {
-                reason = { name = 'reason', help = 'Motivo della chiusura (opzionale)' },
-            },
+                reason = {
+                    name = 'motivo',
+                    help = 'Motivo di chiusura del server (opzionale)'
+                }
+            }
         },
         car = {
-            help = 'Spawna Veicolo (solo Admin)',
-            params = {
-                model = { name = 'model', help = 'Nome del modello del veicolo' },
-            },
+            help = 'Spawna Veicolo (Solo Admin)',
+            params = {model = {name = 'modello', help = 'Nome del veicolo'}}
         },
-        dv = { help = 'Elimina Veicolo (solo Admin)' },
-        spawnwagon = { help = 'Spawna un Carro (solo Admin)' },
-        spawnhorse = { help = 'Spawna un Cavallo (solo Admin)' },
+        dv = {help = 'Elimina Veicolo (Solo Admin)'},
         givemoney = {
-            help = 'Dai soldi a un giocatore (solo Admin)',
+            help = 'Dai soldi ad un Giocatore (Solo Admin)',
             params = {
-                id = { name = 'id', help = 'Player ID' },
-                moneytype = { name = 'moneytype', help = 'Tipo di denaro (cash, bank, bloodmoney)' },
-                amount = { name = 'amount', help = 'Importo denaro' },
-            },
+                id = {name = 'id', help = 'ID Giocatore'},
+                moneytype = {
+                    name = 'tipo',
+                    help = 'Tipo di soldi (cash, bank, crypto)'
+                },
+                amount = {name = 'importo', help = 'Importo'}
+            }
         },
         setmoney = {
-            help = 'Imposta importo soldi del giocatore (solo Admin)',
+            help = 'Imposta i soldi ad un Giocatore (Solo Admin)',
             params = {
-                id = { name = 'id', help = 'Player ID' },
-                moneytype = { name = 'moneytype', help = 'Tipo di denaro (cash, bank, bloodmoney)' },
-                amount = { name = 'amount', help = 'Importo denaro' },
-            },
+                id = {name = 'id', help = 'ID Giocatore'},
+                moneytype = {
+                    name = 'tipo',
+                    help = 'Tipo di soldi (cash, bank, crypto)'
+                },
+                amount = {name = 'importo', help = 'Importo'}
+            }
         },
-        job = { help = 'Verifica il tuo lavoro attuale' },
+        job = {help = 'Controlla il tuo Lavoro'},
         setjob = {
-            help = 'Imposta un lavoro per il giocatore (solo Admin)',
+            help = 'Imposta Lavoro ad un Giocatore (Solo Admin)',
             params = {
-                id = { name = 'id', help = 'Player ID' },
-                job = { name = 'job', help = 'Nome del lavoro' },
-                grade = { name = 'grade', help = 'Grado Lavoro' },
-            },
+                id = {name = 'id', help = 'ID Giocatore'},
+                job = {name = 'lavoro', help = 'Nome Lavoro'},
+                grade = {name = 'grado', help = 'Grado'}
+            }
         },
-        gang = { help = 'Verifica la tua Gang attuale' },
+        gang = {help = 'Controlla la tua Fazione'},
         setgang = {
-            help = 'Imposta una gang per il giocatore (solo Admin)',
+            help = 'Imposta Fazione ad un Giocatore (Solo Admin)',
             params = {
-                id = { name = 'id', help = 'Player ID' },
-                gang = { name = 'gang', help = 'Nome Gang' },
-                grade = { name = 'grade', help = 'Grado Gang' },
-            },
+                id = {name = 'id', help = 'ID Giocatore'},
+                gang = {name = 'fazione', help = 'Nome Fazione'},
+                grade = {name = 'grado', help = 'Grado'}
+            }
         },
-        ooc = { help = 'Messaggio Chat OOC' },
+        ooc = {help = 'Messaggio OOC'},
         me = {
-            help = 'Mostra messaggio locale',
-            params = {
-                message = { name = 'message', help = 'Messaggio da inviare' }
-            },
-        },
+            help = 'Mostra Messaggio circostante',
+            params = {message = {name = 'messaggio', help = 'Messaggio'}}
+        }
     },
 }
 
-if GetConvar('rsg_locale', 'en') == 'it' then
+if GetConvar('qb_locale', 'en') == 'it' then
     Lang = Locale:new({
         phrases = Translations,
         warnOnMissing = true,

@@ -1,4 +1,3 @@
 RSGShared.Locations = {
-    -- add here
-
+    -- Base game MLO interiors
 }

@@ -3,6 +3,11 @@ RSGShared = RSGShared or {}
 local StringCharset = {}
 local NumberCharset = {}
 
+RSGShared.StarterItems = {
+    ['bread'] = { amount = 5, item = 'bread' },
+    ['water'] = { amount = 5, item = 'water' },
+}
+
 for i = 48, 57 do NumberCharset[#NumberCharset + 1] = string.char(i) end
 for i = 65, 90 do StringCharset[#StringCharset + 1] = string.char(i) end
 for i = 97, 122 do StringCharset[#StringCharset + 1] = string.char(i) end

@@ -1,9 +1,11 @@
 fx_version 'cerulean'
-game 'rdr3'
 rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aware my resources *will* become incompatible once RedM ships.'
+game 'rdr3'
+
+lua54 'yes'
 
 description 'rsg-core'
-version '1.4.7'
+version '2.0.0'
 
 shared_scripts {
     '@ox_lib/init.lua',
@@ -11,7 +13,14 @@ shared_scripts {
     'shared/locale.lua',
     'locale/en.lua',
     'locale/*.lua',
-    'shared/*.lua',
+    'shared/main.lua',
+    'shared/items.lua',
+    'shared/jobs.lua',
+    'shared/vehicles.lua',
+    'shared/gangs.lua',
+    'shared/weapons.lua',
+    'shared/locations.lua',
+    'shared/keybinds.lua'
 }
 
 client_scripts {
@@ -21,7 +30,6 @@ client_scripts {
     'client/events.lua',
     'client/drawtext.lua',
     'client/prompts.lua',
-    'client/pvp.lua'
 }
 
 server_scripts {
@@ -32,13 +40,16 @@ server_scripts {
     'server/events.lua',
     'server/commands.lua',
     'server/exports.lua',
-    'server/debug.lua',
-    'server/versionchecker.lua'
+    'server/debug.lua'
 }
 
-dependency {
-    'oxmysql',
-    'ox_lib'
+ui_page 'html/index.html'
+
+files {
+    'html/index.html',
+    'html/css/style.css',
+    'html/css/drawtext.css',
+    'html/js/*.js'
 }
 
-lua54 'yes'
+dependency 'oxmysql'
