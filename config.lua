@@ -35,7 +35,6 @@ RSGConfig.Player.PlayerDefaults = {
         birthdate = '00-00-0000',
         gender = 0,
         nationality = 'USA',
-        phone = function() return RSGCore.Functions.CreatePhoneNumber() end,
         account = function() return RSGCore.Functions.CreateAccountNumber() end
     },
     job = {
