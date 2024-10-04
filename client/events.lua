@@ -99,7 +99,6 @@ RegisterNetEvent('RSGCore:Command:SpawnVehicle', function(vehName)
     SetVehicleFuelLevel(vehicle, 100.0)
     SetVehicleDirtLevel(vehicle, 0.0)
     SetModelAsNoLongerNeeded(hash)
-    TriggerEvent('vehiclekeys:client:SetOwner', RSGCore.Functions.GetPlate(vehicle))
 end)
 
 RegisterNetEvent('RSGCore:Command:DeleteVehicle', function()
@@ -118,27 +117,6 @@ RegisterNetEvent('RSGCore:Command:DeleteVehicle', function()
             end
         end
     end
-end)
-
-RegisterNetEvent('RSGCore:Client:VehicleInfo', function(info)
-    local plate = RSGCore.Functions.GetPlate(info.vehicle)
-    local hasKeys = true
-
-    if GetResourceState('qb-vehiclekeys') == 'started' then
-        hasKeys = exports['qb-vehiclekeys']:HasKeys()
-    end
-
-    local data = {
-        vehicle = info.vehicle,
-        seat = info.seat,
-        name = info.modelName,
-        plate = plate,
-        driver = GetPedInVehicleSeat(info.vehicle, -1),
-        inseat = GetPedInVehicleSeat(info.vehicle, info.seat),
-        haskeys = hasKeys
-    }
-
-    TriggerEvent('RSGCore:Client:' .. info.event .. 'Vehicle', data)
 end)
 
 -- Other stuff

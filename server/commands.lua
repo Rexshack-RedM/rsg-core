@@ -183,7 +183,7 @@ end, 'admin')
 
 -- Vehicle
 
-RSGCore.Commands.Add('car', Lang:t('command.car.help'), { { name = Lang:t('command.car.params.model.name'), help = Lang:t('command.car.params.model.help') } }, true, function(source, args)
+RSGCore.Commands.Add('vehicle', Lang:t('command.car.help'), { { name = Lang:t('command.car.params.model.name'), help = Lang:t('command.car.params.model.help') } }, true, function(source, args)
     TriggerClientEvent('RSGCore:Command:SpawnVehicle', source, args[1])
 end, 'admin')
 

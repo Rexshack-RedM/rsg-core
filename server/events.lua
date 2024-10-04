@@ -171,47 +171,6 @@ RegisterNetEvent('RSGCore:ToggleDuty', function()
     TriggerClientEvent('RSGCore:Client:SetDuty', src, Player.PlayerData.job.onduty)
 end)
 
--- BaseEvents
-
--- Vehicles
-RegisterServerEvent('baseevents:enteringVehicle', function(veh, seat, modelName)
-    local src = source
-    local data = {
-        vehicle = veh,
-        seat = seat,
-        name = modelName,
-        event = 'Entering'
-    }
-    TriggerClientEvent('RSGCore:Client:VehicleInfo', src, data)
-end)
-
-RegisterServerEvent('baseevents:enteredVehicle', function(veh, seat, modelName)
-    local src = source
-    local data = {
-        vehicle = veh,
-        seat = seat,
-        name = modelName,
-        event = 'Entered'
-    }
-    TriggerClientEvent('RSGCore:Client:VehicleInfo', src, data)
-end)
-
-RegisterServerEvent('baseevents:enteringAborted', function()
-    local src = source
-    TriggerClientEvent('RSGCore:Client:AbortVehicleEntering', src)
-end)
-
-RegisterServerEvent('baseevents:leftVehicle', function(veh, seat, modelName)
-    local src = source
-    local data = {
-        vehicle = veh,
-        seat = seat,
-        name = modelName,
-        event = 'Left'
-    }
-    TriggerClientEvent('RSGCore:Client:VehicleInfo', src, data)
-end)
-
 -- Items
 
 -- This event is exploitable and should not be used. It has been deprecated, and will be removed soon.
@@ -259,16 +218,3 @@ RSGCore.Functions.CreateCallback('RSGCore:Server:SpawnVehicle', function(source,
     local veh = RSGCore.Functions.SpawnVehicle(source, model, coords, warp)
     cb(NetworkGetNetworkIdFromEntity(veh))
 end)
-
--- Use this for long distance vehicle spawning
--- vehicle server-side spawning callback (netId)
--- use the netid on the client with the NetworkGetEntityFromNetworkId native
--- convert it to a vehicle via the NetToVeh native
-RSGCore.Functions.CreateCallback('RSGCore:Server:CreateVehicle', function(source, cb, model, coords, warp)
-    local veh = RSGCore.Functions.CreateAutomobile(source, model, coords, warp)
-    cb(NetworkGetNetworkIdFromEntity(veh))
-end)
-
---RSGCore.Functions.CreateCallback('RSGCore:HasItem', function(source, cb, items, amount)
--- https://github.com/rsgcore-framework/rsg-inventory/blob/e4ef156d93dd1727234d388c3f25110c350b3bcf/server/main.lua#L2066
---end)

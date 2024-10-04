@@ -22,7 +22,6 @@ end
 ---@param idtype string
 ---@return string?
 function RSGCore.Functions.GetIdentifier(source, idtype)
-    if GetConvarInt('sv_fxdkMode', 0) == 1 then return 'license:fxdk' end
     return GetPlayerIdentifierByType(source, idtype or 'license')
 end
 
@@ -337,26 +336,6 @@ function RSGCore.Functions.SpawnVehicle(source, model, coords, warp)
         end
     end
     while NetworkGetEntityOwner(veh) ~= source do Wait(0) end
-    return veh
-end
-
----Server side vehicle creation with optional callback
----the CreateAutomobile native is still experimental but doesn't use client for creation
----doesn't work for all vehicles!
----comment
----@param source any
----@param model any
----@param coords vector
----@param warp boolean
----@return number
-function RSGCore.Functions.CreateAutomobile(source, model, coords, warp)
-    model = type(model) == 'string' and joaat(model) or model
-    if not coords then coords = GetEntityCoords(GetPlayerPed(source)) end
-    local heading = coords.w and coords.w or 0.0
-    local CreateAutomobile = `CREATE_AUTOMOBILE`
-    local veh = Citizen.InvokeNative(CreateAutomobile, model, coords, heading, true, true)
-    while not DoesEntityExist(veh) do Wait(0) end
-    if warp then TaskWarpPedIntoVehicle(GetPlayerPed(source), veh, -1) end
     return veh
 end
 
