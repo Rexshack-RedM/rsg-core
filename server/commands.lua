@@ -320,3 +320,17 @@ RSGCore.Commands.Add('me', Lang:t('command.me.help'), { { name = Lang:t('command
         end
     end
 end, 'user')
+
+-- ids
+RSGCore.Commands.Add('id', 'Check Your ID #', {}, false, function(source)
+    local src = source
+    local Player = RSGCore.Functions.GetPlayer(src)
+    TriggerClientEvent('ox_lib:notify', source, {title = 'ID: '..source, type = 'info', duration = 5000 })
+end, 'user')
+
+RSGCore.Commands.Add('cid', 'Check Your Citizen ID #', {}, false, function(source)
+    local src = source
+    local Player = RSGCore.Functions.GetPlayer(src)
+    local Playercid = Player.PlayerData.citizenid
+    TriggerClientEvent('ox_lib:notify', source, {title = 'Citizen ID: '..Playercid, type = 'info', duration = 5000 })
+end, 'user')
