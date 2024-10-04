@@ -37,17 +37,15 @@ RegisterNetEvent('RSGCore:Client:PvpHasToggled', function(pvp_state)
     SetCanAttackFriendly(PlayerPedId(), pvp_state, false)
     NetworkSetFriendlyFireOption(pvp_state)
 end)
+
 -- Teleport Commands
 
 RegisterNetEvent('RSGCore:Command:TeleportToPlayer', function(coords)
-    local ped = PlayerPedId()
-    SetPedCoordsKeepVehicle(ped, coords.x, coords.y, coords.z)
+    SetEntityCoords(cache.ped, coords.x, coords.y, coords.z) 
 end)
 
 RegisterNetEvent('RSGCore:Command:TeleportToCoords', function(x, y, z, h)
-    local ped = PlayerPedId()
-    SetPedCoordsKeepVehicle(ped, x, y, z)
-    SetEntityHeading(ped, h or GetEntityHeading(ped))
+    SetEntityCoords(cache.ped, x, y, z) 
 end)
 
 RegisterNetEvent('RSGCore:Command:GoToMarker', function()
@@ -55,7 +53,7 @@ RegisterNetEvent('RSGCore:Command:GoToMarker', function()
     local groundZ = GetHeightmapBottomZForPosition(coords.x, coords.y)
     local vehicle = GetVehiclePedIsIn(cache.ped, false)
     if not IsWaypointActive() then
-        RSGCore.Functions.Notify(Lang:t("error.no_waypoint"), "error", 3000)
+        lib.notify({ title = Lang:t("error.no_waypoint"), type = 'error', duration = 5000 })
         return
     end
 
@@ -74,7 +72,7 @@ RegisterNetEvent('RSGCore:Command:GoToMarker', function()
         Citizen.InvokeNative(0x028F76B6E78246EB, cache.ped, vehicle, -1)
     end
 
-    RSGCore.Functions.Notify(Lang:t("success.teleported_waypoint"), "success", 3000)
+    lib.notify({ title = Lang:t("success.teleported_waypoint"), type = 'success', duration = 5000 })
 end)
 
 -- Vehicle Commands
