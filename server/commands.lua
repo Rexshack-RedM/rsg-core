@@ -89,14 +89,14 @@ RSGCore.Commands.Add('tp', Lang:t('command.tp.help'), { { name = Lang:t('command
                 local coords = GetEntityCoords(target)
                 TriggerClientEvent('RSGCore:Command:TeleportToPlayer', source, coords)
             else
-                TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.not_online'), 'error')
+                TriggerClientEvent('ox_lib:notify', source, {title = Lang:t('error.not_online'), type = 'error', duration = 5000 })
             end
         else
             local location = RSGShared.Locations[args[1]]
             if location then
                 TriggerClientEvent('RSGCore:Command:TeleportToCoords', source, location.x, location.y, location.z, location.w)
             else
-                TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.location_not_exist'), 'error')
+                TriggerClientEvent('ox_lib:notify', source, {title = Lang:t('error.location_not_exist'), type = 'error', duration = 5000 })
             end
         end
     else
@@ -107,10 +107,10 @@ RSGCore.Commands.Add('tp', Lang:t('command.tp.help'), { { name = Lang:t('command
             if x ~= 0 and y ~= 0 and z ~= 0 then
                 TriggerClientEvent('RSGCore:Command:TeleportToCoords', source, x, y, z)
             else
-                TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.wrong_format'), 'error')
+                TriggerClientEvent('ox_lib:notify', source, {title = Lang:t('error.wrong_format'), type = 'error', duration = 5000 })
             end
         else
-            TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.missing_args'), 'error')
+            TriggerClientEvent('ox_lib:notify', source, {title = Lang:t('error.missing_args'), type = 'error', duration = 5000 })
         end
     end
 end, 'admin')
@@ -132,7 +132,7 @@ RSGCore.Commands.Add('addpermission', Lang:t('command.addpermission.help'), { { 
     if Player then
         RSGCore.Functions.AddPermission(Player.PlayerData.source, permission)
     else
-        TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.not_online'), 'error')
+        TriggerClientEvent('ox_lib:notify', source, {title = Lang:t('error.not_online'), type = 'error', duration = 5000 })
     end
 end, 'god')
 
@@ -142,7 +142,7 @@ RSGCore.Commands.Add('removepermission', Lang:t('command.removepermission.help')
     if Player then
         RSGCore.Functions.RemovePermission(Player.PlayerData.source, permission)
     else
-        TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.not_online'), 'error')
+        TriggerClientEvent('ox_lib:notify', source, {title = Lang:t('error.not_online'), type = 'error', duration = 5000 })
     end
 end, 'god')
 
@@ -150,12 +150,12 @@ end, 'god')
 
 RSGCore.Commands.Add('openserver', Lang:t('command.openserver.help'), {}, false, function(source)
     if not RSGCore.Config.Server.Closed then
-        TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.server_already_open'), 'error')
+        TriggerClientEvent('ox_lib:notify', source, {title = Lang:t('error.server_already_open'), type = 'error', duration = 5000 })
         return
     end
     if RSGCore.Functions.HasPermission(source, 'admin') then
         RSGCore.Config.Server.Closed = false
-        TriggerClientEvent('RSGCore:Notify', source, Lang:t('success.server_opened'), 'success')
+        TriggerClientEvent('ox_lib:notify', source, {title = Lang:t('success.server_opened'), type = 'success', duration = 5000 })
     else
         RSGCore.Functions.Kick(source, Lang:t('error.no_permission'), nil, nil)
     end
@@ -163,7 +163,7 @@ end, 'admin')
 
 RSGCore.Commands.Add('closeserver', Lang:t('command.closeserver.help'), { { name = Lang:t('command.closeserver.params.reason.name'), help = Lang:t('command.closeserver.params.reason.help') } }, false, function(source, args)
     if RSGCore.Config.Server.Closed then
-        TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.server_already_closed'), 'error')
+        TriggerClientEvent('ox_lib:notify', source, {title = Lang:t('error.server_already_closed'), type = 'error', duration = 5000 })
         return
     end
     if RSGCore.Functions.HasPermission(source, 'admin') then
@@ -175,7 +175,7 @@ RSGCore.Commands.Add('closeserver', Lang:t('command.closeserver.help'), { { name
                 RSGCore.Functions.Kick(k, reason, nil, nil)
             end
         end
-        TriggerClientEvent('RSGCore:Notify', source, Lang:t('success.server_closed'), 'success')
+        TriggerClientEvent('ox_lib:notify', source, {title = Lang:t('success.server_closed'), type = 'success', duration = 5000 })
     else
         RSGCore.Functions.Kick(source, Lang:t('error.no_permission'), nil, nil)
     end
@@ -223,7 +223,7 @@ RSGCore.Commands.Add('givemoney', Lang:t('command.givemoney.help'), { { name = L
     if Player then
         Player.Functions.AddMoney(tostring(args[2]), tonumber(args[3]), 'Admin give money')
     else
-        TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.not_online'), 'error')
+        TriggerClientEvent('ox_lib:notify', source, {title = Lang:t('error.not_online'), type = 'error', duration = 5000 })
     end
 end, 'admin')
 
@@ -232,7 +232,7 @@ RSGCore.Commands.Add('setmoney', Lang:t('command.setmoney.help'), { { name = Lan
     if Player then
         Player.Functions.SetMoney(tostring(args[2]), tonumber(args[3]))
     else
-        TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.not_online'), 'error')
+        TriggerClientEvent('ox_lib:notify', source, {title = Lang:t('error.not_online'), type = 'error', duration = 5000 })
     end
 end, 'admin')
 
@@ -240,7 +240,7 @@ end, 'admin')
 
 RSGCore.Commands.Add('job', Lang:t('command.job.help'), {}, false, function(source)
     local PlayerJob = RSGCore.Functions.GetPlayer(source).PlayerData.job
-    TriggerClientEvent('RSGCore:Notify', source, Lang:t('info.job_info', { value = PlayerJob.label, value2 = PlayerJob.grade.name, value3 = PlayerJob.onduty }))
+    TriggerClientEvent('ox_lib:notify', source, {title = Lang:t('info.job_info', { value = PlayerJob.label, value2 = PlayerJob.grade.name, value3 = PlayerJob.onduty }), type = 'info', duration = 5000 })
 end, 'user')
 
 RSGCore.Commands.Add('setjob', Lang:t('command.setjob.help'), { { name = Lang:t('command.setjob.params.id.name'), help = Lang:t('command.setjob.params.id.help') }, { name = Lang:t('command.setjob.params.job.name'), help = Lang:t('command.setjob.params.job.help') }, { name = Lang:t('command.setjob.params.grade.name'), help = Lang:t('command.setjob.params.grade.help') } }, true, function(source, args)
@@ -248,7 +248,7 @@ RSGCore.Commands.Add('setjob', Lang:t('command.setjob.help'), { { name = Lang:t(
     if Player then
         Player.Functions.SetJob(tostring(args[2]), tonumber(args[3]))
     else
-        TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.not_online'), 'error')
+        TriggerClientEvent('ox_lib:notify', source, {title = Lang:t('error.not_online'), type = 'error', duration = 5000 })
     end
 end, 'admin')
 
@@ -256,7 +256,7 @@ end, 'admin')
 
 RSGCore.Commands.Add('gang', Lang:t('command.gang.help'), {}, false, function(source)
     local PlayerGang = RSGCore.Functions.GetPlayer(source).PlayerData.gang
-    TriggerClientEvent('RSGCore:Notify', source, Lang:t('info.gang_info', { value = PlayerGang.label, value2 = PlayerGang.grade.name }))
+    TriggerClientEvent('ox_lib:notify', source, {title = Lang:t('info.gang_info', { value = PlayerGang.label, value2 = PlayerGang.grade.name }), type = 'info', duration = 5000 })
 end, 'user')
 
 RSGCore.Commands.Add('setgang', Lang:t('command.setgang.help'), { { name = Lang:t('command.setgang.params.id.name'), help = Lang:t('command.setgang.params.id.help') }, { name = Lang:t('command.setgang.params.gang.name'), help = Lang:t('command.setgang.params.gang.help') }, { name = Lang:t('command.setgang.params.grade.name'), help = Lang:t('command.setgang.params.grade.help') } }, true, function(source, args)
@@ -264,7 +264,7 @@ RSGCore.Commands.Add('setgang', Lang:t('command.setgang.help'), { { name = Lang:
     if Player then
         Player.Functions.SetGang(tostring(args[2]), tonumber(args[3]))
     else
-        TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.not_online'), 'error')
+        TriggerClientEvent('ox_lib:notify', source, {title = Lang:t('error.not_online'), type = 'error', duration = 5000 })
     end
 end, 'admin')
 
@@ -304,7 +304,7 @@ end, 'user')
 
 RSGCore.Commands.Add('me', Lang:t('command.me.help'), { { name = Lang:t('command.me.params.message.name'), help = Lang:t('command.me.params.message.help') } }, false, function(source, args)
     if #args < 1 then
-        TriggerClientEvent('RSGCore:Notify', source, Lang:t('error.missing_args2'), 'error')
+        TriggerClientEvent('ox_lib:notify', source, {title = Lang:t('error.missing_args2'), type = 'error', duration = 5000 })
         return
     end
     local ped = GetPlayerPed(source)
