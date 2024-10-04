@@ -373,19 +373,19 @@ function PaycheckInterval()
                         local account = exports['rsg-banking']:GetAccountBalance(Player.PlayerData.job.name)
                         if account ~= 0 then          -- Checks if player is employed by a society
                             if account < payment then -- Checks if company has enough money to pay society
-                                TriggerClientEvent('RSGCore:Notify', Player.PlayerData.source, Lang:t('error.company_too_poor'), 'error')
+                                TriggerClientEvent('ox_lib:notify', Player.PlayerData.source, {title = Lang:t('error.company_too_poor'), type = 'error', duration = 5000 })
                             else
                                 Player.Functions.AddMoney('bank', payment, 'paycheck')
                                 exports['rsg-banking']:RemoveMoney(Player.PlayerData.job.name, payment, 'Employee Paycheck')
-                                TriggerClientEvent('RSGCore:Notify', Player.PlayerData.source, Lang:t('info.received_paycheck', { value = payment }))
+                                TriggerClientEvent('ox_lib:notify', Player.PlayerData.source, {title = Lang:t('info.received_paycheck', { value = payment }), type = 'info', duration = 5000 })
                             end
                         else
                             Player.Functions.AddMoney('bank', payment, 'paycheck')
-                            TriggerClientEvent('RSGCore:Notify', Player.PlayerData.source, Lang:t('info.received_paycheck', { value = payment }))
+                            TriggerClientEvent('ox_lib:notify', Player.PlayerData.source, {title = Lang:t('info.received_paycheck', { value = payment }), type = 'info', duration = 5000 })
                         end
                     else
                         Player.Functions.AddMoney('bank', payment, 'paycheck')
-                        TriggerClientEvent('RSGCore:Notify', Player.PlayerData.source, Lang:t('info.received_paycheck', { value = payment }))
+                        TriggerClientEvent('ox_lib:notify', Player.PlayerData.source, {title = Lang:t('info.received_paycheck', { value = payment }), type = 'info', duration = 5000 })
                     end
                 end
             end
