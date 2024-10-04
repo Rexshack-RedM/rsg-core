@@ -155,6 +155,19 @@ RegisterNetEvent('RSGCore:UpdatePlayer', function()
     Player.Functions.Save()
 end)
 
+RegisterNetEvent('RSGCore:Server:SetMetaData', function(meta, data)
+    local src = source
+    local Player = RSGCore.Functions.GetPlayer(src)
+    if not Player then return end
+    if meta == 'hunger' or meta == 'thirst' or meta == 'cleanliness' then
+        if data > 100 then
+            data = 100
+        end
+    end
+    Player.Functions.SetMetaData(meta, data)
+    TriggerClientEvent('hud:client:UpdateNeeds', src, Player.PlayerData.metadata['hunger'], Player.PlayerData.metadata['thirst'], Player.PlayerData.metadata['cleanliness'])
+end)
+
 RegisterNetEvent('RSGCore:ToggleDuty', function()
     local src = source
     local Player = RSGCore.Functions.GetPlayer(src)
