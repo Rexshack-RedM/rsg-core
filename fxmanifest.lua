@@ -40,6 +40,7 @@ server_scripts {
     'server/events.lua',
     'server/commands.lua',
     'server/exports.lua',
-    'server/debug.lua'
+    'server/debug.lua',
+    'server/versionchecker.lua'
 }
 dependency 'oxmysql'
