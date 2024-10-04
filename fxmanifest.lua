@@ -42,14 +42,4 @@ server_scripts {
     'server/exports.lua',
     'server/debug.lua'
 }
-
-ui_page 'html/index.html'
-
-files {
-    'html/index.html',
-    'html/css/style.css',
-    'html/css/drawtext.css',
-    'html/js/*.js'
-}
-
 dependency 'oxmysql'

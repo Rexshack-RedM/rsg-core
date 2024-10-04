@@ -1,3 +1,3 @@
 RSGShared.Locations = {
-    -- Base game MLO interiors
+    -- Base game ipl interiors
 }
