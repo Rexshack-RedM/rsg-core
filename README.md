@@ -12,7 +12,7 @@ https://discord.gg/rsg-redm-framework-914413479157448744
 
 
 # credits
-- original resouce created by : https://github.com/RSGCORE-redm-framework
+- original resouce created by : https://github.com/QBCORE-redm-framework
 - convert and rework by : https://github.com/QRCore-RedM-Re
 
 
