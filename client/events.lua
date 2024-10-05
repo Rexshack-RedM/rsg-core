@@ -159,29 +159,36 @@ RegisterNetEvent('RSGCore:Client:TriggerCallback', function(name, ...)
 end)
 
 -- Me command
-
 local function Draw3DText(coords, str)
-    local onScreen, worldX, worldY = World3dToScreen2d(coords.x, coords.y, coords.z)
+    local onScreen, worldX, worldY = GetScreenCoordFromWorldCoord(coords.x, coords.y, coords.z)
     local camCoords = GetGameplayCamCoord()
     local scale = 200 / (GetGameplayCamFov() * #(camCoords - coords))
+
     if onScreen then
-        SetTextScale(1.0, 0.5 * scale)
-        SetTextFont(4)
-        SetTextColour(255, 255, 255, 255)
-        SetTextEdge(2, 0, 0, 0, 150)
-        SetTextProportional(1)
-        SetTextOutline()
-        SetTextCentre(1)
-        BeginTextCommandDisplayText('STRING')
-        AddTextComponentSubstringPlayerName(str)
-        EndTextCommandDisplayText(worldX, worldY)
+        -- Set the text color using SetTextColor (RedM version)
+        SetTextColor(255, 255, 255, 255) -- White color with full opacity
+
+        -- Set the text scale (RedM requires slight adjustment)
+        SetTextScale(0.0, 0.5 * scale) -- Adjust the scale values as needed
+
+        -- Set the font to the desired font using SetTextFontForCurrentCommand
+        SetTextFontForCurrentCommand(2) -- Use appropriate font ID here
+
+        -- Center the text
+        SetTextCentre(true)
+
+        -- Create the text to be displayed using a variable string
+        local varString = CreateVarString(10, "LITERAL_STRING", str)
+
+        -- Display the text at the world coordinates (converted to screen coordinates)
+        DisplayText(varString, worldX, worldY)
     end
 end
 
 RegisterNetEvent('RSGCore:Command:ShowMe3D', function(senderId, msg)
     local sender = GetPlayerFromServerId(senderId)
     CreateThread(function()
-        local displayTime = 5000 + GetGameTimer()
+        local displayTime = 10000 + GetGameTimer()
         while displayTime > GetGameTimer() do
             local targetPed = GetPlayerPed(sender)
             local tCoords = GetEntityCoords(targetPed)
