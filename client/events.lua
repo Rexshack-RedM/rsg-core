@@ -75,6 +75,11 @@ RegisterNetEvent('RSGCore:Command:GoToMarker', function()
     lib.notify({ title = Lang:t("success.teleported_waypoint"), type = 'success', duration = 5000 })
 end)
 
+-- Noclip Command
+RegisterNetEvent('RSGCore:Command:ToggleNoClip', function()
+    ExecuteCommand('txAdmin:menu:noClipToggle')
+end)
+
 -- Vehicle Commands
 
 RegisterNetEvent('RSGCore:Command:SpawnVehicle', function(vehName)
