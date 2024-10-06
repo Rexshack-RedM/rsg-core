@@ -44,4 +44,8 @@ server_scripts {
     'server/debug.lua',
     'server/versionchecker.lua'
 }
-dependency 'oxmysql'
+
+dependencies {
+    'oxmysql',
+    'ox_lib',
+}
