@@ -644,15 +644,6 @@ function RSGCore.Functions.HasItem(source, items, amount)
     return exports['rsg-inventory']:HasItem(source, items, amount)
 end
 
----Notify
----@param source any
----@param text string
----@param type string
----@param length number
-function RSGCore.Functions.Notify(source, text, type, length)
-    TriggerClientEvent('RSGCore:Notify', source, text, type, length)
-end
-
 ---???? ... ok
 ---@param source any
 ---@param data any

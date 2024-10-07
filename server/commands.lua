@@ -124,6 +124,11 @@ RSGCore.Commands.Add('togglepvp', Lang:t('command.togglepvp.help'), {}, false, f
     TriggerClientEvent('RSGCore:Client:PvpHasToggled', -1, RSGCore.Config.Server.PVP)
 end, 'admin')
 
+-- admin noclip
+RSGCore.Commands.Add('noclip', Lang:t("command.noclip.help"), {}, false, function(source)
+    TriggerClientEvent('RSGCore:Command:ToggleNoClip', source)
+end, 'admin')
+
 -- Permissions
 
 RSGCore.Commands.Add('addpermission', Lang:t('command.addpermission.help'), { { name = Lang:t('command.addpermission.params.id.name'), help = Lang:t('command.addpermission.params.id.help') }, { name = Lang:t('command.addpermission.params.permission.name'), help = Lang:t('command.addpermission.params.permission.help') } }, true, function(source, args)

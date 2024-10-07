@@ -245,10 +245,6 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         return true
     end
 
-    function self.Functions.Notify(text, type, length)
-        TriggerClientEvent('RSGCore:Notify', self.PlayerData.source, text, type, length)
-    end
-
     function self.Functions.HasItem(items, amount)
         return RSGCore.Functions.HasItem(self.PlayerData.source, items, amount)
     end

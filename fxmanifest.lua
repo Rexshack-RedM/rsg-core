@@ -5,7 +5,7 @@ game 'rdr3'
 lua54 'yes'
 
 description 'rsg-core'
-version '2.0.4'
+version '2.1.0'
 
 shared_scripts {
     '@ox_lib/init.lua',
@@ -30,6 +30,7 @@ client_scripts {
     'client/events.lua',
     'client/drawtext.lua',
     'client/prompts.lua',
+    'client/pvp.lua'
 }
 
 server_scripts {
@@ -43,4 +44,8 @@ server_scripts {
     'server/debug.lua',
     'server/versionchecker.lua'
 }
-dependency 'oxmysql'
+
+dependencies {
+    'oxmysql',
+    'ox_lib',
+}

@@ -75,6 +75,11 @@ RegisterNetEvent('RSGCore:Command:GoToMarker', function()
     lib.notify({ title = Lang:t("success.teleported_waypoint"), type = 'success', duration = 5000 })
 end)
 
+-- Noclip Command
+RegisterNetEvent('RSGCore:Command:ToggleNoClip', function()
+    ExecuteCommand('txAdmin:menu:noClipToggle')
+end)
+
 -- Vehicle Commands
 
 RegisterNetEvent('RSGCore:Command:SpawnVehicle', function(vehName)
@@ -127,18 +132,10 @@ RegisterNetEvent('RSGCore:Player:UpdatePlayerData', function()
     TriggerServerEvent('RSGCore:UpdatePlayer')
 end)
 
-RegisterNetEvent('RSGCore:Notify', function(text, type, length, icon)
-    RSGCore.Functions.Notify(text, type, length, icon)
-end)
-
 -- This event is exploitable and should not be used. It has been deprecated, and will be removed soon.
 RegisterNetEvent('RSGCore:Client:UseItem', function(item)
     RSGCore.Debug(string.format('%s triggered RSGCore:Client:UseItem by ID %s with the following data. This event is deprecated due to exploitation, and will be removed soon. Check qb-inventory for the right use on this event.', GetInvokingResource(), GetPlayerServerId(PlayerId())))
     RSGCore.Debug(item)
-end)
-
-RegisterNUICallback('getNotifyConfig', function(_, cb)
-    cb(RSGCore.Config.Notify)
 end)
 
 -- Callback Events --

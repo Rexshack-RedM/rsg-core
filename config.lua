@@ -99,19 +99,6 @@ RSGConfig.Server.Permissions = { 'god', 'admin', 'mod' } -- Add as many groups a
 RSGConfig.Commands = {}                                  -- Command Configuration
 RSGConfig.Commands.OOCColor = { 255, 151, 133 }          -- RGB color code for the OOC command
 
-RSGConfig.Notify = {}
-
-RSGConfig.Notify.NotificationStyling = {
-    group = false, -- Allow notifications to stack with a badge instead of repeating
-    position = "right", -- top-left | top-right | bottom-left | bottom-right | top | bottom | left | right | center
-    progress = true -- Display Progress Bar
-}
-
--- These are how you define different notification variants
--- The "color" key is background of the notification
--- The "icon" key is the css-icon code, this project uses `Material Icons` & `Font Awesome`
-RSGConfig.NotifyPosition = 'top-right' -- 'top' | 'top-right' | 'top-left' | 'bottom' | 'bottom-right' | 'bottom-left'
-
 RSGConfig.PromptDistance = 1.5
 RSGConfig.Player.CleanlinessRate = 0.0 -- Rate at which cleanliness goes down.
 RSGConfig.Player.RevealMap = true
