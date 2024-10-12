@@ -17,7 +17,6 @@ RSGShared.Items = {
     -- horse items
     horse_brush     = { name = 'horse_brush',     label = 'Horse Brush',     weight = 100, type = 'item', image = 'horse_brush.png',     unique = false, useable = true, shouldClose = true, description = 'brush used to clean your horse' },
     horse_lantern   = { name = 'horse_lantern',   label = 'Horse Lantern',   weight = 100, type = 'item', image = 'horse_lantern.png',   unique = false, useable = true, shouldClose = true, description = 'to see in the dark' },
-    horse_lantern   = { name = 'horse_lantern',   label = 'Horse Lantern',   weight = 100, type = 'item', image = 'horse_lantern.png',   unique = false, useable = true, shouldClose = true, description = 'to see in the dark' },
     horse_holster   = { name = 'horse_holster',   label = 'Horse Holster',   weight = 100, type = 'item', image = 'horse_holster.png',   unique = false, useable = true, shouldClose = true, description = 'Somewhere to put your gun' },
     horse_stimulant = { name = 'horse_stimulant', label = 'Horse Stimulant', weight = 100, type = 'item', image = 'horse_stimulant.png', unique = false, useable = true, shouldClose = true, description = 'Given to horses' },
     horse_reviver   = { name = 'horse_reviver',   label = 'Horse Reviver',   weight = 100, type = 'item', image = 'horse_reviver.png',   unique = false, useable = true, shouldClose = true, description = 'Given to horses' },
