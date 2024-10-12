@@ -15,10 +15,15 @@ RSGShared.Items = {
     canteen0   = { name = 'canteen0',   label = 'Empty Canteen', weight = 100, type = 'item', image = 'consumable_canteen_water.png',  unique = true,  useable = true, shouldClose = true, description = 'Empty Canteen'},
 
     -- horse items
-    horse_brush     = { name = 'horse_brush',     label = 'Horse Brush',     weight = 100, type = 'item', image = 'horse_brush.png',                unique = false, useable = true, shouldClose = true, description = 'brush used to clean your horse' },
-    horse_lantern   = { name = 'horse_lantern',   label = 'Horse Lantern',   weight = 100, type = 'item', image = 'horse_lantern.png',              unique = false, useable = true, shouldClose = true, description = 'to see in the dark' },
-    horse_stimulant = { name = 'horse_stimulant', label = 'Horse Stimulant', weight = 100, type = 'item', image = 'consumable_horse_stimulant.png', unique = false, useable = true, shouldClose = true, description = 'Stimulant for horses' },
-    sugarcube       = { name = 'sugarcube',       label = 'Sugar Cube',      weight = 100, type = 'item', image = 'consumable_sugarcube.png',       unique = false, useable = true, shouldClose = true, description = 'Horses like these' },
+    horse_brush     = { name = 'horse_brush',     label = 'Horse Brush',     weight = 100, type = 'item', image = 'horse_brush.png',     unique = false, useable = true, shouldClose = true, description = 'brush used to clean your horse' },
+    horse_lantern   = { name = 'horse_lantern',   label = 'Horse Lantern',   weight = 100, type = 'item', image = 'horse_lantern.png',   unique = false, useable = true, shouldClose = true, description = 'to see in the dark' },
+    horse_lantern   = { name = 'horse_lantern',   label = 'Horse Lantern',   weight = 100, type = 'item', image = 'horse_lantern.png',   unique = false, useable = true, shouldClose = true, description = 'to see in the dark' },
+    horse_holster   = { name = 'horse_holster',   label = 'Horse Holster',   weight = 100, type = 'item', image = 'horse_holster.png',   unique = false, useable = true, shouldClose = true, description = 'Somewhere to put your gun' },
+    horse_stimulant = { name = 'horse_stimulant', label = 'Horse Stimulant', weight = 100, type = 'item', image = 'horse_stimulant.png', unique = false, useable = true, shouldClose = true, description = 'Given to horses' },
+    horse_reviver   = { name = 'horse_reviver',   label = 'Horse Reviver',   weight = 100, type = 'item', image = 'horse_reviver.png',   unique = false, useable = true, shouldClose = true, description = 'Given to horses' },
+    carrot          = { name = 'carrot',          label = 'Carrot',          weight = 100, type = 'item', image = 'carrot.png',          unique = false, useable = true, shouldClose = true, description = 'Horses like these' },
+    sugarcube       = { name = 'sugarcube',       label = 'Sugar Cube',      weight = 100, type = 'item', image = 'sugarcube.png',       unique = false, useable = true, shouldClose = true, description = 'Horses like these' },
+    apple           = { name = 'apple',           label = 'Apple',           weight = 100, type = 'item', image = 'apple.png',           unique = false, useable = true, shouldClose = true, description = 'Horses like these' },
 
     -- animal items
     legendary_pelt = { name = 'legendary_pelt', label = 'Legendary Pelt', weight = 100, type = 'item', image = 'legendary_pelt.png', unique = false, useable = true, shouldClose = true, description = 'Legendary' },
