@@ -4,6 +4,7 @@ RSGConfig.MaxPlayers = GetConvarInt('sv_maxclients', 48) -- Gets max players fro
 RSGConfig.DefaultSpawn = vector4(-1035.71, -2731.87, 12.86, 0.0)
 RSGConfig.UpdateInterval = 5                             -- how often to update player data in minutes
 RSGConfig.StatusInterval = 5000                          -- how often to check hunger/thirst status in milliseconds
+RSGConfig.HidePlayerNames = true
 
 RSGConfig.Money = {}
 RSGConfig.Money.MoneyTypes = { cash = 50, bank = 0, valbank = 0, rhobank = 0, blkbank = 0, armbank = 0, bloodmoney = 0 } -- type = startamount - Add or remove money types for your server (for ex. blackmoney = 0), remember once added it will not be removed from the database!
