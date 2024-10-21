@@ -2,9 +2,13 @@ RSGShared = RSGShared or {}
 RSGShared.Items = {
 
     -----------------------------------------------
-    -- ITEMS
+    -- YOUR CUSTOM ITEMS
     -----------------------------------------------
+    -- add your custom items here & check for doubles
 
+    -----------------------------------------------
+    -- CORE ITEMS
+    -----------------------------------------------
     -- general items
     bread      = { name = 'bread',      label = 'Bread',         weight = 100, type = 'item', image = 'consumable_bread_roll.png',          unique = false, useable = true, shouldClose = true, description = 'Bread Roll' },
     water      = { name = 'water',      label = 'Water',         weight = 100, type = 'item', image = 'consumable_water_filtered.png',      unique = false, useable = true, shouldClose = true, description = 'Drinkable Water' },
