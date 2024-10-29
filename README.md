@@ -1,19 +1,21 @@
-# RSG-Core
+# rsg-core
 
-RSG-Core is a fundamental script for RedM servers, providing essential functionalities and ensuring smooth performance with low latency. It is designed to work seamlessly with RedM, offering stability and reliability.
+	Thanks to Kakarot and the QB Team for the original work https://discord.gg/qbcore
 
-# Dependencies
-- [oxmysql](https://github.com/overextended/oxmysql)
-- [ox_lib](https://github.com/overextended/ox_lib)
+# License
 
-# Discord
-Join the community
-https://discord.gg/rsg-redm-framework-914413479157448744
+    RSG RedM Framework
+    Copyright (C) 2015-2022 ESX (Jérémie N'gadi), Joshua Eger
 
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-# credits
-- original resouce created by : https://github.com/qbcore-redm-framework
-- convert and rework by : https://github.com/QRCore-RedM-Re
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-
-# Rexshack Gaming Version
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>
