@@ -37,6 +37,7 @@ server_scripts {
     '@oxmysql/lib/MySQL.lua',
     'server/main.lua',
     'server/functions.lua',
+    'server/moneyitems.lua',
     'server/player.lua',
     'server/events.lua',
     'server/commands.lua',

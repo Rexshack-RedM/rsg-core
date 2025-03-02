@@ -175,6 +175,11 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
 
     function self.Functions.UpdatePlayerData()
         if self.Offline then return end
+
+        if RSGCore.Config.Money.EnableMoneyItems then
+            self.PlayerData = SynchronizeMoneyItems(self.PlayerData)
+        end
+
         TriggerEvent('RSGCore:Player:SetPlayerData', self.PlayerData)
         TriggerClientEvent('RSGCore:Player:SetPlayerData', self.PlayerData.source, self.PlayerData)
     end
