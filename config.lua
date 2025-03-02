@@ -12,6 +12,7 @@ RSGConfig.Money.DontAllowMinus = { 'cash', 'bloodmoney' }            -- Money th
 RSGConfig.Money.MinusLimit = -5000                                    -- The maximum amount you can be negative 
 RSGConfig.Money.PayCheckTimeOut = 10                                 -- The time in minutes that it will give the paycheck
 RSGConfig.Money.PayCheckSociety = false                              -- If true paycheck will come from the society account that the player is employed at, requires rsg-management
+RSGConfig.Money.EnableMoneyItems = true                              -- If true cash and bloodmoney will be represented wih inventory items
 
 RSGConfig.Player = {}
 RSGConfig.Player.HungerRate = 4.2 -- Rate at which hunger goes down.

@@ -47,6 +47,12 @@ RSGShared.Items = {
     -- Bird Post
     birdpost = { name = 'birdpost', label = 'Bird Post', weight = 5, type = 'item', image = 'birdpost.png', unique = false, useable = true, shouldClose = true, description = 'Bird Post for sending letters' },
 
+    -- MoneyItems
+    dollar = {name = 'dollar', label = 'Dollars', weight = 1, type = 'item', image = 'dollar.png', unique = false, useable = false, description = 'Standard currency used for everyday transactions'},
+    cent = {name = 'cent', label = 'Cents', weight = 3, type = 'item', image = 'cent.png', unique = false, useable = false, description = 'Small denomination of currency, commonly used for change'},
+    blood_dollar = {name = 'blood_dollar', label = 'Bloodstained Dollars', weight = 1, type = 'item', image = 'blood_dollar.png', unique = false, useable = false, description = 'Currency tainted by violence and crime'},
+    blood_cent = {name = 'blood_cent', label = 'Bloodstained Cents', weight = 3, type = 'item', image = 'blood_cent.png', unique = false, useable = false, description = 'Small change stained with the remnants of bloodshed'},
+
     -- Money Clip
     money_clip       = { name = 'money_clip',       label = 'Money Clip',       weight = 1, type = 'item', image = 'money_clip.png',       unique = true, useable = true, shouldClose = true, description = 'Money Clip' },
     blood_money_clip = { name = 'blood_money_clip', label = 'Blood Money Clip', weight = 1, type = 'item', image = 'blood_money_clip.png', unique = true, useable = true, shouldClose = true, description = 'Blood Money Clip' },
