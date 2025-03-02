@@ -41,7 +41,7 @@ local function getInventoryMoney(playerData)
     return money
 end
 
-local function removeItems(itemName, amountToRemove)
+local function removeItems(player, itemName, amountToRemove)
     for _, item in ipairs(player.Functions.GetItemsByName(itemName) or {}) do
         local removeAmount = math.min(item.amount, amountToRemove)
         player.Functions.RemoveItem(item.name, removeAmount, item.slot)
