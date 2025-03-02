@@ -223,3 +223,8 @@ if RSGConfig.HidePlayerNames then
         end
     end)
 end
+
+RegisterNUICallback('validateCSRF', function(data, cb)
+    local isValid = lib.callback.await('RSGCore:Server:ValidateCSRF', false, data.clientToken)
+    cb({ valid = isValid })
+end)
