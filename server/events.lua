@@ -232,23 +232,6 @@ RSGCore.Functions.CreateCallback('RSGCore:Server:SpawnVehicle', function(source,
     cb(NetworkGetNetworkIdFromEntity(veh))
 end)
 
--- csrf protection
-
-local csrfTokens = {}
-
-lib.callback.register('RSGCore:Server:GenerateToken', function(src)
-    local token = tostring(math.random(100000, 999999)) .. os.time()
-    csrfTokens[src] = token
-
-    return token
-end)
-
-lib.callback.register('RSGCore:Server:ValidateCSRF', function(src, clientToken)
-    if csrfTokens[src] and csrfTokens[src] == clientToken then
-        csrfTokens[src] = nil
-        return true
-    else
-        DropPlayer(src, "CSRF validation failed.") -- possible expoit attempt
-        return false
-    end
+RegisterNetEvent('RSGCore:Server:KickCSRF', function()
+    DropPlayer(source, 'CSRF validation failed')
 end)
