@@ -224,7 +224,24 @@ if RSGConfig.HidePlayerNames then
     end)
 end
 
+-- csrf protection
+
+local csrfToken = nil
+
+local function GenerateCSRFToken() 
+    local token = tostring(math.random(100000, 999999)) .. GetGameTimer()
+    csrfToken = token
+
+    return token
+end
+exports('GenerateCSRFToken', GenerateCSRFToken)
+
 RegisterNUICallback('validateCSRF', function(data, cb)
-    local isValid = lib.callback.await('RSGCore:Server:ValidateCSRF', false, data.clientToken)
-    cb({ valid = isValid })
+    if csrfToken and csrfToken == data.clientToken then
+        csrfToken = nil
+        cb({ valid = true })
+    else
+        TriggerServerEvent('RSGCore:Server:KickCSRF')
+        cb({ valid = false })
+    end
 end)

@@ -68,8 +68,7 @@ local function handleAddMoney(src, moneytype, amount)
     local player = RSGCore.Functions.GetPlayer(src)
     if not player or not moneyItems[moneytype] then return end
 
-    local dollars, cents = math.modf(amount)
-    cents = math.floor((cents * 100) + 0.5)
+    local dollars, cents = getParts(amount)
 
     if dollars > 0 then 
         player.Functions.AddItem(moneyItems[moneytype].dollar, dollars)
@@ -96,7 +95,7 @@ local function handleRemoveMoney(src, moneytype, amount)
     local remainingCentValue = amount * 100
     local centsToRemove, dollarsToRemove, centsToAdd = 0, 0, 0
 
-    if amountCents > 0 and availableCents >= amountCents then
+    if availableCents > 0 and availableCents >= amountCents then
         centsToRemove = amountCents
         availableCents = availableCents - amountCents
         remainingCentValue = remainingCentValue - amountCents
