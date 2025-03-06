@@ -222,5 +222,7 @@ RSGShared.Items = {
     ammo_box_shotgun_slug                = { name = 'ammo_box_shotgun_slug',                label = 'Ammo Box Shotgun (S)',        weight = 100, type = 'item', image = 'ammo_box_shotgun_slug.png',                unique = false, useable = true, shouldClose = true, description = 'Shotgun Ammo Box' },
     ammo_box_shotgun_slug_explosive      = { name = 'ammo_box_shotgun_slug_explosive',      label = 'Ammo Box Shotgun (SE)',       weight = 100, type = 'item', image = 'ammo_box_shotgun_slug_explosive.png',      unique = false, useable = true, shouldClose = true, description = 'Shotgun Ammo Box' },
     ammo_box_rifle_elephant              = { name = 'ammo_box_rifle_elephant',              label = 'Ammo Box Elephant Rifle (N)', weight = 100, type = 'item', image = 'ammo_box_rifle_elephant.png',              unique = false, useable = true, shouldClose = true, description = 'Elephant Rifle Ammo Box' },
+    ammo_box_varmint = { name = 'ammo_box_varmint', label = 'Ammo Box Varmint Rifle (N)', weight = 50, type = 'item', image = 'ammo_box_rifle.png', unique = false, useable = true, shouldClose = true, description = 'Varmint Rifle Ammo Box' },
+    ammo_box_varmint_tranquilizer = { name = 'ammo_box_varmint_tranquilizer', label = 'Ammo Box Varmint Tranquilizer (N)', weight = 60, type = 'item', image = 'ammo_box_rifle.png', unique = false, useable = true, shouldClose = true, description = 'Varmint Rifle Tranquilizer Ammo Box' },
 
 }
