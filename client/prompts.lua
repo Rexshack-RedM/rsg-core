@@ -103,7 +103,8 @@ local function setupPromptGroup(prompt)
     prompt.created = true
 end
 
-AddEventHandler('onResourceStop', function()
+AddEventHandler('onResourceStop', function(resourceName)
+if GetCurrentResourceName() ~= resourceName then return end
     for k,v in pairs(Prompts) do
         Citizen.InvokeNative(0x8A0FB4D03A630D21, Prompts[k].prompt, false)
         Citizen.InvokeNative(0x71215ACCFDE075EE, Prompts[k].prompt, false)
