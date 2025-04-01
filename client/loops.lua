@@ -18,9 +18,12 @@ CreateThread(function()
                     SetEntityHealth(cache.ped, 0)
                 else
                     local decreaseThreshold = math.random(5, 10)
+                    PlayPain(cache.ped, 9, 1, true, true)
                     SetEntityHealth(cache.ped, currentHealth - decreaseThreshold)
                 end
             end
+
+            TriggerServerEvent('RSGCore:Server:UpdateNeeds')
         end
         Wait(RSGCore.Config.StatusInterval)
     end
