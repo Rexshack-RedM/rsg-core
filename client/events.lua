@@ -229,6 +229,12 @@ end
 local csrfToken = nil
 
 local function GenerateCSRFToken() 
+    local timeout = 500
+    while csrfToken and timeout > 0 do
+        timeout = timeout - 1
+        Wait(0)
+    end
+    
     local token = tostring(math.random(100000, 999999)) .. GetGameTimer()
     csrfToken = token
 
