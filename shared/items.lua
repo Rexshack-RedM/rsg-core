@@ -14,11 +14,11 @@ RSGShared.Items = {
     water      = { name = 'water',      label = 'Water',         weight = 100, type = 'item', image = 'consumable_water_filtered.png',      unique = false, useable = true, shouldClose = true, description = 'Drinkable Water' },
     stew       = { name = 'stew',       label = 'Stew',          weight = 100, type = 'item', image = 'consumable_stew_prison.png',         unique = false, useable = true, decay = 60, delete = true, shouldClose = true, description = 'Warm Stew' },
     coffee     = { name = 'coffee',     label = 'Coffee',        weight = 100, type = 'item', image = 'consumable_coffee.png',              unique = false, useable = true, decay = 10, delete = true, shouldClose = true, description = 'Hot Coffee' },
-    canteen100 = { name = 'canteen100', label = 'Full Canteen',  weight = 500, type = 'item', image = 'consumable_canteen_water.png',       unique = true,  useable = true, shouldClose = true, description = 'Canteen 100% Full'},
-    canteen75  = { name = 'canteen75',  label = 'Canteen',       weight = 400, type = 'item', image = 'consumable_canteen_water.png',       unique = true,  useable = true, shouldClose = true, description = 'Canteen 75% Full'},
-    canteen50  = { name = 'canteen50',  label = 'Canteen',       weight = 300, type = 'item', image = 'consumable_canteen_water.png',       unique = true,  useable = true, shouldClose = true, description = 'Canteen 50% Full'},
-    canteen25  = { name = 'canteen25',  label = 'Canteen',       weight = 200, type = 'item', image = 'consumable_canteen_water.png',       unique = true,  useable = true, shouldClose = true, description = 'Canteen 25% Full'},
-    canteen0   = { name = 'canteen0',   label = 'Empty Canteen', weight = 100, type = 'item', image = 'consumable_canteen_water_empty.png', unique = true,  useable = true, shouldClose = true, description = 'Empty Canteen'},
+    canteen100 = { name = 'canteen100', label = 'Full Canteen',  weight = 500, type = 'item', image = 'canteen100.png',                     unique = true,  useable = true, shouldClose = true, description = 'Canteen 100% Full'},
+    canteen75  = { name = 'canteen75',  label = 'Canteen',       weight = 400, type = 'item', image = 'canteen75.png',                      unique = true,  useable = true, shouldClose = true, description = 'Canteen 75% Full'},
+    canteen50  = { name = 'canteen50',  label = 'Canteen',       weight = 300, type = 'item', image = 'canteen50.png',                      unique = true,  useable = true, shouldClose = true, description = 'Canteen 50% Full'},
+    canteen25  = { name = 'canteen25',  label = 'Canteen',       weight = 200, type = 'item', image = 'canteen25.png',                      unique = true,  useable = true, shouldClose = true, description = 'Canteen 25% Full'},
+    canteen0   = { name = 'canteen0',   label = 'Empty Canteen', weight = 100, type = 'item', image = 'canteen0.png',                       unique = true,  useable = true, shouldClose = true, description = 'Empty Canteen'},
 
     -- horse items
     horse_brush     = { name = 'horse_brush',     label = 'Horse Brush',     weight = 100, type = 'item', image = 'horse_brush.png',     unique = false, useable = true, shouldClose = true, description = 'brush used to clean your horse' },
