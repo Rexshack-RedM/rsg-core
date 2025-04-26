@@ -430,7 +430,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
 
     function self.Functions.PersistStateBags()
         local metadata = {}
-        local keys = { "hunger", "thirst", "cleanliness", "stress" }
+        local keys = { "hunger", "thirst", "cleanliness", "stress", "health" }
     
         local state = Player(self.PlayerData.source).state
         for _, key in ipairs(keys) do
@@ -446,7 +446,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
 
     function self.Functions.InitializeStateBags()
         local metadata = self.PlayerData.metadata
-        local keys = { "hunger", "thirst", "cleanliness", "stress" }
+        local keys = { "hunger", "thirst", "cleanliness", "stress", "health" }
     
         local state = Player(self.PlayerData.source).state
         for _, key in ipairs(keys) do
