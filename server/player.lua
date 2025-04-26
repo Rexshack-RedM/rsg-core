@@ -410,6 +410,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         if self.Offline then
             RSGCore.Player.SaveOffline(self.PlayerData)
         else
+            self.Functions.PersistStateBags()
             RSGCore.Player.Save(self.PlayerData.source)
         end
     end
@@ -427,9 +428,38 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         self[fieldName] = data
     end
 
+    function self.Functions.PersistStateBags()
+        local metadata = {}
+        local keys = { "hunger", "thirst", "cleanliness", "stress" }
+    
+        local state = Player(self.PlayerData.source).state
+        for _, key in ipairs(keys) do
+            if state[key] ~= nil then
+                metadata[key] = state[key]
+            end
+        end
+    
+        if next(metadata) then
+            self.Functions.SetMetaData(metadata)
+        end
+    end
+
+    function self.Functions.InitializeStateBags()
+        local metadata = self.PlayerData.metadata
+        local keys = { "hunger", "thirst", "cleanliness", "stress" }
+    
+        local state = Player(self.PlayerData.source).state
+        for _, key in ipairs(keys) do
+            if metadata[key] ~= nil then
+                state[key] = metadata[key]
+            end
+        end
+    end
+
     if self.Offline then
         return self
     else
+        self.Functions.InitializeStateBags()
         RSGCore.Players[self.PlayerData.source] = self
         RSGCore.Player.Save(self.PlayerData.source)
         TriggerEvent('RSGCore:Server:PlayerLoaded', self)
