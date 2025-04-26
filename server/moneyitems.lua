@@ -124,9 +124,9 @@ local function handleRemoveMoney(src, moneytype, amount)
     local centName = moneyItems[moneytype].cent
     local dollarName = moneyItems[moneytype].dollar
 
-    if centsToRemove > 0 then removeItems(player, centName, centsToRemove) end
-    if dollarsToRemove > 0 then removeItems(player, dollarName, dollarsToRemove) end
-    if centsToAdd > 0 then player.Functions.AddItem(centName, centsToAdd) end
+    if centsToRemove > 0 then removeItems(player, centName, math.round(centsToRemove)) end
+    if dollarsToRemove > 0 then removeItems(player, dollarName, math.round(dollarsToRemove)) end
+    if centsToAdd > 0 then player.Functions.AddItem(centName, math.round(centsToAdd)) end
 
     if Player(src).state.inv_busy then
         TriggerClientEvent('rsg-inventory:client:updateInventory', src)
@@ -214,7 +214,7 @@ if RSGCore.Config.Money.EnableMoneyItems then
         local handler = moneyHandlers[operation]
         if handler then 
             handler(src, moneytype, amount) 
-            TriggerClientEvent('hud:client:OnMoneyChange', src, moneytype, amount, false)
+            TriggerClientEvent('hud:client:OnMoneyChange', src, moneytype, amount, operation == 'remove')
         end
     end)
 

@@ -3,7 +3,6 @@ RSGConfig = {}
 RSGConfig.MaxPlayers = GetConvarInt('sv_maxclients', 48) -- Gets max players from config file, default 48
 RSGConfig.DefaultSpawn = vector4(-1035.71, -2731.87, 12.86, 0.0)
 RSGConfig.UpdateInterval = 5                             -- how often to save player data in database in minutes
-RSGConfig.StatusInterval = 5000                          -- how often to update hunger/thirst status in milliseconds
 RSGConfig.HidePlayerNames = true
 
 RSGConfig.Money = {}
@@ -15,10 +14,6 @@ RSGConfig.Money.PayCheckSociety = false                              -- If true 
 RSGConfig.Money.EnableMoneyItems = true                              -- If true cash and bloodmoney will be represented wih inventory items
 
 RSGConfig.Player = {}
-RSGConfig.Player.HungerRate = 0.10 -- Rate at which hunger goes down.
-RSGConfig.Player.ThirstRate = 0.15 -- Rate at which thirst goes down.
-RSGConfig.Player.CleanlinessRate = 0.01 -- Rate at which cleanliness goes down.
-
 RSGConfig.Player.Bloodtypes = {
     'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-',
 }

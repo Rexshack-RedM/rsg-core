@@ -268,11 +268,24 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
     end
 
     function self.Functions.SetMetaData(meta, val)
-        if not meta or type(meta) ~= 'string' then return end
-        if meta == 'hunger' or meta == 'thirst' or meta == 'cleanliness' then
-            val = val > 100 and 100 or val
+        local function validateData(key, value)
+            if key == 'hunger' or key == 'thirst' or key == 'cleanliness' then
+                value = lib.math.clamp(value, 0, 100)
+            end
+
+            return value
         end
-        self.PlayerData.metadata[meta] = val
+
+        if type(meta) == 'table' then
+            for key, value in pairs(meta) do
+                self.PlayerData.metadata[key] = validateData(key, value)
+            end
+            self.Functions.UpdatePlayerData()
+            return
+        end
+    
+        if type(meta) ~= 'string' then return end
+        self.PlayerData.metadata[meta] = validateData(meta, val)
         self.Functions.UpdatePlayerData()
     end
 
@@ -321,7 +334,10 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
             else
                 TriggerEvent('rsg-log:server:CreateLog', 'playermoney', 'AddMoney', 'lightgreen', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') added, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype] .. ' reason: ' .. reason)
             end
-            TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, amount, false)
+
+            if not RSGCore.Config.Money.EnableMoneyItems then
+                TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, amount, false)
+            end
             TriggerClientEvent('RSGCore:Client:OnMoneyChange', self.PlayerData.source, moneytype, amount, 'add', reason)
             TriggerEvent('RSGCore:Server:OnMoneyChange', self.PlayerData.source, moneytype, amount, 'add', reason)
         end
@@ -352,9 +368,8 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
             else
                 TriggerEvent('rsg-log:server:CreateLog', 'playermoney', 'RemoveMoney', 'red', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') removed, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype] .. ' reason: ' .. reason)
             end
-            TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, amount, true)
-            if moneytype == 'bank' then
-                TriggerClientEvent('rsg-phone:client:RemoveBankMoney', self.PlayerData.source, amount)
+            if not RSGCore.Config.Money.EnableMoneyItems then
+                TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, amount, true)
             end
             TriggerClientEvent('RSGCore:Client:OnMoneyChange', self.PlayerData.source, moneytype, amount, 'remove', reason)
             TriggerEvent('RSGCore:Server:OnMoneyChange', self.PlayerData.source, moneytype, amount, 'remove', reason)
@@ -375,7 +390,9 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         if not self.Offline then
             self.Functions.UpdatePlayerData()
             TriggerEvent('rsg-log:server:CreateLog', 'playermoney', 'SetMoney', 'green', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') set, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype] .. ' reason: ' .. reason)
-            TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, math.abs(difference), difference < 0)
+            if not RSGCore.Config.Money.EnableMoneyItems then
+                TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, math.abs(difference), difference < 0)
+            end
             TriggerClientEvent('RSGCore:Client:OnMoneyChange', self.PlayerData.source, moneytype, amount, 'set', reason)
             TriggerEvent('RSGCore:Server:OnMoneyChange', self.PlayerData.source, moneytype, amount, 'set', reason)
         end
@@ -393,6 +410,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         if self.Offline then
             RSGCore.Player.SaveOffline(self.PlayerData)
         else
+            self.Functions.PersistStateBags()
             RSGCore.Player.Save(self.PlayerData.source)
         end
     end
@@ -410,9 +428,38 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         self[fieldName] = data
     end
 
+    function self.Functions.PersistStateBags()
+        local metadata = {}
+        local keys = { "hunger", "thirst", "cleanliness", "stress", "health" }
+    
+        local state = Player(self.PlayerData.source).state
+        for _, key in ipairs(keys) do
+            if state[key] ~= nil then
+                metadata[key] = state[key]
+            end
+        end
+    
+        if next(metadata) then
+            self.Functions.SetMetaData(metadata)
+        end
+    end
+
+    function self.Functions.InitializeStateBags()
+        local metadata = self.PlayerData.metadata
+        local keys = { "hunger", "thirst", "cleanliness", "stress", "health" }
+    
+        local state = Player(self.PlayerData.source).state
+        for _, key in ipairs(keys) do
+            if metadata[key] ~= nil then
+                state[key] = metadata[key]
+            end
+        end
+    end
+
     if self.Offline then
         return self
     else
+        self.Functions.InitializeStateBags()
         RSGCore.Players[self.PlayerData.source] = self
         RSGCore.Player.Save(self.PlayerData.source)
         TriggerEvent('RSGCore:Server:PlayerLoaded', self)
