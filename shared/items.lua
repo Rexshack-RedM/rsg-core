@@ -108,6 +108,8 @@ RSGShared.Items = {
     -----------------------------------------------
     -- WEAPONS
     -----------------------------------------------
+    -- customice weapon
+    gunsmith = { name = 'gunsmith', label = 'Gun craft', weight = 12000, type = 'item', image = 'guncraft.png', unique = false, useable = true,  shouldClose = true, description = 'Placeholder'},
 
     -- maintenance
     weapon_repair_kit = { name = 'weapon_repair_kit', label = 'Weapon Repair Kit', weight = 350, type = 'item', image = 'weapon_repair_kit.png', unique = false, useable = true, shouldClose = true, description = 'Used for weapon maintenance' },
