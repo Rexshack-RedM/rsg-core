@@ -18,7 +18,6 @@ AddEventHandler('playerDropped', function(reason)
     RSGCore.Players[src] = nil
 end)
 
--- Player Connecting
 local readyFunction = MySQL.ready
 local databaseConnected, bansTableExists = readyFunction == nil, readyFunction == nil
 if readyFunction ~= nil then
@@ -32,9 +31,24 @@ if readyFunction ~= nil then
         if result and result[1] then
             bansTableExists = true
         end
+        
+        local resultColumns = MySQL.query.await('SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = "players" AND COLUMN_NAME IN ("weight", "slots");', {DatabaseInfo.database})
+        local columnsExist = {}
+        if resultColumns then
+            for _, column in ipairs(resultColumns) do
+            columnsExist[column.COLUMN_NAME] = true
+            end
+        end
+
+        if not columnsExist["weight"] or not columnsExist["slots"] then
+            MySQL.query.await('ALTER TABLE players ADD COLUMN weight INT DEFAULT '..RSGCore.Config.Player.PlayerDefaults.weight..';')
+            MySQL.query.await('ALTER TABLE players ADD COLUMN slots INT DEFAULT '..RSGCore.Config.Player.PlayerDefaults.slots..';')
+            RSGCore.ShowSuccess(GetCurrentResourceName(), 'Added weight and slots columns to players table')
+        end
     end)
 end
 
+-- Player Connecting
 local function onPlayerConnecting(name, _, deferrals)
     local src = source
     deferrals.defer()

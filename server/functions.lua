@@ -660,3 +660,25 @@ function RSGCore.Functions.PrepForSQL(source, data, pattern)
     end
     return true
 end
+
+---Change weight to player
+---@param source any
+---@param weight number
+---@return boolean
+function RSGCore.Functions.ChangeWeight(source, weight)
+    local Player = RSGCore.Functions.GetPlayer(source)
+    if not Player then return end
+
+    Player.Functions.SetPlayerData('weight', weight)
+end
+
+---Change slots to player
+---@param source any
+---@param slots number
+---@return boolean
+function RSGCore.Functions.ChangeSlots(source, slots)
+    local Player = RSGCore.Functions.GetPlayer(source)
+    if not Player then return end
+
+    Player.Functions.SetPlayerData('slots', slots)
+end
