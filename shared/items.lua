@@ -19,6 +19,7 @@ RSGShared.Items = {
     canteen50  = { name = 'canteen50',  label = 'Canteen',       weight = 300, type = 'item', image = 'canteen50.png',                 unique = true,  useable = true, shouldClose = true, description = 'Canteen 50% Full'},
     canteen25  = { name = 'canteen25',  label = 'Canteen',       weight = 200, type = 'item', image = 'canteen25.png',                 unique = true,  useable = true, shouldClose = true, description = 'Canteen 25% Full'},
     canteen0   = { name = 'canteen0',   label = 'Empty Canteen', weight = 100, type = 'item', image = 'canteen0.png',                  unique = true,  useable = true, shouldClose = true, description = 'Empty Canteen'},
+    handcuffs  = { name = 'handcuffs',  label = 'Hand Cuffs',    weight = 100, type = 'item', image = 'handcuffs.png',                 unique = false, useable = true, shouldClose = true, description = 'Used for cuffs' },
 
     -- horse items
     horse_brush     = { name = 'horse_brush',     label = 'Horse Brush',     weight = 100, type = 'item', image = 'horse_brush.png',     unique = false, useable = true, shouldClose = true, description = 'brush used to clean your horse' },
