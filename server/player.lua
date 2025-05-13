@@ -530,7 +530,7 @@ function RSGCore.Player.Save(source)
     local pcoords = GetEntityCoords(ped)
     local PlayerData = RSGCore.Players[source].PlayerData
     if PlayerData then
-        MySQL.insert('INSERT INTO players (citizenid, cid, license, name, money, charinfo, job, gang, position, metadata) VALUES (:citizenid, :cid, :license, :name, :money, :charinfo, :job, :gang, :position, :metadata) ON DUPLICATE KEY UPDATE cid = :cid, name = :name, money = :money, charinfo = :charinfo, job = :job, gang = :gang, position = :position, metadata = :metadata', {
+        MySQL.insert('INSERT INTO players (citizenid, cid, license, name, money, charinfo, job, gang, position, metadata, weight, slots) VALUES (:citizenid, :cid, :license, :name, :money, :charinfo, :job, :gang, :position, :metadata, :weight, :slots) ON DUPLICATE KEY UPDATE cid = :cid, name = :name, money = :money, charinfo = :charinfo, job = :job, gang = :gang, position = :position, metadata = :metadata, weight = :weight, slots = :slots', {
             citizenid = PlayerData.citizenid,
             cid = tonumber(PlayerData.cid),
             license = PlayerData.license,
@@ -540,7 +540,9 @@ function RSGCore.Player.Save(source)
             job = json.encode(PlayerData.job),
             gang = json.encode(PlayerData.gang),
             position = json.encode(pcoords),
-            metadata = json.encode(PlayerData.metadata)
+            metadata = json.encode(PlayerData.metadata),
+            weight = PlayerData.weight,
+            slots = PlayerData.slots,
         })
         if GetResourceState('rsg-inventory') ~= 'missing' then exports['rsg-inventory']:SaveInventory(source) end
         RSGCore.ShowSuccess(resourceName, PlayerData.name .. ' PLAYER SAVED!')
@@ -551,7 +553,7 @@ end
 
 function RSGCore.Player.SaveOffline(PlayerData)
     if PlayerData then
-        MySQL.insert('INSERT INTO players (citizenid, cid, license, name, money, charinfo, job, gang, position, metadata) VALUES (:citizenid, :cid, :license, :name, :money, :charinfo, :job, :gang, :position, :metadata) ON DUPLICATE KEY UPDATE cid = :cid, name = :name, money = :money, charinfo = :charinfo, job = :job, gang = :gang, position = :position, metadata = :metadata', {
+        MySQL.insert('INSERT INTO players (citizenid, cid, license, name, money, charinfo, job, gang, position, metadata, weight, slots) VALUES (:citizenid, :cid, :license, :name, :money, :charinfo, :job, :gang, :position, :metadata, :weight, :slots) ON DUPLICATE KEY UPDATE cid = :cid, name = :name, money = :money, charinfo = :charinfo, job = :job, gang = :gang, position = :position, metadata = :metadata, weight = :weight, slots = :slots', {
             citizenid = PlayerData.citizenid,
             cid = tonumber(PlayerData.cid),
             license = PlayerData.license,
@@ -561,7 +563,9 @@ function RSGCore.Player.SaveOffline(PlayerData)
             job = json.encode(PlayerData.job),
             gang = json.encode(PlayerData.gang),
             position = json.encode(PlayerData.position),
-            metadata = json.encode(PlayerData.metadata)
+            metadata = json.encode(PlayerData.metadata),
+            weight = PlayerData.weight,
+            slots = PlayerData.slots,
         })
         if GetResourceState('rsg-inventory') ~= 'missing' then exports['rsg-inventory']:SaveInventory(PlayerData, true) end
         RSGCore.ShowSuccess(resourceName, PlayerData.name .. ' OFFLINE PLAYER SAVED!')
@@ -569,6 +573,7 @@ function RSGCore.Player.SaveOffline(PlayerData)
         RSGCore.ShowError(resourceName, 'ERROR RSGCore.PLAYER.SAVEOFFLINE - PLAYERDATA IS EMPTY!')
     end
 end
+
 
 -- Delete character
 

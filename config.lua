@@ -82,6 +82,8 @@ RSGConfig.Player.PlayerDefaults = {
     },
     position = RSGConfig.DefaultSpawn,
     items = {},
+    weight = 35000,
+    slots = 25,
 }
 
 RSGConfig.Server = {}                                    -- General server config
