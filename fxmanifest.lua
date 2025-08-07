@@ -5,7 +5,7 @@ game 'rdr3'
 lua54 'yes'
 
 description 'rsg-core'
-version '2.3.0'
+version '2.3.1'
 
 shared_scripts {
     '@ox_lib/init.lua',
