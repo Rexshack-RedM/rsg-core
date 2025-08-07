@@ -220,12 +220,26 @@ if RSGCore.Config.Money.EnableMoneyItems then
 
     function SynchronizeMoneyItems(playerData)
         if not initialized then return playerData end
-    
-        local money = getInventoryMoney(playerData) 
-    
-        playerData.money.cash = calculateTotal(money.cashDollars, money.cashCents)
-        playerData.money.bloodmoney = calculateTotal(money.bloodDollars, money.bloodCents)
-    
+
+        local money = getInventoryMoney(playerData)
+
+        local cash = calculateTotal(money.cashDollars, money.cashCents)
+        local bloodmoney = calculateTotal(money.bloodDollars, money.bloodCents)
+
+        if cash ~= playerData.money.cash then
+            local operation = cash > (playerData.money.cash or 0) and 'add' or 'remove'
+            local amount = math.abs(cash - (playerData.money.cash or 0))
+            playerData.money.cash = cash
+            TriggerClientEvent('hud:client:OnMoneyChange', playerData.source, 'cash', amount, operation)
+        end
+
+        if bloodmoney ~= playerData.money.bloodmoney then
+            local operation = bloodmoney > (playerData.money.bloodmoney or 0) and 'add' or 'remove'
+            local amount = math.abs(bloodmoney - (playerData.money.bloodmoney or 0))
+            playerData.money.bloodmoney = bloodmoney
+            TriggerClientEvent('hud:client:OnMoneyChange', playerData.source, 'bloodmoney', amount, operation)
+        end
+
         return playerData
     end
 
