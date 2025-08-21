@@ -68,15 +68,42 @@ local function handleAddMoney(src, moneytype, amount)
     local player = RSGCore.Functions.GetPlayer(src)
     if not player or not moneyItems[moneytype] then return end
 
-    local dollars, cents = getParts(amount)
+    -- Get current inventory money
+    local inventoryMoney = getInventoryMoney(player.PlayerData)
+    local currentDollars = inventoryMoney[moneyMap[moneyItems[moneytype].dollar]] or 0
+    local currentCents = inventoryMoney[moneyMap[moneyItems[moneytype].cent]] or 0
 
-    if dollars > 0 then 
-        player.Functions.AddItem(moneyItems[moneytype].dollar, dollars)
+    -- Split new amount to add
+    local newDollars, newCents = getParts(amount)
+    
+    -- Convert everything to cents for precision math
+    local currentTotalCents = (currentDollars * 100) + currentCents
+    local newTotalCents = (newDollars * 100) + newCents
+    local finalTotalCents = currentTotalCents + newTotalCents
+    
+    -- Convert back to dollars and cents (this handles rollover automatically)
+    local finalDollars = math.floor(finalTotalCents / 100)
+    local finalCents = finalTotalCents % 100
+    
+    -- Remove all current money items
+    local function removeAllItems(itemName)
+        for _, item in ipairs(player.Functions.GetItemsByName(itemName) or {}) do
+            player.Functions.RemoveItem(item.name, item.amount, item.slot)
+        end
     end
-    if cents > 0 then
-        player.Functions.AddItem(moneyItems[moneytype].cent, cents)
+    
+    removeAllItems(moneyItems[moneytype].cent)
+    removeAllItems(moneyItems[moneytype].dollar)
+    
+    -- Add back the converted amounts
+    if finalDollars > 0 then 
+        player.Functions.AddItem(moneyItems[moneytype].dollar, finalDollars)
     end
-
+    if finalCents > 0 then
+        player.Functions.AddItem(moneyItems[moneytype].cent, finalCents)
+    end
+    
+    -- Update inventory display
     if Player(src).state.inv_busy then
         TriggerClientEvent('rsg-inventory:client:updateInventory', src)
     end
@@ -157,6 +184,46 @@ local function handleSetMoney(src, moneytype, amount)
     end
 end
 
+local function handleConvertMoney(src, moneytype)
+    local player = RSGCore.Functions.GetPlayer(src)
+    if not player or not moneyItems[moneytype] then return end
+
+    -- Get current inventory money
+    local inventoryMoney = getInventoryMoney(player.PlayerData)
+    local currentDollars = inventoryMoney[moneyMap[moneyItems[moneytype].dollar]] or 0
+    local currentCents = inventoryMoney[moneyMap[moneyItems[moneytype].cent]] or 0
+    
+    -- Convert everything to cents for precision math
+    local totalCents = (currentDollars * 100) + currentCents
+    
+    -- Convert back to dollars and cents (this handles rollover automatically)
+    local finalDollars = math.floor(totalCents / 100)
+    local finalCents = totalCents % 100
+    
+    -- Remove all current money items
+    local function removeAllItems(itemName)
+        for _, item in ipairs(player.Functions.GetItemsByName(itemName) or {}) do
+            player.Functions.RemoveItem(item.name, item.amount, item.slot, 'money-conversion')
+        end
+    end
+    
+    removeAllItems(moneyItems[moneytype].cent)
+    removeAllItems(moneyItems[moneytype].dollar)
+    
+    -- Add back the converted amounts
+    if finalDollars > 0 then 
+        player.Functions.AddItem(moneyItems[moneytype].dollar, finalDollars, nil, {}, 'money-conversion')
+    end
+    if finalCents > 0 then
+        player.Functions.AddItem(moneyItems[moneytype].cent, finalCents, nil, {}, 'money-conversion')
+    end
+    
+    -- Update inventory display
+    if Player(src).state.inv_busy then
+        TriggerClientEvent('rsg-inventory:client:updateInventory', src)
+    end
+end
+exports('ConvertMoneyItems', handleConvertMoney)
 -----------------------------------------------------------------
 -- If config changed, handle inventory items accordingly on login
 -----------------------------------------------------------------
