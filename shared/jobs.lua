@@ -3,6 +3,7 @@ RSGShared.ForceJobDefaultDutyAtLogin = true -- true: Force duty state to jobdefa
 RSGShared.Jobs = {
 
     unemployed = {
+        name = 'unemployed',
         label = 'Civilian',
         defaultDuty = true,
         offDutyPay = false,
@@ -11,6 +12,7 @@ RSGShared.Jobs = {
         },
     },
     vallaw = {
+        name = 'vallaw',
         label = 'Valentine Law Enforcement',
         type = 'leo',
         defaultDuty = false,
@@ -22,6 +24,7 @@ RSGShared.Jobs = {
         },
     },
     rholaw = {
+        name = 'rholaw',
         label = 'Rhodes Law Enforcement',
         type = 'leo',
         defaultDuty = false,
@@ -33,6 +36,7 @@ RSGShared.Jobs = {
         },
     },
     blklaw = {
+        name = 'blklaw',
         label = 'Blackwater Law Enforcement',
         type = 'leo',
         defaultDuty = false,
@@ -44,6 +48,7 @@ RSGShared.Jobs = {
         },
     },
     strlaw = {
+        name = 'strlaw',
         label = 'Strawberry Law Enforcement',
         type = 'leo',
         defaultDuty = false,
@@ -55,6 +60,7 @@ RSGShared.Jobs = {
         },
     },
     stdenlaw = {
+        name = 'stdenlaw',
         label = 'Saint Denis Law Enforcement',
         type = 'leo',
         defaultDuty = false,
@@ -66,6 +72,7 @@ RSGShared.Jobs = {
         },
     },
     medic = {
+        name = 'medic',
         label = 'Medic',
         type = 'medic',
         defaultDuty = false,
