@@ -24,7 +24,7 @@ local moneyMap = {
 -- Helper functions
 -------------------
 
-local function getInventoryMoney(playerData) 
+local function getInventoryMoney(playerData)
     local money = {
         cashDollars = 0,
         cashCents = 0,
@@ -70,7 +70,7 @@ local function handleAddMoney(src, moneytype, amount)
 
     local dollars, cents = getParts(amount)
 
-    if dollars > 0 then 
+    if dollars > 0 then
         player.Functions.AddItem(moneyItems[moneytype].dollar, dollars)
     end
     if cents > 0 then
@@ -133,7 +133,7 @@ local function handleRemoveMoney(src, moneytype, amount)
     end
 end
 
-local function handleSetMoney(src, moneytype, amount) 
+local function handleSetMoney(src, moneytype, amount)
     local player = RSGCore.Functions.GetPlayer(src)
     if not player or not moneyItems[moneytype] then return end
 
@@ -152,8 +152,8 @@ local function handleSetMoney(src, moneytype, amount)
     if dollars > 0 then player.Functions.AddItem(moneyItems[moneytype].dollar, dollars) end
     if cents > 0 then player.Functions.AddItem(moneyItems[moneytype].cent, cents) end
 
-    if Player(src).state.inv_busy then 
-        TriggerClientEvent('rsg-inventory:client:updateInventory', src) 
+    if Player(src).state.inv_busy then
+        TriggerClientEvent('rsg-inventory:client:updateInventory', src)
     end
 end
 
@@ -161,7 +161,7 @@ end
 -- If config changed, handle inventory items accordingly on login
 -----------------------------------------------------------------
 
-local initialized = false
+local initialized = {}
 RegisterNetEvent('RSGCore:Server:OnPlayerLoaded')
 AddEventHandler('RSGCore:Server:OnPlayerLoaded', function()
     local src = source
@@ -187,7 +187,7 @@ AddEventHandler('RSGCore:Server:OnPlayerLoaded', function()
                 player.Functions.RemoveItem(item.name, item.amount, item.slot, 'money-item-cleanup')
             end
         end
-    
+
         removeAllItems(moneyItems['cash'].cent)
         removeAllItems(moneyItems['cash'].dollar)
         removeAllItems(moneyItems['bloodmoney'].cent)
@@ -195,7 +195,7 @@ AddEventHandler('RSGCore:Server:OnPlayerLoaded', function()
     end
 
     -- failsafe to prevent early override by synchronization
-    initialized = true
+    initialized[player.PlayerData.citizenid] = true
 end)
 
 -------------------------------------------------------------
@@ -212,14 +212,14 @@ if RSGCore.Config.Money.EnableMoneyItems then
 
     AddEventHandler('RSGCore:Server:OnMoneyChange', function(src, moneytype, amount, operation, reason)
         local handler = moneyHandlers[operation]
-        if handler then 
-            handler(src, moneytype, amount) 
+        if handler then
+            handler(src, moneytype, amount)
             TriggerClientEvent('hud:client:OnMoneyChange', src, moneytype, amount, operation == 'remove')
         end
     end)
 
     function SynchronizeMoneyItems(playerData)
-        if not initialized then return playerData end
+        if not initialized[playerData.citizenid] then return playerData end
 
         local money = getInventoryMoney(playerData)
 
