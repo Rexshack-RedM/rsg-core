@@ -9,7 +9,6 @@ local function createPrompt(name, coords, key, text, options)
         Prompts[name].key = key
         Prompts[name].text = text
         Prompts[name].options = options
-        Prompts[name].active = false
         Prompts[name].prompt = nil
     else
         print('[rsg-core]  Prompt with name ' .. name .. ' already exists!')
@@ -22,7 +21,6 @@ local function createPromptGroup(group, label, coords, prompts)
         PromptGroups[group].coords = coords
         PromptGroups[group].label = label
         PromptGroups[group].group = group
-        PromptGroups[group].active = false
         PromptGroups[group].created = false
         PromptGroups[group].prompts = prompts
     else
@@ -45,16 +43,16 @@ end
 
 local function deletePrompt(name)
     if Prompts then
-        Citizen.InvokeNative(0x8A0FB4D03A630D21, Prompts[name].prompt, false)
-        Citizen.InvokeNative(0x71215ACCFDE075EE, Prompts[name].prompt, false)
+        UiPromptDelete(Prompts[name].prompt)
         Prompts[name] = nil
     end
 end
 
 local function deletePromptGroup(name)
-    if PromptGroups then
-        Citizen.InvokeNative(0x8A0FB4D03A630D21, PromptGroups[name].prompt, false)
-        Citizen.InvokeNative(0x71215ACCFDE075EE, PromptGroups[name].prompt, false)
+    if PromptGroups[name] then
+        for k,v in pairs(PromptGroups[name].prompts) do
+            UiPromptDelete(v.prompt)
+        end
         PromptGroups[name] = nil
     end
 end
@@ -81,8 +79,8 @@ local function setupPrompt(prompt)
     prompt.prompt = Citizen.InvokeNative(0x04F97DE45A519419, Citizen.ReturnResultAnyway())
     Citizen.InvokeNative(0xB5352B7494A08258, prompt.prompt, prompt.key)
     Citizen.InvokeNative(0x5DD02A8318420DD7, prompt.prompt, str)
-    Citizen.InvokeNative(0x8A0FB4D03A630D21, prompt.prompt, false)
-    Citizen.InvokeNative(0x71215ACCFDE075EE, prompt.prompt, false)
+    Citizen.InvokeNative(0x8A0FB4D03A630D21, prompt.prompt, true)
+    Citizen.InvokeNative(0x71215ACCFDE075EE, prompt.prompt, true)
     Citizen.InvokeNative(0x94073D5CA3F16B7B, prompt.prompt, 1000)
     Citizen.InvokeNative(0xF7AA2696A22AD8B9, prompt.prompt)
 end
@@ -104,12 +102,19 @@ local function setupPromptGroup(prompt)
 end
 
 AddEventHandler('onResourceStop', function(resourceName)
-if GetCurrentResourceName() ~= resourceName then return end
+    if GetCurrentResourceName() ~= resourceName then return end
+
     for k,v in pairs(Prompts) do
-        Citizen.InvokeNative(0x8A0FB4D03A630D21, Prompts[k].prompt, false)
-        Citizen.InvokeNative(0x71215ACCFDE075EE, Prompts[k].prompt, false)
-        Prompts[k].prompt = nil
+        UiPromptDelete(Prompts[k].prompt)
     end
+    Prompts = {}
+
+    for _,pGroup in pairs(PromptGroups) do
+        for k,v in pairs(pGroup.prompts) do
+            UiPromptDelete(v.prompt)
+        end 
+    end
+    PromptGroups = {}
 end)
 
 CreateThread(function()
@@ -124,24 +129,16 @@ CreateThread(function()
                     if (Prompts[k].prompt == nil) then
                         setupPrompt(Prompts[k])
                     end
-                    if (not Prompts[k].active) then
-                        Citizen.InvokeNative(0x8A0FB4D03A630D21, Prompts[k].prompt, true)
-                        Citizen.InvokeNative(0x71215ACCFDE075EE, Prompts[k].prompt, true)
-                        Prompts[k].active = true
-                    end
-                    if (Citizen.InvokeNative(0xE0F65F0640EF0617, Prompts[k].prompt)) then
+                    if UiPromptHasHoldModeCompleted(Prompts[k].prompt) then
                         executeOptions(Prompts[k].options)
-                        Citizen.InvokeNative(0x8A0FB4D03A630D21, Prompts[k].prompt, false)
-                        Citizen.InvokeNative(0x71215ACCFDE075EE, Prompts[k].prompt, false)
-                        Prompts[k].prompt = nil
-                        Prompts[k].active = false
+                        UiPromptSetEnabled(Prompts[k].prompt, false)
+                        Wait(0)
+                        UiPromptSetEnabled(Prompts[k].prompt, true)
                     end
                 else
-                    if (Prompts[k].active) then
-                        Citizen.InvokeNative(0x8A0FB4D03A630D21, Prompts[k].prompt, false)
-                        Citizen.InvokeNative(0x71215ACCFDE075EE, Prompts[k].prompt, false)
+                    if Prompts[k].prompt then
+                        UiPromptDelete(Prompts[k].prompt)
                         Prompts[k].prompt = nil
-                        Prompts[k].active = false
                     end
                 end
             end
@@ -167,18 +164,20 @@ CreateThread(function()
                     Citizen.InvokeNative(0xC65A45D4453C2627, promptGroup, CreateVarString(10, 'LITERAL_STRING', PromptGroups[k].label), 1)
 
                     for i,j in pairs(PromptGroups[k].prompts) do
-                        if (Citizen.InvokeNative(0xE0F65F0640EF0617, j.prompt)) then
+                        if UiPromptHasHoldModeCompleted(j.prompt) then
                             executeOptions(j.options)
-                            j.prompt = nil
-                            PromptGroups[k].active = false
+                            UiPromptSetEnabled(j.prompt, false)
+                            Wait(0)
+                            UiPromptSetEnabled(j.prompt, true)
                         end
                     end
                 else
-                    if (PromptGroups[k].active) then
+                    if (PromptGroups[k].created) then
                         for i,j in pairs(PromptGroups[k].prompts) do
+                            UiPromptDelete(j.prompt)
                             j.prompt = nil
                         end
-                        Prompts[k].active = false
+                        PromptGroups[k].created = false
                     end
                 end
             end
