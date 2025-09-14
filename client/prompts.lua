@@ -132,7 +132,8 @@ CreateThread(function()
                     if UiPromptHasHoldModeCompleted(Prompts[k].prompt) then
                         executeOptions(Prompts[k].options)
                         UiPromptSetEnabled(Prompts[k].prompt, false)
-                        UiPromptSetVisible(Prompts[k].prompt, false)
+                        Wait(0)
+                        UiPromptSetEnabled(Prompts[k].prompt, true)
                     end
                 else
                     if Prompts[k].prompt then
@@ -166,7 +167,8 @@ CreateThread(function()
                         if UiPromptHasHoldModeCompleted(j.prompt) then
                             executeOptions(j.options)
                             UiPromptSetEnabled(j.prompt, false)
-                            UiPromptSetVisible(j.prompt, false)
+                            Wait(0)
+                            UiPromptSetEnabled(j.prompt, true)
                         end
                     end
                 else
