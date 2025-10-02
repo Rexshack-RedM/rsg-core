@@ -84,53 +84,43 @@ end
 
 local function handleRemoveMoney(src, moneytype, amount)
     local player = RSGCore.Functions.GetPlayer(src)
-    if not player or not moneyItems[moneytype] then return end
+    if not player or not moneyItems[moneytype] then return false end
 
-    local amountDollars, amountCents = getParts(amount)
     local inventoryMoney = getInventoryMoney(player.PlayerData)
-
-    local availableDollars = inventoryMoney[moneyMap[moneyItems[moneytype].dollar]] or 0
-    local availableCents = inventoryMoney[moneyMap[moneyItems[moneytype].cent]] or 0
-
-    local remainingCentValue = amount * 100
-    local centsToRemove, dollarsToRemove, centsToAdd = 0, 0, 0
-
-    if availableCents > 0 and availableCents >= amountCents then
-        centsToRemove = amountCents
-        availableCents = availableCents - amountCents
-        remainingCentValue = remainingCentValue - amountCents
-
-        local availableHundredBlocks = math.floor(availableCents / 100)
-        if availableHundredBlocks > 0 and amountDollars > 0 then
-            local dollarsFromCents = math.min(availableHundredBlocks, amountDollars)
-            local additionalCentsToUse = dollarsFromCents * 100
-
-            centsToRemove = centsToRemove + additionalCentsToUse
-            remainingCentValue = remainingCentValue - additionalCentsToUse
-            amountDollars = amountDollars - dollarsFromCents
-        end
-    end
-
-    if amountDollars > 0 then
-        dollarsToRemove = amountDollars
-        remainingCentValue = remainingCentValue - (amountDollars * 100)
-    end
-
-    if remainingCentValue > 0 then
-        dollarsToRemove = dollarsToRemove + 1
-        centsToAdd = 100 - remainingCentValue
-    end
-
     local centName = moneyItems[moneytype].cent
     local dollarName = moneyItems[moneytype].dollar
 
-    if centsToRemove > 0 then removeItems(player, centName, math.round(centsToRemove)) end
-    if dollarsToRemove > 0 then removeItems(player, dollarName, math.round(dollarsToRemove)) end
-    if centsToAdd > 0 then player.Functions.AddItem(centName, math.round(centsToAdd)) end
+    local availableDollars = inventoryMoney[moneyMap[dollarName]] or 0
+    local availableCents = inventoryMoney[moneyMap[centName]] or 0
+    local totalAvailableCents = (availableDollars * 100) + availableCents
+    local requiredCents = math.round(amount * 100)
+
+    if totalAvailableCents < requiredCents then
+        return false
+    end
+
+    local centsToRemove = math.min(availableCents, requiredCents)
+    local remainingRequired = requiredCents - centsToRemove
+    local dollarsToRemove = math.ceil(remainingRequired / 100)
+    local changeInCents = (dollarsToRemove * 100) - remainingRequired
+
+    if centsToRemove > 0 then 
+        removeItems(player, centName, centsToRemove) 
+    end
+    
+    if dollarsToRemove > 0 then 
+        removeItems(player, dollarName, dollarsToRemove) 
+    end
+    
+    if changeInCents > 0 then 
+        player.Functions.AddItem(centName, changeInCents) 
+    end
 
     if Player(src).state.inv_busy then
         TriggerClientEvent('rsg-inventory:client:updateInventory', src)
     end
+
+    return true
 end
 
 local function handleSetMoney(src, moneytype, amount)
