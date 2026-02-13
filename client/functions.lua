@@ -703,3 +703,38 @@ function RSGCore.Functions.GetGroundHash(entity)
     local retval, success, endCoords, surfaceNormal, materialHash, entityHit = GetShapeTestResultEx(num)
     return materialHash, entityHit, surfaceNormal, endCoords, success, retval
 end
+
+---Creates a blip on the map at specified coordinates
+---@param coords table|vector3 The coordinates where the blip will be placed
+---@param sprite number The blip sprite ID (default: 0)
+---@param color number The blip color (default: 0)
+---@param scale number The blip scale (default: 1.0)
+---@param label string The blip label/name
+---@param shortRange boolean Whether the blip only shows at short range (default: true)
+---@param route boolean Whether to show a GPS route (default: false)
+function RSGCore.Functions.CreateBlip(coords, sprite, color, scale, label, shortRange, route)
+    local blipCoords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
+    sprite = sprite or 0
+    color = color or 0
+    scale = scale or 1.0
+    shortRange = shortRange ~= nil and shortRange or true
+    route = route or false
+
+    local blip = AddBlipForCoord(blipCoords.x, blipCoords.y, blipCoords.z)
+
+    SetBlipSprite(blip, sprite)
+    SetBlipColour(blip, color)
+    SetBlipScale(blip, scale)
+    SetBlipAsShortRange(blip, shortRange)
+
+    if label then
+        AddTextComponentString(label)
+        SetBlipName(blip, GetTextRendWidth(_GetTextGxtEntryByHash(0)))
+    end
+
+    if route then
+        SetBlipRoute(blip, true)
+    end
+
+    return blip
+end
