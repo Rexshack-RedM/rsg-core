@@ -1,6 +1,13 @@
 local Prompts = {}
 local PromptGroups = {}
 
+local function distanceBetween(a, b)
+    local dx = a.x - (b.x or b[1])
+    local dy = a.y - (b.y or b[2])
+    local dz = a.z - (b.z or b[3])
+    return math.sqrt(dx * dx + dy * dy + dz * dz)
+end
+
 local function createPrompt(name, coords, key, text, options)
     if (Prompts[name] == nil) then
         Prompts[name] = {}
@@ -119,7 +126,7 @@ CreateThread(function()
         if (next(Prompts) ~= nil) then
             local coords = GetEntityCoords(cache.ped, true)
             for k,v in pairs(Prompts) do
-                local distance = #(coords - v.coords)
+                local distance = distanceBetween(coords, v.coords)
                 if (distance < RSGConfig.PromptDistance) then
                     sleep = 1
                     if (Prompts[k].prompt == nil) then
@@ -152,7 +159,7 @@ CreateThread(function()
         if (next(PromptGroups) ~= nil) then
             local coords = GetEntityCoords(cache.ped, true)
             for k,v in pairs(PromptGroups) do
-                local distance = #(coords - v.coords)
+                local distance = distanceBetween(coords, v.coords)
                 local promptGroup = PromptGroups[k].group
                 if (distance < RSGConfig.PromptDistance) then
                     sleep = 1
