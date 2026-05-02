@@ -4,37 +4,37 @@ local positions = {
     top = 'top-center'
 }
 
+local function resolvePos(pos)
+    return positions[pos] or pos or 'right-center'
+end
+
+local function showText(text, pos)
+    lib.showTextUI(text, {
+        position = resolvePos(pos)
+    })
+end
+
+local function updateText(text, pos)
+    lib.hideTextUI()
+    lib.showTextUI(text, {
+        position = resolvePos(pos)
+    })
+end
+
 local function hideText()
     lib.hideTextUI()
 end
 
-local function drawText(text, position)
-    position = positions[position] or position
-    lib.showTextUI(text, {
-        position = position
-    })
-end
-
-local function changeText(text, position)
-    position = positions[position] or position
-    lib.hideTextUI()
-    lib.showTextUI(text, {
-        position = position
-    })
-end
-
 local function keyPressed()
-    CreateThread(function() -- Not sure if a thread is needed but why not eh?
-        lib.hideTextUI()
-    end)
+    lib.hideTextUI()
 end
 
-RegisterNetEvent('rsg-core:client:DrawText', function(text, position)
-    drawText(text, position)
+RegisterNetEvent('rsg-core:client:DrawText', function(text, pos)
+    showText(text, pos)
 end)
 
-RegisterNetEvent('rsg-core:client:ChangeText', function(text, position)
-    changeText(text, position)
+RegisterNetEvent('rsg-core:client:ChangeText', function(text, pos)
+    updateText(text, pos)
 end)
 
 RegisterNetEvent('rsg-core:client:HideText', function()
@@ -45,7 +45,13 @@ RegisterNetEvent('rsg-core:client:KeyPressed', function()
     keyPressed()
 end)
 
-exports('DrawText', drawText)
-exports('ChangeText', changeText)
+AddEventHandler('onResourceStop', function(res)
+    if res == GetCurrentResourceName() then
+        lib.hideTextUI()
+    end
+end)
+
+exports('DrawText', showText)
+exports('ChangeText', updateText)
 exports('HideText', hideText)
 exports('KeyPressed', keyPressed)
