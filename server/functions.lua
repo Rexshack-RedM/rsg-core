@@ -708,7 +708,6 @@ RSGCore.Functions.CanCarryItem = function(source, item, amount)
 
     -- Get the player's current total inventory weight and max capacity
     -- Note: Depending on your specific rsg-inventory version, this might also be accessed via exports
-    --local currentWeight = exports['rsg-inventory']:GetTotalWeight(Player) or 0
     local currentWeight = exports['rsg-inventory']:GetTotalWeight(Player.PlayerData.items) or 0
     local maxWeight = Player.PlayerData.MaxWeight or 120000 -- Fallback default weight if not set
 
