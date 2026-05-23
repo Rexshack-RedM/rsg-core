@@ -682,3 +682,40 @@ function RSGCore.Functions.ChangeSlots(source, slots)
 
     Player.Functions.SetPlayerData('slots', slots)
 end
+
+--- Checks if a player has enough weight capacity to carry a specific amount of an item
+-- @param source number - The server ID of the player
+-- @param item string - The name of the item
+-- @param amount number - The quantity of the item to check
+-- @return boolean - True if the player can carry it, false if they cannot
+RSGCore.Functions.CanCarryItem = function(source, item, amount)
+    local Player = RSGCore.Functions.GetPlayer(source)
+    if not Player then return false end
+
+    -- Fallback to 1 if amount isn't provided
+    amount = tonumber(amount) or 1
+
+    -- Fetch item data from the framework's shared config to get its weight
+    local itemData = RSGCore.Shared.Items[item:lower()]
+    if not itemData then 
+        print(("^1[RSG-Core] Error:^7 Item '%s' does not exist in shared items."):format(item))
+        return false 
+    end
+
+    -- Calculate the total weight of the incoming items
+    local itemWeight = itemData.weight or 0
+    local incomingWeight = itemWeight * amount
+
+    -- Get the player's current total inventory weight and max capacity
+    -- Note: Depending on your specific rsg-inventory version, this might also be accessed via exports
+    --local currentWeight = exports['rsg-inventory']:GetTotalWeight(Player) or 0
+    local currentWeight = exports['rsg-inventory']:GetTotalWeight(Player.PlayerData.items) or 0
+    local maxWeight = Player.PlayerData.MaxWeight or 120000 -- Fallback default weight if not set
+
+    -- Check if the new total exceeds the limit
+    if (currentWeight + incomingWeight) <= maxWeight then
+        return true
+    else
+        return false
+    end
+end
