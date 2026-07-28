@@ -54,6 +54,7 @@ RSGShared.Items = {
     -- MoneyItems
     dollar       = { name = 'dollar',       label = 'Dollars',              weight = 1, type = 'item', image = 'dollar.png',       unique = false, useable = false, description = 'Standard currency used for everyday transactions'},
     cent         = { name = 'cent',         label = 'Cents',                weight = 3, type = 'item', image = 'cent.png',         unique = false, useable = false, description = 'Small denomination of currency, commonly used for change'},
+    gold         = { name = 'gold',         label = 'Oro',                  weight = 0, type = 'item', image = 'gold.png',         unique = false, useable = false, description = 'Oro utilizzato come valuta.' },
     blood_dollar = { name = 'blood_dollar', label = 'Bloodstained Dollars', weight = 1, type = 'item', image = 'blood_dollar.png', unique = false, useable = false, description = 'Currency tainted by violence and crime'},
     blood_cent   = { name = 'blood_cent',   label = 'Bloodstained Cents',   weight = 3, type = 'item', image = 'blood_cent.png',   unique = false, useable = false, description = 'Small change stained with the remnants of bloodshed'},
 

@@ -176,7 +176,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
     function self.Functions.UpdatePlayerData()
         if self.Offline then return end
 
-        if RSGCore.Config.Money.EnableMoneyItems then
+        if RSGCore.Config.Money.EnableMoneyItems or RSGCore.Config.Gold.EnableGoldItems then
             self.PlayerData = SynchronizeMoneyItems(self.PlayerData)
         end
 
@@ -323,7 +323,9 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         reason = reason or 'unknown'
         moneytype = moneytype:lower()
         amount = tonumber(amount)
+        if not amount then return false end
         if amount < 0 then return end
+        if moneytype == 'gold' and amount % 1 ~= 0 then return false end
         if not self.PlayerData.money[moneytype] then return false end
         self.PlayerData.money[moneytype] = self.PlayerData.money[moneytype] + amount
 
@@ -335,7 +337,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
                 TriggerEvent('rsg-log:server:CreateLog', 'playermoney', 'AddMoney', 'lightgreen', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') added, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype] .. ' reason: ' .. reason)
             end
 
-            if not RSGCore.Config.Money.EnableMoneyItems then
+            if not IsMoneyItemEnabled(moneytype) then
                 TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, amount, false)
             end
             TriggerClientEvent('RSGCore:Client:OnMoneyChange', self.PlayerData.source, moneytype, amount, 'add', reason)
@@ -349,7 +351,9 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         reason = reason or 'unknown'
         moneytype = moneytype:lower()
         amount = tonumber(amount)
+        if not amount then return false end
         if amount < 0 then return end
+        if moneytype == 'gold' and amount % 1 ~= 0 then return false end
         if not self.PlayerData.money[moneytype] then return false end
         for _, mtype in pairs(RSGCore.Config.Money.DontAllowMinus) do
             if mtype == moneytype then
@@ -368,7 +372,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
             else
                 TriggerEvent('rsg-log:server:CreateLog', 'playermoney', 'RemoveMoney', 'red', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') removed, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype] .. ' reason: ' .. reason)
             end
-            if not RSGCore.Config.Money.EnableMoneyItems then
+            if not IsMoneyItemEnabled(moneytype) then
                 TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, amount, true)
             end
             TriggerClientEvent('RSGCore:Client:OnMoneyChange', self.PlayerData.source, moneytype, amount, 'remove', reason)
@@ -382,7 +386,9 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         reason = reason or 'unknown'
         moneytype = moneytype:lower()
         amount = tonumber(amount)
+        if not amount then return false end
         if amount < 0 then return false end
+        if moneytype == 'gold' and amount % 1 ~= 0 then return false end
         if not self.PlayerData.money[moneytype] then return false end
         local difference = amount - self.PlayerData.money[moneytype]
         self.PlayerData.money[moneytype] = amount
@@ -390,7 +396,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         if not self.Offline then
             self.Functions.UpdatePlayerData()
             TriggerEvent('rsg-log:server:CreateLog', 'playermoney', 'SetMoney', 'green', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') set, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype] .. ' reason: ' .. reason)
-            if not RSGCore.Config.Money.EnableMoneyItems then
+            if not IsMoneyItemEnabled(moneytype) then
                 TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, math.abs(difference), difference < 0)
             end
             TriggerClientEvent('RSGCore:Client:OnMoneyChange', self.PlayerData.source, moneytype, amount, 'set', reason)
