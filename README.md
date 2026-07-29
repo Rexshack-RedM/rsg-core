@@ -1,3 +1,9 @@
+![Logo](https://rsgcore.com/logo_new.png)
+
+Documentation https://rsgcore.com/docs
+
+
+
 # rsg-core
 
 	Thanks to Kakarot and the QB Team for the original work https://discord.gg/qbcore
