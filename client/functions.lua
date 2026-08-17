@@ -693,3 +693,34 @@ function RSGCore.Functions.GetGroundHash(entity)
     local retval, success, endCoords, surfaceNormal, materialHash, entityHit = GetShapeTestResultEx(num)
     return materialHash, entityHit, surfaceNormal, endCoords, success, retval
 end
+
+---@param title? string Optional notification title
+---@param text string | table Notification text/description, or a full table of props
+---@param notifyType? string 'primary', 'success', 'error', 'inform', 'warning'
+---@param duration? number Duration in milliseconds (default: 5000)
+---@param icon? string Optional FontAwesome or RedM icon string
+function RSGCore.Functions.Notify(title, text, notifyType, duration, icon)
+    -- If passed as a table, send directly to ox_lib
+    if type(text) == 'table' then
+        return lib.notify(text)
+    end
+
+    -- Map standard RSG notification types to ox_lib NotificationTypes
+    local typeMap = {
+        primary = 'info',
+        inform  = 'info',
+        success = 'success',
+        error   = 'error',
+        warning = 'warning'
+    }
+
+    local parsedType = typeMap[notifyType] or 'info'
+
+    lib.notify({
+        title = title or 'Notification',
+        description = text,
+        type = parsedType,
+        duration = duration or 5000,
+        icon = icon
+    })
+end
