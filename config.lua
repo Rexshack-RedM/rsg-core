@@ -99,7 +99,15 @@ RSGConfig.Server.WhitelistPermission = 'admin'           -- Permission that's ab
 RSGConfig.Server.PVP = true                              -- Enable or disable pvp on the server (Ability to shoot other players)
 RSGConfig.Server.Discord = ''                            -- Discord invite link
 RSGConfig.Server.CheckDuplicateLicense = true            -- Check for duplicate rockstar license on join
-RSGConfig.Server.Permissions = { 'god', 'admin', 'mod' } -- Add as many groups as you want here after creating them in your server.cfg
+
+ -- Add as many groups as you want here after creating them in your server.cfg
+RSGConfig.Server.Permissions = {
+    'god',
+    'developer',
+    'admin',
+    'mod',
+    'helper'
+}
 
 RSGConfig.Commands = {}                                  -- Command Configuration
 RSGConfig.Commands.OOCColor = { 255, 151, 133 }          -- RGB color code for the OOC command
