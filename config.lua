@@ -104,6 +104,7 @@ RSGConfig.Server.CheckDuplicateLicense = true            -- Check for duplicate 
 RSGConfig.Server.Permissions = {
     'god',
     'developer',
+    'headadmin',
     'admin',
     'mod',
     'helper'
