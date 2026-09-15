@@ -85,5 +85,14 @@ RSGShared.Jobs = {
             ['4'] = { name = 'Manager', isboss = true, payment = 100 },
         },
     },
+    ['herbalist'] = {
+        label = 'Herbalist',
+        defaultDuty = true,
+        offDutyPay = false,
+        grades = {
+            ['0'] = { name = 'Apprentice', payment = 0 },
+            ['1'] = { name = 'Master', payment = 0, isboss = true },
+        },
+    },
 
 }
