@@ -14,36 +14,19 @@ local function showText(text, pos)
     })
 end
 
-local function updateText(text, pos)
-    lib.hideTextUI()
-    lib.showTextUI(text, {
-        position = resolvePos(pos)
-    })
-end
+-- lib.showTextUI replaces any text already shown, so no hide is needed first
+local updateText = showText
 
 local function hideText()
     lib.hideTextUI()
 end
 
-local function keyPressed()
-    lib.hideTextUI()
-end
+local keyPressed = hideText
 
-RegisterNetEvent('rsg-core:client:DrawText', function(text, pos)
-    showText(text, pos)
-end)
-
-RegisterNetEvent('rsg-core:client:ChangeText', function(text, pos)
-    updateText(text, pos)
-end)
-
-RegisterNetEvent('rsg-core:client:HideText', function()
-    hideText()
-end)
-
-RegisterNetEvent('rsg-core:client:KeyPressed', function()
-    keyPressed()
-end)
+RegisterNetEvent('rsg-core:client:DrawText', showText)
+RegisterNetEvent('rsg-core:client:ChangeText', updateText)
+RegisterNetEvent('rsg-core:client:HideText', hideText)
+RegisterNetEvent('rsg-core:client:KeyPressed', keyPressed)
 
 AddEventHandler('onResourceStop', function(res)
     if res == GetCurrentResourceName() then

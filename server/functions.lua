@@ -127,11 +127,9 @@ function RSGCore.Functions.GetPlayersOnDuty(job)
     local players = {}
     local count = 0
     for src, Player in pairs(RSGCore.Players) do
-        if Player.PlayerData.job.name == job then
-            if Player.PlayerData.job.onduty then
-                players[#players + 1] = src
-                count += 1
-            end
+        if Player.PlayerData.job.name == job and Player.PlayerData.job.onduty then
+            players[#players + 1] = src
+            count += 1
         end
     end
     return players, count
@@ -141,14 +139,7 @@ end
 ---@param job string
 ---@return number
 function RSGCore.Functions.GetDutyCount(job)
-    local count = 0
-    for _, Player in pairs(RSGCore.Players) do
-        if Player.PlayerData.job.name == job then
-            if Player.PlayerData.job.onduty then
-                count += 1
-            end
-        end
-    end
+    local _, count = RSGCore.Functions.GetPlayersOnDuty(job)
     return count
 end
 
@@ -328,14 +319,21 @@ function RSGCore.Functions.SpawnVehicle(source, model, coords, warp)
     if not coords then coords = GetEntityCoords(ped) end
     local heading = coords.w and coords.w or 0.0
     local veh = CreateVehicle(model, coords.x, coords.y, coords.z, heading, true, true)
-    while not DoesEntityExist(veh) do Wait(0) end
+    -- all waits are bounded so a failed spawn can never hang the calling thread forever
+    local timeout = GetGameTimer() + 5000
+    while not DoesEntityExist(veh) do
+        if GetGameTimer() > timeout then return nil end
+        Wait(0)
+    end
     if warp then
-        while GetVehiclePedIsIn(ped) ~= veh do
-            Wait(0)
+        timeout = GetGameTimer() + 5000
+        while GetVehiclePedIsIn(ped, false) ~= veh and GetGameTimer() < timeout do
             TaskWarpPedIntoVehicle(ped, veh, -1)
+            Wait(50)
         end
     end
-    while NetworkGetEntityOwner(veh) ~= source do Wait(0) end
+    timeout = GetGameTimer() + 5000
+    while NetworkGetEntityOwner(veh) ~= source and GetGameTimer() < timeout do Wait(0) end
     return veh
 end
 
@@ -352,42 +350,48 @@ end
 ---@return number
 function RSGCore.Functions.CreateVehicle(source, model, vehtype, coords, warp)
     model = type(model) == 'string' and joaat(model) or model
-    vehtype = type(vehtype) == 'string' and tostring(vehtype) or vehtype
     if not coords then coords = GetEntityCoords(GetPlayerPed(source)) end
     local heading = coords.w and coords.w or 0.0
-    local veh = CreateVehicleServerSetter(model, vehtype, coords, heading)
-    while not DoesEntityExist(veh) do Wait(0) end
+    local veh = CreateVehicleServerSetter(model, vehtype, coords.x, coords.y, coords.z, heading)
+    local timeout = GetGameTimer() + 5000
+    while not DoesEntityExist(veh) do
+        if GetGameTimer() > timeout then return nil end
+        Wait(0)
+    end
     if warp then TaskWarpPedIntoVehicle(GetPlayerPed(source), veh, -1) end
     return veh
 end
 
 ---Paychecks (standalone - don't touch)
+local function notifyPaycheck(src, title, notifyType)
+    TriggerClientEvent('ox_lib:notify', src, { title = title, type = notifyType, duration = 5000 })
+end
+
 function PaycheckInterval()
-    if next(RSGCore.Players) then
-        for _, Player in pairs(RSGCore.Players) do
-            if Player then
-                local payment = RSGShared.Jobs[Player.PlayerData.job.name]['grades'][tostring(Player.PlayerData.job.grade.level)].payment
-                if not payment then payment = Player.PlayerData.job.payment end
-                if Player.PlayerData.job and payment > 0 and (RSGShared.Jobs[Player.PlayerData.job.name].offDutyPay or Player.PlayerData.job.onduty) then
-                    if RSGCore.Config.Money.PayCheckSociety then
-                        local account = exports['rsg-banking']:GetAccountBalance(Player.PlayerData.job.name)
-                        if account ~= 0 then          -- Checks if player is employed by a society
-                            if account < payment then -- Checks if company has enough money to pay society
-                                TriggerClientEvent('ox_lib:notify', Player.PlayerData.source, {title = Lang:t('error.company_too_poor'), type = 'error', duration = 5000 })
-                            else
-                                Player.Functions.AddMoney('bank', payment, 'paycheck')
-                                exports['rsg-banking']:RemoveMoney(Player.PlayerData.job.name, payment, 'Employee Paycheck')
-                                TriggerClientEvent('ox_lib:notify', Player.PlayerData.source, {title = Lang:t('info.received_paycheck', { value = payment }), type = 'info', duration = 5000 })
-                            end
-                        else
-                            Player.Functions.AddMoney('bank', payment, 'paycheck')
-                            TriggerClientEvent('ox_lib:notify', Player.PlayerData.source, {title = Lang:t('info.received_paycheck', { value = payment }), type = 'info', duration = 5000 })
-                        end
+    for _, Player in pairs(RSGCore.Players) do
+        local job = Player.PlayerData.job
+        local jobInfo = job and RSGShared.Jobs[job.name]
+        -- guard against jobs/grades removed from shared/jobs.lua (previously errored and killed the paycheck loop)
+        local gradeInfo = jobInfo and jobInfo.grades and jobInfo.grades[tostring(job.grade and job.grade.level)]
+        local payment = (gradeInfo and gradeInfo.payment) or (job and job.payment) or 0
+        local src = Player.PlayerData.source
+
+        if jobInfo and payment > 0 and (jobInfo.offDutyPay or job.onduty) then
+            local canPay = true
+            if RSGCore.Config.Money.PayCheckSociety then
+                local account = exports['rsg-banking']:GetAccountBalance(job.name)
+                if account ~= 0 then -- player is employed by a society
+                    if account < payment then
+                        canPay = false
+                        notifyPaycheck(src, Lang:t('error.company_too_poor'), 'error')
                     else
-                        Player.Functions.AddMoney('bank', payment, 'paycheck')
-                        TriggerClientEvent('ox_lib:notify', Player.PlayerData.source, {title = Lang:t('info.received_paycheck', { value = payment }), type = 'info', duration = 5000 })
+                        exports['rsg-banking']:RemoveMoney(job.name, payment, 'Employee Paycheck')
                     end
                 end
+            end
+            if canPay then
+                Player.Functions.AddMoney('bank', payment, 'paycheck')
+                notifyPaycheck(src, Lang:t('info.received_paycheck', { value = payment }), 'inform')
             end
         end
     end
@@ -401,8 +405,13 @@ end
 ---@param source any
 ---@param cb function
 ---@param ... any
+---Internal: key used to store a pending client callback for a specific player
+function RSGCore.Functions.ClientCallbackKey(source, name)
+    return ('%s:%s'):format(source, name)
+end
+
 function RSGCore.Functions.TriggerClientCallback(name, source, cb, ...)
-    RSGCore.ClientCallbacks[name] = cb
+    RSGCore.ClientCallbacks[RSGCore.Functions.ClientCallbackKey(source, name)] = cb
     TriggerClientEvent('RSGCore:Client:TriggerClientCallback', source, name, ...)
 end
 
@@ -413,7 +422,7 @@ function RSGCore.Functions.CreateCallback(name, cb)
     RSGCore.ServerCallbacks[name] = cb
 end
 
----Trigger Serv er Callback
+---Trigger Server Callback
 ---@param name string
 ---@param source any
 ---@param cb function
@@ -453,7 +462,7 @@ end
 ---@param setKickReason boolean
 ---@param deferrals boolean
 function RSGCore.Functions.Kick(source, reason, setKickReason, deferrals)
-    reason = '\n' .. reason .. '\n🔸 Check our Discord for further information: ' .. RSGCore.Config.Server.Discord
+    reason = '\n' .. tostring(reason) .. '\n' .. Lang:t('info.check_discord', { discord = RSGCore.Config.Server.Discord })
     if setKickReason then
         setKickReason(reason)
     end
@@ -464,20 +473,6 @@ function RSGCore.Functions.Kick(source, reason, setKickReason, deferrals)
         end
         if source then
             DropPlayer(source, reason)
-        end
-        for _ = 0, 4 do
-            while true do
-                if source then
-                    if GetPlayerPing(source) >= 0 then
-                        break
-                    end
-                    Wait(100)
-                    CreateThread(function()
-                        DropPlayer(source, reason)
-                    end)
-                end
-            end
-            Wait(5000)
         end
     end)
 end
@@ -561,7 +556,7 @@ function RSGCore.Functions.IsOptin(source)
     local license = RSGCore.Functions.GetIdentifier(source, 'license')
     if not license or not RSGCore.Functions.HasPermission(source, 'admin') then return false end
     local Player = RSGCore.Functions.GetPlayer(source)
-    return Player.PlayerData.optin
+    return Player ~= nil and Player.PlayerData.optin
 end
 
 ---Toggle opt-in to admin messages
@@ -570,8 +565,8 @@ function RSGCore.Functions.ToggleOptin(source)
     local license = RSGCore.Functions.GetIdentifier(source, 'license')
     if not license or not RSGCore.Functions.HasPermission(source, 'admin') then return end
     local Player = RSGCore.Functions.GetPlayer(source)
-    Player.PlayerData.optin = not Player.PlayerData.optin
-    Player.Functions.SetPlayerData('optin', Player.PlayerData.optin)
+    if not Player then return end
+    Player.Functions.SetPlayerData('optin', not Player.PlayerData.optin)
 end
 
 ---Check if player is banned
@@ -579,11 +574,12 @@ end
 ---@return boolean, string?
 function RSGCore.Functions.IsPlayerBanned(source)
     local plicense = RSGCore.Functions.GetIdentifier(source, 'license')
+    if not plicense then return false end
     local result = MySQL.single.await('SELECT id, reason, expire FROM bans WHERE license = ?', { plicense })
     if not result then return false end
-    if os.time() < result.expire then
-        local timeTable = os.date('*t', tonumber(result.expire))
-        return true, 'You have been banned from the server:\n' .. result.reason .. '\nYour ban expires ' .. timeTable.day .. '/' .. timeTable.month .. '/' .. timeTable.year .. ' ' .. timeTable.hour .. ':' .. timeTable.min .. '\n'
+    local expire = tonumber(result.expire) or 0
+    if os.time() < expire then
+        return true, Lang:t('info.ban_message', { reason = result.reason or '', expires = os.date('%d/%m/%Y %H:%M', expire) })
     else
         MySQL.query('DELETE FROM bans WHERE id = ?', { result.id })
     end
@@ -617,6 +613,7 @@ function RSGCore.Functions.GetDatabaseInfo()
                 return details
             end
         end
+        return details
     end
 end
 
@@ -644,18 +641,17 @@ function RSGCore.Functions.HasItem(source, items, amount)
     return exports['rsg-inventory']:HasItem(source, items, amount)
 end
 
----???? ... ok
+---Validates that the whole string matches the given pattern (logs an anticheat entry otherwise)
 ---@param source any
 ---@param data any
 ---@param pattern any
 ---@return boolean
 function RSGCore.Functions.PrepForSQL(source, data, pattern)
     data = tostring(data)
-    local src = source
-    local player = RSGCore.Functions.GetPlayer(src)
     local result = string.match(data, pattern)
     if not result or string.len(result) ~= string.len(data) then
-        TriggerEvent('rsg-log:server:CreateLog', 'anticheat', 'SQL Exploit Attempted', 'red', string.format('%s attempted to exploit SQL!', player.PlayerData.license))
+        local license = RSGCore.Functions.GetIdentifier(source, 'license') or tostring(source)
+        TriggerEvent('rsg-log:server:CreateLog', 'anticheat', 'SQL Exploit Attempted', 'red', string.format('%s attempted to exploit SQL!', license))
         return false
     end
     return true
@@ -684,37 +680,23 @@ function RSGCore.Functions.ChangeSlots(source, slots)
 end
 
 --- Checks if a player has enough weight capacity to carry a specific amount of an item
--- @param source number - The server ID of the player
--- @param item string - The name of the item
--- @param amount number - The quantity of the item to check
--- @return boolean - True if the player can carry it, false if they cannot
-RSGCore.Functions.CanCarryItem = function(source, item, amount)
+---@param source number
+---@param item string
+---@param amount number
+---@return boolean
+function RSGCore.Functions.CanCarryItem(source, item, amount)
     local Player = RSGCore.Functions.GetPlayer(source)
-    if not Player then return false end
+    if not Player or type(item) ~= 'string' then return false end
 
-    -- Fallback to 1 if amount isn't provided
     amount = tonumber(amount) or 1
-
-    -- Fetch item data from the framework's shared config to get its weight
     local itemData = RSGCore.Shared.Items[item:lower()]
-    if not itemData then 
+    if not itemData then
         print(("^1[RSG-Core] Error:^7 Item '%s' does not exist in shared items."):format(item))
-        return false 
-    end
-
-    -- Calculate the total weight of the incoming items
-    local itemWeight = itemData.weight or 0
-    local incomingWeight = itemWeight * amount
-
-    -- Get the player's current total inventory weight and max capacity
-    -- Note: Depending on your specific rsg-inventory version, this might also be accessed via exports
-    local currentWeight = exports['rsg-inventory']:GetTotalWeight(Player.PlayerData.items) or 0
-    local maxWeight = Player.PlayerData.MaxWeight or 120000 -- Fallback default weight if not set
-
-    -- Check if the new total exceeds the limit
-    if (currentWeight + incomingWeight) <= maxWeight then
-        return true
-    else
         return false
     end
+
+    local currentWeight = exports['rsg-inventory']:GetTotalWeight(Player.PlayerData.items) or 0
+    -- previously read PlayerData.MaxWeight, which does not exist, so the 120000 fallback was always used
+    local maxWeight = Player.PlayerData.weight or RSGCore.Config.Player.PlayerDefaults.weight
+    return currentWeight + (itemData.weight or 0) * amount <= maxWeight
 end

@@ -6,22 +6,30 @@ RSGCore.Player = {}
 -- Will cause major issues!
 
 local resourceName = GetCurrentResourceName()
+local jsonColumns = { 'money', 'job', 'gang', 'position', 'metadata', 'charinfo' }
+
+local function decodePlayerRow(PlayerData)
+    for i = 1, #jsonColumns do
+        local col = jsonColumns[i]
+        PlayerData[col] = json.decode(PlayerData[col] or 'null')
+    end
+    return PlayerData
+end
+
+local function playerLabel(src)
+    return GetPlayerName(src) or ('ID ' .. tostring(src))
+end
 function RSGCore.Player.Login(source, citizenid, newData)
     if source and source ~= '' then
         if citizenid then
             local license = RSGCore.Functions.GetIdentifier(source, 'license')
             local PlayerData = MySQL.prepare.await('SELECT * FROM players where citizenid = ?', { citizenid })
             if PlayerData and license == PlayerData.license then
-                PlayerData.money = json.decode(PlayerData.money)
-                PlayerData.job = json.decode(PlayerData.job)
-                PlayerData.gang = json.decode(PlayerData.gang)
-                PlayerData.position = json.decode(PlayerData.position)
-                PlayerData.metadata = json.decode(PlayerData.metadata)
-                PlayerData.charinfo = json.decode(PlayerData.charinfo)
-                RSGCore.Player.CheckPlayerData(source, PlayerData)
+                RSGCore.Player.CheckPlayerData(source, decodePlayerRow(PlayerData))
             else
+                TriggerEvent('rsg-log:server:CreateLog', 'anticheat', 'Anti-Cheat', 'white', playerLabel(source) .. ' Has Been Dropped For Character Joining Exploit', false)
                 DropPlayer(source, Lang:t('info.exploit_dropped'))
-                TriggerEvent('rsg-log:server:CreateLog', 'anticheat', 'Anti-Cheat', 'white', GetPlayerName(source) .. ' Has Been Dropped For Character Joining Exploit', false)
+                return false
             end
         else
             RSGCore.Player.CheckPlayerData(source, newData)
@@ -37,13 +45,7 @@ function RSGCore.Player.GetOfflinePlayer(citizenid)
     if citizenid then
         local PlayerData = MySQL.prepare.await('SELECT * FROM players where citizenid = ?', { citizenid })
         if PlayerData then
-            PlayerData.money = json.decode(PlayerData.money)
-            PlayerData.job = json.decode(PlayerData.job)
-            PlayerData.gang = json.decode(PlayerData.gang)
-            PlayerData.position = json.decode(PlayerData.position)
-            PlayerData.metadata = json.decode(PlayerData.metadata)
-            PlayerData.charinfo = json.decode(PlayerData.charinfo)
-            return RSGCore.Player.CheckPlayerData(nil, PlayerData)
+            return RSGCore.Player.CheckPlayerData(nil, decodePlayerRow(PlayerData))
         end
     end
     return nil
@@ -65,13 +67,7 @@ function RSGCore.Player.GetOfflinePlayerByLicense(license)
     if license then
         local PlayerData = MySQL.prepare.await('SELECT * FROM players where license = ?', { license })
         if PlayerData then
-            PlayerData.money = json.decode(PlayerData.money)
-            PlayerData.job = json.decode(PlayerData.job)
-            PlayerData.gang = json.decode(PlayerData.gang)
-            PlayerData.position = json.decode(PlayerData.position)
-            PlayerData.metadata = json.decode(PlayerData.metadata)
-            PlayerData.charinfo = json.decode(PlayerData.charinfo)
-            return RSGCore.Player.CheckPlayerData(nil, PlayerData)
+            return RSGCore.Player.CheckPlayerData(nil, decodePlayerRow(PlayerData))
         end
     end
     return nil
@@ -158,7 +154,8 @@ end
 function RSGCore.Player.Logout(source)
     TriggerClientEvent('RSGCore:Client:OnPlayerUnload', source)
     TriggerEvent('RSGCore:Server:OnPlayerUnload', source)
-    TriggerClientEvent('RSGCore:Player:UpdatePlayerData', source)
+    -- save directly on the server instead of round-tripping through the client
+    if RSGCore.Players[source] then RSGCore.Players[source].Functions.Save() end
     Wait(200)
     RSGCore.Players[source] = nil
 end
@@ -166,6 +163,30 @@ end
 -- Create a new character
 -- Don't touch any of this unless you know what you are doing
 -- Will cause major issues!
+
+local stateBagKeys = { 'hunger', 'thirst', 'cleanliness', 'stress', 'health' }
+
+-- numeric metadata that must stay within a range
+local clampedMeta = {
+    hunger = { 0, 100 },
+    thirst = { 0, 100 },
+    cleanliness = { 0, 100 },
+    stress = { 0, 100 },
+    health = { 0, 10000 },
+    armor = { 0, 100 },
+}
+
+local function isValidAmount(amount)
+    return amount ~= nil and amount == amount and amount >= 0 and amount ~= math.huge
+end
+
+local function moneyLog(self, action, color, moneytype, amount, reason, verb)
+    local d = self.PlayerData
+    TriggerEvent('rsg-log:server:CreateLog', 'playermoney', action, color,
+        ('**%s (citizenid: %s | id: %s)** $%s (%s) %s, new %s balance: %s reason: %s'):format(
+            playerLabel(d.source), d.citizenid, d.source, amount, moneytype, verb, moneytype, d.money[moneytype], reason),
+        amount > 100000)
+end
 
 function RSGCore.Player.CreatePlayer(PlayerData, Offline)
     local self = {}
@@ -185,6 +206,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
     end
 
     function self.Functions.SetJob(job, grade)
+        if type(job) ~= 'string' then return false end
         job = job:lower()
         grade = grade or '0'
         if not RSGCore.Shared.Jobs[job] then return false end
@@ -193,6 +215,8 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
             label = RSGCore.Shared.Jobs[job].label,
             onduty = RSGCore.Shared.Jobs[job].defaultDuty,
             type = RSGCore.Shared.Jobs[job].type or 'none',
+            payment = 0,
+            isboss = false,
             grade = {
                 name = 'No Grades',
                 level = 0,
@@ -206,6 +230,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
             self.PlayerData.job.grade.name = jobGradeInfo.name
             self.PlayerData.job.grade.level = tonumber(gradeKey)
             self.PlayerData.job.grade.payment = jobGradeInfo.payment
+            self.PlayerData.job.payment = jobGradeInfo.payment or 0
             self.PlayerData.job.grade.isboss = jobGradeInfo.isboss or false
             self.PlayerData.job.isboss = jobGradeInfo.isboss or false
         end
@@ -220,12 +245,14 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
     end
 
     function self.Functions.SetGang(gang, grade)
+        if type(gang) ~= 'string' then return false end
         gang = gang:lower()
         grade = grade or '0'
         if not RSGCore.Shared.Gangs[gang] then return false end
         self.PlayerData.gang = {
             name = gang,
             label = RSGCore.Shared.Gangs[gang].label,
+            isboss = false,
             grade = {
                 name = 'No Grades',
                 level = 0,
@@ -269,10 +296,12 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
 
     function self.Functions.SetMetaData(meta, val)
         local function validateData(key, value)
-            if key == 'hunger' or key == 'thirst' or key == 'cleanliness' then
-                value = lib.math.clamp(value, 0, 100)
+            if clampedMeta[key] then
+                -- non-numeric values (e.g. a client-set statebag) previously crashed Save()
+                value = tonumber(value)
+                if not value or value ~= value then return self.PlayerData.metadata[key] end
+                value = lib.math.clamp(value, clampedMeta[key][1], clampedMeta[key][2])
             end
-
             return value
         end
 
@@ -295,22 +324,18 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
     end
 
     function self.Functions.AddRep(rep, amount)
-        if not rep or not amount then return end
         local addAmount = tonumber(amount)
+        if not rep or not addAmount then return end
         local currentRep = self.PlayerData.metadata['rep'][rep] or 0
         self.PlayerData.metadata['rep'][rep] = currentRep + addAmount
         self.Functions.UpdatePlayerData()
     end
 
     function self.Functions.RemoveRep(rep, amount)
-        if not rep or not amount then return end
         local removeAmount = tonumber(amount)
+        if not rep or not removeAmount then return end
         local currentRep = self.PlayerData.metadata['rep'][rep] or 0
-        if currentRep - removeAmount < 0 then
-            self.PlayerData.metadata['rep'][rep] = 0
-        else
-            self.PlayerData.metadata['rep'][rep] = currentRep - removeAmount
-        end
+        self.PlayerData.metadata['rep'][rep] = math.max(0, currentRep - removeAmount)
         self.Functions.UpdatePlayerData()
     end
 
@@ -319,29 +344,35 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         return self.PlayerData.metadata['rep'][rep] or 0
     end
 
-    function self.Functions.AddMoney(moneytype, amount, reason)
-        reason = reason or 'unknown'
+    ---Shared validation for money operations. Returns the normalised moneytype and amount, or nil.
+    local function prepMoney(moneytype, amount)
+        if type(moneytype) ~= 'string' then return end
         moneytype = moneytype:lower()
         amount = tonumber(amount)
-        if not amount then return false end
-        if amount < 0 then return end
-        if moneytype == 'gold' and amount % 1 ~= 0 then return false end
-        if not self.PlayerData.money[moneytype] then return false end
+        if not isValidAmount(amount) then return end -- rejects nil, NaN, negative and infinite amounts
+        if moneytype == 'gold' and amount % 1 ~= 0 then return end
+        if not self.PlayerData.money[moneytype] then return end
+        return moneytype, amount
+    end
+
+    local function onMoneyChanged(moneytype, amount, operation, reason, hudAmount, hudIsMinus)
+        if not IsMoneyItemEnabled(moneytype) then
+            TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, hudAmount, hudIsMinus)
+        end
+        TriggerClientEvent('RSGCore:Client:OnMoneyChange', self.PlayerData.source, moneytype, amount, operation, reason)
+        TriggerEvent('RSGCore:Server:OnMoneyChange', self.PlayerData.source, moneytype, amount, operation, reason)
+    end
+
+    function self.Functions.AddMoney(moneytype, amount, reason)
+        reason = reason or 'unknown'
+        moneytype, amount = prepMoney(moneytype, amount)
+        if not moneytype then return false end
         self.PlayerData.money[moneytype] = self.PlayerData.money[moneytype] + amount
 
         if not self.Offline then
             self.Functions.UpdatePlayerData()
-            if amount > 100000 then
-                TriggerEvent('rsg-log:server:CreateLog', 'playermoney', 'AddMoney', 'lightgreen', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') added, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype] .. ' reason: ' .. reason, true)
-            else
-                TriggerEvent('rsg-log:server:CreateLog', 'playermoney', 'AddMoney', 'lightgreen', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') added, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype] .. ' reason: ' .. reason)
-            end
-
-            if not IsMoneyItemEnabled(moneytype) then
-                TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, amount, false)
-            end
-            TriggerClientEvent('RSGCore:Client:OnMoneyChange', self.PlayerData.source, moneytype, amount, 'add', reason)
-            TriggerEvent('RSGCore:Server:OnMoneyChange', self.PlayerData.source, moneytype, amount, 'add', reason)
+            moneyLog(self, 'AddMoney', 'lightgreen', moneytype, amount, reason, 'added')
+            onMoneyChanged(moneytype, amount, 'add', reason, amount, false)
         end
 
         return true
@@ -349,34 +380,19 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
 
     function self.Functions.RemoveMoney(moneytype, amount, reason)
         reason = reason or 'unknown'
-        moneytype = moneytype:lower()
-        amount = tonumber(amount)
-        if not amount then return false end
-        if amount < 0 then return end
-        if moneytype == 'gold' and amount % 1 ~= 0 then return false end
-        if not self.PlayerData.money[moneytype] then return false end
+        moneytype, amount = prepMoney(moneytype, amount)
+        if not moneytype then return false end
+        local newBalance = self.PlayerData.money[moneytype] - amount
         for _, mtype in pairs(RSGCore.Config.Money.DontAllowMinus) do
-            if mtype == moneytype then
-                if (self.PlayerData.money[moneytype] - amount) < 0 then
-                    return false
-                end
-            end
+            if mtype == moneytype and newBalance < 0 then return false end
         end
-        if self.PlayerData.money[moneytype] - amount < RSGCore.Config.Money.MinusLimit then return false end
-        self.PlayerData.money[moneytype] = self.PlayerData.money[moneytype] - amount
+        if newBalance < RSGCore.Config.Money.MinusLimit then return false end
+        self.PlayerData.money[moneytype] = newBalance
 
         if not self.Offline then
             self.Functions.UpdatePlayerData()
-            if amount > 100000 then
-                TriggerEvent('rsg-log:server:CreateLog', 'playermoney', 'RemoveMoney', 'red', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') removed, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype] .. ' reason: ' .. reason, true)
-            else
-                TriggerEvent('rsg-log:server:CreateLog', 'playermoney', 'RemoveMoney', 'red', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') removed, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype] .. ' reason: ' .. reason)
-            end
-            if not IsMoneyItemEnabled(moneytype) then
-                TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, amount, true)
-            end
-            TriggerClientEvent('RSGCore:Client:OnMoneyChange', self.PlayerData.source, moneytype, amount, 'remove', reason)
-            TriggerEvent('RSGCore:Server:OnMoneyChange', self.PlayerData.source, moneytype, amount, 'remove', reason)
+            moneyLog(self, 'RemoveMoney', 'red', moneytype, amount, reason, 'removed')
+            onMoneyChanged(moneytype, amount, 'remove', reason, amount, true)
         end
 
         return true
@@ -384,30 +400,22 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
 
     function self.Functions.SetMoney(moneytype, amount, reason)
         reason = reason or 'unknown'
-        moneytype = moneytype:lower()
-        amount = tonumber(amount)
-        if not amount then return false end
-        if amount < 0 then return false end
-        if moneytype == 'gold' and amount % 1 ~= 0 then return false end
-        if not self.PlayerData.money[moneytype] then return false end
+        moneytype, amount = prepMoney(moneytype, amount)
+        if not moneytype then return false end
         local difference = amount - self.PlayerData.money[moneytype]
         self.PlayerData.money[moneytype] = amount
 
         if not self.Offline then
             self.Functions.UpdatePlayerData()
-            TriggerEvent('rsg-log:server:CreateLog', 'playermoney', 'SetMoney', 'green', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') set, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype] .. ' reason: ' .. reason)
-            if not IsMoneyItemEnabled(moneytype) then
-                TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, math.abs(difference), difference < 0)
-            end
-            TriggerClientEvent('RSGCore:Client:OnMoneyChange', self.PlayerData.source, moneytype, amount, 'set', reason)
-            TriggerEvent('RSGCore:Server:OnMoneyChange', self.PlayerData.source, moneytype, amount, 'set', reason)
+            moneyLog(self, 'SetMoney', 'green', moneytype, amount, reason, 'set')
+            onMoneyChanged(moneytype, amount, 'set', reason, math.abs(difference), difference < 0)
         end
 
         return true
     end
 
     function self.Functions.GetMoney(moneytype)
-        if not moneytype then return false end
+        if type(moneytype) ~= 'string' then return false end
         moneytype = moneytype:lower()
         return self.PlayerData.money[moneytype]
     end
@@ -436,10 +444,8 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
 
     function self.Functions.PersistStateBags()
         local metadata = {}
-        local keys = { "hunger", "thirst", "cleanliness", "stress", "health" }
-    
         local state = Player(self.PlayerData.source).state
-        for _, key in ipairs(keys) do
+        for _, key in ipairs(stateBagKeys) do
             if state[key] ~= nil then
                 metadata[key] = state[key]
             end
@@ -452,10 +458,8 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
 
     function self.Functions.InitializeStateBags()
         local metadata = self.PlayerData.metadata
-        local keys = { "hunger", "thirst", "cleanliness", "stress", "health" }
-    
         local state = Player(self.PlayerData.source).state
-        for _, key in ipairs(keys) do
+        for _, key in ipairs(stateBagKeys) do
             if metadata[key] ~= nil then
                 state[key] = metadata[key]
             end
@@ -531,55 +535,49 @@ end
 
 -- Save player info to database (make sure citizenid is the primary key in your database)
 
+local SAVE_QUERY = 'INSERT INTO players (citizenid, cid, license, name, money, charinfo, job, gang, position, metadata, weight, slots) VALUES (:citizenid, :cid, :license, :name, :money, :charinfo, :job, :gang, :position, :metadata, :weight, :slots) ON DUPLICATE KEY UPDATE cid = :cid, name = :name, money = :money, charinfo = :charinfo, job = :job, gang = :gang, position = :position, metadata = :metadata, weight = :weight, slots = :slots'
+
+local function savePlayerRow(PlayerData, position)
+    MySQL.insert(SAVE_QUERY, {
+        citizenid = PlayerData.citizenid,
+        cid = tonumber(PlayerData.cid),
+        license = PlayerData.license,
+        name = PlayerData.name,
+        money = json.encode(PlayerData.money),
+        charinfo = json.encode(PlayerData.charinfo),
+        job = json.encode(PlayerData.job),
+        gang = json.encode(PlayerData.gang),
+        position = json.encode(position),
+        metadata = json.encode(PlayerData.metadata),
+        weight = PlayerData.weight,
+        slots = PlayerData.slots,
+    })
+end
+
 function RSGCore.Player.Save(source)
-    local ped = GetPlayerPed(source)
-    local pcoords = GetEntityCoords(ped)
-    local PlayerData = RSGCore.Players[source].PlayerData
-    if PlayerData then
-        MySQL.insert('INSERT INTO players (citizenid, cid, license, name, money, charinfo, job, gang, position, metadata, weight, slots) VALUES (:citizenid, :cid, :license, :name, :money, :charinfo, :job, :gang, :position, :metadata, :weight, :slots) ON DUPLICATE KEY UPDATE cid = :cid, name = :name, money = :money, charinfo = :charinfo, job = :job, gang = :gang, position = :position, metadata = :metadata, weight = :weight, slots = :slots', {
-            citizenid = PlayerData.citizenid,
-            cid = tonumber(PlayerData.cid),
-            license = PlayerData.license,
-            name = PlayerData.name,
-            money = json.encode(PlayerData.money),
-            charinfo = json.encode(PlayerData.charinfo),
-            job = json.encode(PlayerData.job),
-            gang = json.encode(PlayerData.gang),
-            position = json.encode(pcoords),
-            metadata = json.encode(PlayerData.metadata),
-            weight = PlayerData.weight,
-            slots = PlayerData.slots,
-        })
-        if GetResourceState('rsg-inventory') ~= 'missing' then exports['rsg-inventory']:SaveInventory(source) end
-        RSGCore.ShowSuccess(resourceName, PlayerData.name .. ' PLAYER SAVED!')
-    else
-        RSGCore.ShowError(resourceName, 'ERROR RSGCore.PLAYER.SAVE - PLAYERDATA IS EMPTY!')
+    local Player = RSGCore.Players[source]
+    if not Player or not Player.PlayerData then
+        return RSGCore.ShowError(resourceName, 'ERROR RSGCore.PLAYER.SAVE - PLAYERDATA IS EMPTY!')
     end
+    local PlayerData = Player.PlayerData
+    local pcoords = GetEntityCoords(GetPlayerPed(source))
+    -- keep the last known position if the ped is not available (e.g. mid-disconnect), instead of saving 0,0,0
+    if pcoords.x == 0.0 and pcoords.y == 0.0 and pcoords.z == 0.0 then
+        pcoords = PlayerData.position
+    end
+    savePlayerRow(PlayerData, pcoords)
+    if GetResourceState('rsg-inventory') ~= 'missing' then exports['rsg-inventory']:SaveInventory(source) end
+    RSGCore.ShowSuccess(resourceName, PlayerData.name .. ' PLAYER SAVED!')
 end
 
 function RSGCore.Player.SaveOffline(PlayerData)
-    if PlayerData then
-        MySQL.insert('INSERT INTO players (citizenid, cid, license, name, money, charinfo, job, gang, position, metadata, weight, slots) VALUES (:citizenid, :cid, :license, :name, :money, :charinfo, :job, :gang, :position, :metadata, :weight, :slots) ON DUPLICATE KEY UPDATE cid = :cid, name = :name, money = :money, charinfo = :charinfo, job = :job, gang = :gang, position = :position, metadata = :metadata, weight = :weight, slots = :slots', {
-            citizenid = PlayerData.citizenid,
-            cid = tonumber(PlayerData.cid),
-            license = PlayerData.license,
-            name = PlayerData.name,
-            money = json.encode(PlayerData.money),
-            charinfo = json.encode(PlayerData.charinfo),
-            job = json.encode(PlayerData.job),
-            gang = json.encode(PlayerData.gang),
-            position = json.encode(PlayerData.position),
-            metadata = json.encode(PlayerData.metadata),
-            weight = PlayerData.weight,
-            slots = PlayerData.slots,
-        })
-        if GetResourceState('rsg-inventory') ~= 'missing' then exports['rsg-inventory']:SaveInventory(PlayerData, true) end
-        RSGCore.ShowSuccess(resourceName, PlayerData.name .. ' OFFLINE PLAYER SAVED!')
-    else
-        RSGCore.ShowError(resourceName, 'ERROR RSGCore.PLAYER.SAVEOFFLINE - PLAYERDATA IS EMPTY!')
+    if not PlayerData then
+        return RSGCore.ShowError(resourceName, 'ERROR RSGCore.PLAYER.SAVEOFFLINE - PLAYERDATA IS EMPTY!')
     end
+    savePlayerRow(PlayerData, PlayerData.position)
+    if GetResourceState('rsg-inventory') ~= 'missing' then exports['rsg-inventory']:SaveInventory(PlayerData, true) end
+    RSGCore.ShowSuccess(resourceName, PlayerData.name .. ' OFFLINE PLAYER SAVED!')
 end
-
 
 -- Delete character
 
@@ -593,52 +591,39 @@ local playertables = { -- Add tables as needed
     { table = 'telegrams'},
 }
 
+local function deleteCharacterRows(citizenid, onDone)
+    local queries = table.create(#playertables, 0)
+    for i = 1, #playertables do
+        queries[i] = { query = ('DELETE FROM %s WHERE citizenid = ?'):format(playertables[i].table), values = { citizenid } }
+    end
+    MySQL.transaction(queries, function(result)
+        if result then onDone() end
+    end)
+end
+
 function RSGCore.Player.DeleteCharacter(source, citizenid)
     local license = RSGCore.Functions.GetIdentifier(source, 'license')
     local result = MySQL.scalar.await('SELECT license FROM players where citizenid = ?', { citizenid })
-    if license == result then
-        local query = 'DELETE FROM %s WHERE citizenid = ?'
-        local tableCount = #playertables
-        local queries = table.create(tableCount, 0)
-
-        for i = 1, tableCount do
-            local v = playertables[i]
-            queries[i] = { query = query:format(v.table), values = { citizenid } }
-        end
-
-        MySQL.transaction(queries, function(result2)
-            if result2 then
-                TriggerEvent('rsg-log:server:CreateLog', 'joinleave', 'Character Deleted', 'red', '**' .. GetPlayerName(source) .. '** ' .. license .. ' deleted **' .. citizenid .. '**..')
-            end
+    if license and license == result then
+        deleteCharacterRows(citizenid, function()
+            TriggerEvent('rsg-log:server:CreateLog', 'joinleave', 'Character Deleted', 'red', ('**%s** %s deleted **%s**..'):format(playerLabel(source), license, citizenid))
         end)
     else
+        TriggerEvent('rsg-log:server:CreateLog', 'anticheat', 'Anti-Cheat', 'white', playerLabel(source) .. ' Has Been Dropped For Character Deletion Exploit', true)
         DropPlayer(source, Lang:t('info.exploit_dropped'))
-        TriggerEvent('rsg-log:server:CreateLog', 'anticheat', 'Anti-Cheat', 'white', GetPlayerName(source) .. ' Has Been Dropped For Character Deletion Exploit', true)
     end
 end
 
 function RSGCore.Player.ForceDeleteCharacter(citizenid)
     local result = MySQL.scalar.await('SELECT license FROM players where citizenid = ?', { citizenid })
-    if result then
-        local query = 'DELETE FROM %s WHERE citizenid = ?'
-        local tableCount = #playertables
-        local queries = table.create(tableCount, 0)
-        local Player = RSGCore.Functions.GetPlayerByCitizenId(citizenid)
-
-        if Player then
-            DropPlayer(Player.PlayerData.source, 'An admin deleted the character which you are currently using')
-        end
-        for i = 1, tableCount do
-            local v = playertables[i]
-            queries[i] = { query = query:format(v.table), values = { citizenid } }
-        end
-
-        MySQL.transaction(queries, function(result2)
-            if result2 then
-                TriggerEvent('rsg-log:server:CreateLog', 'joinleave', 'Character Force Deleted', 'red', 'Character **' .. citizenid .. '** got deleted')
-            end
-        end)
+    if not result then return end
+    local Player = RSGCore.Functions.GetPlayerByCitizenId(citizenid)
+    if Player then
+        DropPlayer(Player.PlayerData.source, Lang:t('info.character_deleted_by_admin'))
     end
+    deleteCharacterRows(citizenid, function()
+        TriggerEvent('rsg-log:server:CreateLog', 'joinleave', 'Character Force Deleted', 'red', 'Character **' .. citizenid .. '** got deleted')
+    end)
 end
 
 -- Inventory Backwards Compatibility

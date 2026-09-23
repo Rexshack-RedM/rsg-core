@@ -49,6 +49,12 @@ local function getInventoryMoney(playerData)
     return money
 end
 
+local function refreshInventory(src)
+    if Player(src).state.inv_busy then
+        TriggerClientEvent('rsg-inventory:client:updateInventory', src)
+    end
+end
+
 local function removeItems(player, itemName, amountToRemove, reason)
     for _, item in ipairs(player.Functions.GetItemsByName(itemName) or {}) do
         local removeAmount = math.min(item.amount, amountToRemove)
@@ -58,10 +64,10 @@ local function removeItems(player, itemName, amountToRemove, reason)
     end
 end
 
+-- work in whole cents to avoid float errors (e.g. 0.29 * 100 = 28.999... which lost a cent)
 local function getParts(number)
-    local integerPart, decimalPart = math.modf(number)
-    local decimalValue = math.floor(decimalPart * 100)
-    return integerPart, decimalValue
+    local totalCents = math.floor(number * 100 + 0.5)
+    return totalCents // 100, totalCents % 100
 end
 
 local function calculateTotal(dollars, cents)
@@ -69,7 +75,7 @@ local function calculateTotal(dollars, cents)
 end
 
 ----------------------------
--- Money operations hanlders
+-- Money operations handlers
 ----------------------------
 
 local function handleAddMoney(src, moneytype, amount)
@@ -80,9 +86,7 @@ local function handleAddMoney(src, moneytype, amount)
         if amount > 0 then
             player.Functions.AddItem(moneyItems.gold.unit, amount)
         end
-        if Player(src).state.inv_busy then
-            TriggerClientEvent('rsg-inventory:client:updateInventory', src)
-        end
+        refreshInventory(src)
         return
     end
 
@@ -95,9 +99,7 @@ local function handleAddMoney(src, moneytype, amount)
         player.Functions.AddItem(moneyItems[moneytype].cent, cents)
     end
 
-    if Player(src).state.inv_busy then
-        TriggerClientEvent('rsg-inventory:client:updateInventory', src)
-    end
+    refreshInventory(src)
 end
 
 local function handleRemoveMoney(src, moneytype, amount)
@@ -109,9 +111,7 @@ local function handleRemoveMoney(src, moneytype, amount)
     if moneytype == 'gold' then
         if inventoryMoney.gold < amount then return false end
         removeItems(player, moneyItems.gold.unit, amount)
-        if Player(src).state.inv_busy then
-            TriggerClientEvent('rsg-inventory:client:updateInventory', src)
-        end
+        refreshInventory(src)
         return true
     end
 
@@ -144,9 +144,7 @@ local function handleRemoveMoney(src, moneytype, amount)
         player.Functions.AddItem(centName, changeInCents) 
     end
 
-    if Player(src).state.inv_busy then
-        TriggerClientEvent('rsg-inventory:client:updateInventory', src)
-    end
+    refreshInventory(src)
 
     return true
 end
@@ -164,24 +162,19 @@ local function handleSetMoney(src, moneytype, amount)
     if moneytype == 'gold' then
         removeAllItems(moneyItems.gold.unit)
         if amount > 0 then player.Functions.AddItem(moneyItems.gold.unit, amount) end
-        if Player(src).state.inv_busy then
-            TriggerClientEvent('rsg-inventory:client:updateInventory', src)
-        end
+        refreshInventory(src)
         return
     end
 
     removeAllItems(moneyItems[moneytype].cent)
     removeAllItems(moneyItems[moneytype].dollar)
 
-    local dollars, cents = math.modf(amount)
-    cents = math.floor(cents * 100)
+    local dollars, cents = getParts(amount)
 
     if dollars > 0 then player.Functions.AddItem(moneyItems[moneytype].dollar, dollars) end
     if cents > 0 then player.Functions.AddItem(moneyItems[moneytype].cent, cents) end
 
-    if Player(src).state.inv_busy then
-        TriggerClientEvent('rsg-inventory:client:updateInventory', src)
-    end
+    refreshInventory(src)
 end
 
 -----------------------------------------------------------------
@@ -189,11 +182,12 @@ end
 -----------------------------------------------------------------
 
 local initialized = {}
-RegisterNetEvent('RSGCore:Server:OnPlayerLoaded')
-AddEventHandler('RSGCore:Server:OnPlayerLoaded', function()
+RegisterNetEvent('RSGCore:Server:OnPlayerLoaded', function()
     local src = source
     local player = RSGCore.Functions.GetPlayer(src)
     if not player then return end
+    -- only run once per login; the client could otherwise re-trigger the item <-> balance reset at will
+    if initialized[player.PlayerData.citizenid] then return end
 
     local money = getInventoryMoney(player.PlayerData)
 
@@ -225,6 +219,16 @@ AddEventHandler('RSGCore:Server:OnPlayerLoaded', function()
 
     -- failsafe to prevent early override by synchronization
     initialized[player.PlayerData.citizenid] = true
+end)
+
+local function clearInitialized(src)
+    local player = RSGCore.Functions.GetPlayer(src)
+    if player then initialized[player.PlayerData.citizenid] = nil end
+end
+
+AddEventHandler('RSGCore:Server:OnPlayerUnload', clearInitialized)
+AddEventHandler('RSGCore:Server:PlayerDropped', function(player)
+    initialized[player.PlayerData.citizenid] = nil
 end)
 
 -------------------------------------------------------------
@@ -267,25 +271,22 @@ if RSGCore.Config.Money.EnableMoneyItems or RSGCore.Config.Gold.EnableGoldItems 
             local bloodmoney = calculateTotal(money.bloodDollars, money.bloodCents)
 
             if cash ~= playerData.money.cash then
-                local operation = cash > (playerData.money.cash or 0) and 'add' or 'remove'
-                local amount = math.abs(cash - (playerData.money.cash or 0))
+                local old = playerData.money.cash or 0
                 playerData.money.cash = cash
-                TriggerClientEvent('hud:client:OnMoneyChange', playerData.source, 'cash', amount, operation)
+                TriggerClientEvent('hud:client:OnMoneyChange', playerData.source, 'cash', math.abs(cash - old), cash < old)
             end
 
             if bloodmoney ~= playerData.money.bloodmoney then
-                local operation = bloodmoney > (playerData.money.bloodmoney or 0) and 'add' or 'remove'
-                local amount = math.abs(bloodmoney - (playerData.money.bloodmoney or 0))
+                local old = playerData.money.bloodmoney or 0
                 playerData.money.bloodmoney = bloodmoney
-                TriggerClientEvent('hud:client:OnMoneyChange', playerData.source, 'bloodmoney', amount, operation)
+                TriggerClientEvent('hud:client:OnMoneyChange', playerData.source, 'bloodmoney', math.abs(bloodmoney - old), bloodmoney < old)
             end
         end
 
         if RSGCore.Config.Gold.EnableGoldItems and money.gold ~= playerData.money.gold then
-            local operation = money.gold > (playerData.money.gold or 0) and 'add' or 'remove'
-            local amount = math.abs(money.gold - (playerData.money.gold or 0))
+            local old = playerData.money.gold or 0
             playerData.money.gold = money.gold
-            TriggerClientEvent('hud:client:OnMoneyChange', playerData.source, 'gold', amount, operation)
+            TriggerClientEvent('hud:client:OnMoneyChange', playerData.source, 'gold', math.abs(money.gold - old), money.gold < old)
         end
 
         return playerData

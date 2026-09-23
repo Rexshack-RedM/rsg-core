@@ -1,18 +1,19 @@
 local Prompts = {}
 local PromptGroups = {}
 
-local function distanceBetween(a, b)
-    local dx = a.x - (b.x or b[1])
-    local dy = a.y - (b.y or b[2])
-    local dz = a.z - (b.z or b[3])
-    return math.sqrt(dx * dx + dy * dy + dz * dz)
+local function toVec3(c)
+    return vector3(c.x or c[1], c.y or c[2], c.z or c[3])
+end
+
+local function safeDelete(prompt)
+    if prompt then UiPromptDelete(prompt) end
 end
 
 local function createPrompt(name, coords, key, text, options)
     if (Prompts[name] == nil) then
         Prompts[name] = {}
         Prompts[name].name = name
-        Prompts[name].coords = coords
+        Prompts[name].coords = toVec3(coords)
         Prompts[name].key = key
         Prompts[name].text = text
         Prompts[name].options = options
@@ -25,13 +26,13 @@ end
 local function createPromptGroup(group, label, coords, prompts)
     if (PromptGroups[group] == nil) then
         PromptGroups[group] = {}
-        PromptGroups[group].coords = coords
+        PromptGroups[group].coords = toVec3(coords)
         PromptGroups[group].label = label
         PromptGroups[group].group = group
         PromptGroups[group].created = false
         PromptGroups[group].prompts = prompts
     else
-        print('[rsg-core]  Prompt with name ' .. group .. ' already exists!')
+        print('[rsg-core]  Prompt group ' .. tostring(group) .. ' already exists!')
     end
 end
 
@@ -46,15 +47,15 @@ end
 
 local function deletePrompt(name)
     if Prompts[name] then
-        UiPromptDelete(Prompts[name].prompt)
+        safeDelete(Prompts[name].prompt)
         Prompts[name] = nil
     end
 end
 
 local function deletePromptGroup(name)
     if PromptGroups[name] then
-        for k,v in pairs(PromptGroups[name].prompts) do
-            UiPromptDelete(v.prompt)
+        for _, v in pairs(PromptGroups[name].prompts) do
+            safeDelete(v.prompt)
         end
         PromptGroups[name] = nil
     end
@@ -62,132 +63,101 @@ end
 
 
 local function executeOptions(options)
-    if (options.type == 'client') then
-        if (options.args == nil) then
-            TriggerEvent(options.event)
-        else
-            TriggerEvent(options.event, table.unpack(options.args))
-        end
+    if not options or not options.event then return end
+    local args = options.args or {}
+    if options.type == 'client' then
+        TriggerEvent(options.event, table.unpack(args))
     else
-        if (options.args == nil) then
-            TriggerServerEvent(options.event)
-        else
-            TriggerServerEvent(options.event, table.unpack(options.args))
-        end
+        TriggerServerEvent(options.event, table.unpack(args))
     end
+end
+
+local function buildPrompt(key, text, group)
+    local prompt = UiPromptRegisterBegin()
+    UiPromptSetControlAction(prompt, key)
+    UiPromptSetText(prompt, CreateVarString(10, 'LITERAL_STRING', text))
+    UiPromptSetEnabled(prompt, true)
+    UiPromptSetVisible(prompt, true)
+    UiPromptSetHoldMode(prompt, 1000)
+    if group then UiPromptSetGroup(prompt, group, 0) end
+    UiPromptRegisterEnd(prompt)
+    return prompt
 end
 
 local function setupPrompt(prompt)
-    local str = CreateVarString(10, 'LITERAL_STRING', prompt.text)
-    prompt.prompt = Citizen.InvokeNative(0x04F97DE45A519419, Citizen.ReturnResultAnyway())
-    Citizen.InvokeNative(0xB5352B7494A08258, prompt.prompt, prompt.key)
-    Citizen.InvokeNative(0x5DD02A8318420DD7, prompt.prompt, str)
-    Citizen.InvokeNative(0x8A0FB4D03A630D21, prompt.prompt, true)
-    Citizen.InvokeNative(0x71215ACCFDE075EE, prompt.prompt, true)
-    Citizen.InvokeNative(0x94073D5CA3F16B7B, prompt.prompt, 1000)
-    Citizen.InvokeNative(0xF7AA2696A22AD8B9, prompt.prompt)
+    prompt.prompt = buildPrompt(prompt.key, prompt.text)
 end
 
-local function setupPromptGroup(prompt)
-    for k,v in pairs(prompt.prompts) do
-        local str = CreateVarString(10, 'LITERAL_STRING', v.text)
-        v.prompt = Citizen.InvokeNative(0x04F97DE45A519419, Citizen.ReturnResultAnyway())
-        Citizen.InvokeNative(0xB5352B7494A08258, v.prompt, v.key)
-        Citizen.InvokeNative(0x5DD02A8318420DD7, v.prompt, str)
-        Citizen.InvokeNative(0x8A0FB4D03A630D21, v.prompt, true)
-        Citizen.InvokeNative(0x71215ACCFDE075EE, v.prompt, true)
-        Citizen.InvokeNative(0x94073D5CA3F16B7B, v.prompt, 1000)
-        Citizen.InvokeNative(0x2F11D3A254169EA4, v.prompt, prompt.group, 0)
-        Citizen.InvokeNative(0xF7AA2696A22AD8B9, v.prompt)
+local function setupPromptGroup(pGroup)
+    for _, v in pairs(pGroup.prompts) do
+        v.prompt = buildPrompt(v.key, v.text, pGroup.group)
     end
+    pGroup.created = true
+end
 
-    prompt.created = true
+-- briefly hides a prompt after it fires so the hold has to be restarted
+local function resetPrompt(prompt)
+    UiPromptSetEnabled(prompt, false)
+    UiPromptSetVisible(prompt, false)
+    Wait(0)
+    UiPromptSetEnabled(prompt, true)
+    UiPromptSetVisible(prompt, true)
 end
 
 AddEventHandler('onResourceStop', function(resourceName)
     if GetCurrentResourceName() ~= resourceName then return end
-
-    for k,v in pairs(Prompts) do
-        UiPromptDelete(Prompts[k].prompt)
+    for _, v in pairs(Prompts) do
+        safeDelete(v.prompt)
     end
-    Prompts = {}
-
-    for _,pGroup in pairs(PromptGroups) do
-        for k,v in pairs(pGroup.prompts) do
-            UiPromptDelete(v.prompt)
-        end 
+    for _, pGroup in pairs(PromptGroups) do
+        for _, v in pairs(pGroup.prompts) do
+            safeDelete(v.prompt)
+        end
     end
-    PromptGroups = {}
+    Prompts, PromptGroups = {}, {}
 end)
 
+-- single loop handles both prompts and prompt groups
 CreateThread(function()
     while true do
         local sleep = 1000
-        if (next(Prompts) ~= nil) then
-            local coords = GetEntityCoords(cache.ped, true)
-            for k,v in pairs(Prompts) do
-                local distance = distanceBetween(coords, v.coords)
-                if (distance < RSGConfig.PromptDistance) then
-                    sleep = 1
-                    if (Prompts[k].prompt == nil) then
-                        setupPrompt(Prompts[k])
-                    end
-                    if UiPromptHasHoldModeCompleted(Prompts[k].prompt) then
-                        executeOptions(Prompts[k].options)
-                        UiPromptSetEnabled(Prompts[k].prompt, false)
-                        UiPromptSetVisible(Prompts[k].prompt, false)
-                        Wait(0)
-                        UiPromptSetEnabled(Prompts[k].prompt, true)
-                        UiPromptSetVisible(Prompts[k].prompt, true)
+        if next(Prompts) or next(PromptGroups) then
+            local coords = GetEntityCoords(cache.ped)
+            local maxDist = RSGConfig.PromptDistance
+
+            for _, v in pairs(Prompts) do
+                if #(coords - v.coords) < maxDist then
+                    sleep = 0
+                    if not v.prompt then setupPrompt(v) end
+                    if UiPromptHasHoldModeCompleted(v.prompt) then
+                        executeOptions(v.options)
+                        resetPrompt(v.prompt)
                         break
                     end
-                else
-                    if Prompts[k].prompt then
-                        UiPromptDelete(Prompts[k].prompt)
-                        Prompts[k].prompt = nil
-                    end
+                elseif v.prompt then
+                    UiPromptDelete(v.prompt)
+                    v.prompt = nil
                 end
             end
-        end
-        Wait(sleep)
-    end
-end)
 
-CreateThread(function()
-    while true do
-        local sleep = 1000
-        if (next(PromptGroups) ~= nil) then
-            local coords = GetEntityCoords(cache.ped, true)
-            for k,v in pairs(PromptGroups) do
-                local distance = distanceBetween(coords, v.coords)
-                local promptGroup = PromptGroups[k].group
-                if (distance < RSGConfig.PromptDistance) then
-                    sleep = 1
-                    if (PromptGroups[k].created == false) then
-                        setupPromptGroup(PromptGroups[k])
-                    end
-
-                    Citizen.InvokeNative(0xC65A45D4453C2627, promptGroup, CreateVarString(10, 'LITERAL_STRING', PromptGroups[k].label), 1)
-
-                    for i,j in pairs(PromptGroups[k].prompts) do
-                        if UiPromptHasHoldModeCompleted(j.prompt) then
-                            executeOptions(j.options)
-                            UiPromptSetEnabled(j.prompt, false)
-                            UiPromptSetVisible(j.prompt, false)
-                            Wait(0)
-                            UiPromptSetEnabled(j.prompt, true)
-                            UiPromptSetVisible(j.prompt, true)
+            for _, pGroup in pairs(PromptGroups) do
+                if #(coords - pGroup.coords) < maxDist then
+                    sleep = 0
+                    if not pGroup.created then setupPromptGroup(pGroup) end
+                    Citizen.InvokeNative(0xC65A45D4453C2627, pGroup.group, CreateVarString(10, 'LITERAL_STRING', pGroup.label), 1) -- UiPromptSetActiveGroupThisFrame
+                    for _, v in pairs(pGroup.prompts) do
+                        if UiPromptHasHoldModeCompleted(v.prompt) then
+                            executeOptions(v.options)
+                            resetPrompt(v.prompt)
                             break
                         end
                     end
-                else
-                    if (PromptGroups[k].created) then
-                        for i,j in pairs(PromptGroups[k].prompts) do
-                            UiPromptDelete(j.prompt)
-                            j.prompt = nil
-                        end
-                        PromptGroups[k].created = false
+                elseif pGroup.created then
+                    for _, v in pairs(pGroup.prompts) do
+                        safeDelete(v.prompt)
+                        v.prompt = nil
                     end
+                    pGroup.created = false
                 end
             end
         end
@@ -196,12 +166,12 @@ CreateThread(function()
 end)
 
 -- https://github.com/femga/rdr3_discoveries/tree/master/graphics/HUD/prompts/prompt_types
+-- hides the default prompt types every frame (must run each frame)
 CreateThread(function()
     while true do
-        Wait(1)
-        Citizen.InvokeNative(0xFC094EF26DD153FA, 1)
+        Citizen.InvokeNative(0xFC094EF26DD153FA, 1) -- UiPromptDisablePromptTypeThisFrame
         Citizen.InvokeNative(0xFC094EF26DD153FA, 2)
-        --Citizen.InvokeNative(0xFC094EF26DD153FA, 3)
+        Wait(0)
     end
 end)
 

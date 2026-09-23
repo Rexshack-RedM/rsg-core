@@ -16,8 +16,15 @@ function RSGCore.Functions.TriggerCallback(name, cb, ...)
     TriggerServerEvent('RSGCore:Server:TriggerCallback', name, ...)
 end
 
-function RSGCore.Debug(resource, obj, depth)
-    TriggerServerEvent('RSGCore:DebugSomething', resource, obj, depth)
+-- Prints to the client (F8) console. Previously this was sent to the server through an
+-- unprotected net event, which let any client flood the server console.
+function RSGCore.Debug(...)
+    local out = {}
+    for i = 1, select('#', ...) do
+        local v = select(i, ...)
+        out[i] = type(v) == 'table' and json.encode(v, { indent = true }) or tostring(v)
+    end
+    print(('[%s : DEBUG] %s'):format(GetInvokingResource() or GetCurrentResourceName(), table.concat(out, ' ')))
 end
 
 -- Player
@@ -41,39 +48,24 @@ end
 ---@param speed number - The speed at which the entity should turn
 ---@return number - The time at which the entity was looked at
 function RSGCore.Functions.LookAtEntity(entity, timeout, speed)
-    if not DoesEntityExist(entity) then return end
-    if type(entity) ~= 'number' then return end
-    if speed and type(speed) ~= 'number' then return end
-    if speed and speed > 5.0 then speed = 5.0 end
+    if type(entity) ~= 'number' or not DoesEntityExist(entity) then return end
+    if speed ~= nil and type(speed) ~= 'number' then return end
+    speed = math.min(speed or 1.0, 5.0) -- speed was required before; nil caused an arithmetic error
     if not timeout or timeout > 5000 then timeout = 5000 end
-    local ped = PlayerPedId()
+    local ped = cache.ped
     local playerPos = GetEntityCoords(ped)
     local targetPos = GetEntityCoords(entity)
-    local dx = targetPos.x - playerPos.x
-    local dy = targetPos.y - playerPos.y
-    local targetHeading = GetHeadingFromVector_2d(dx, dy)
-    local turnSpeed = speed
-    local startTimeout = GetGameTimer()
-    while true do
+    local targetHeading = GetHeadingFromVector_2d(targetPos.x - playerPos.x, targetPos.y - playerPos.y)
+    local endTime = GetGameTimer() + timeout
+    while GetGameTimer() < endTime do
         local currentHeading = GetEntityHeading(ped)
         local diff = targetHeading - currentHeading
-        if math.abs(diff) < 2 then
-            break
-        end
-        if diff < -180 then
-            diff = diff + 360
-        elseif diff > 180 then
-            diff = diff - 360
-        end
-        turnSpeed = speed + (2.5 - speed) * (1 - math.abs(diff) / 180)
-        if diff > 0 then
-            currentHeading = currentHeading + turnSpeed
-        else
-            currentHeading = currentHeading - turnSpeed
-        end
-        SetEntityHeading(ped, currentHeading)
+        -- normalise first, so e.g. 359 -> 1 degrees is treated as a 2 degree turn
+        if diff < -180 then diff = diff + 360 elseif diff > 180 then diff = diff - 360 end
+        if math.abs(diff) < 2 then break end
+        local turnSpeed = speed + (2.5 - speed) * (1 - math.abs(diff) / 180)
+        SetEntityHeading(ped, currentHeading + (diff > 0 and turnSpeed or -turnSpeed))
         Wait(0)
-        if (startTimeout + timeout) < GetGameTimer() then break end
     end
     SetEntityHeading(ped, targetHeading)
 end
@@ -89,22 +81,6 @@ function RSGCore.Functions.PlayAnim(animDict, animName, upperbodyOnly, duration)
     local flags = upperbodyOnly and 16 or 0
     local runTime = duration or -1
     lib.playAnim(cache.ped, animDict, animName, 8.0, 3.0, runTime, flags, 0.0, false, false, true)
-end
-
-function RSGCore.Functions.IsWearingGloves()
-    local ped = PlayerPedId()
-    local armIndex = GetPedDrawableVariation(ped, 3)
-    local model = GetEntityModel(ped)
-    if model == `mp_m_freemode_01` then
-        if RSGCore.Shared.MaleNoGloves[armIndex] then
-            return false
-        end
-    else
-        if RSGCore.Shared.FemaleNoGloves[armIndex] then
-            return false
-        end
-    end
-    return true
 end
 
 -- World Getters
@@ -123,7 +99,7 @@ end
 
 function RSGCore.Functions.GetPlayersFromCoords(coords, distance)
     local players = GetActivePlayers()
-    local ped = PlayerPedId()
+    local ped = cache.ped
     if coords then
         coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
     else
@@ -142,7 +118,7 @@ function RSGCore.Functions.GetPlayersFromCoords(coords, distance)
 end
 
 function RSGCore.Functions.GetClosestPlayer(coords)
-    local ped = PlayerPedId()
+    local ped = cache.ped
     if coords then
         coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
     else
@@ -182,7 +158,7 @@ function RSGCore.Functions.GetPeds(ignoreList)
 end
 
 function RSGCore.Functions.GetClosestPed(coords, ignoreList)
-    local ped = PlayerPedId()
+    local ped = cache.ped
     if coords then
         coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
     else
@@ -205,7 +181,7 @@ function RSGCore.Functions.GetClosestPed(coords, ignoreList)
 end
 
 function RSGCore.Functions.GetClosestVehicle(coords)
-    local ped = PlayerPedId()
+    local ped = cache.ped
     local vehicles = GetGamePool('CVehicle')
     local closestDistance = -1
     local closestVehicle = -1
@@ -227,7 +203,7 @@ function RSGCore.Functions.GetClosestVehicle(coords)
 end
 
 function RSGCore.Functions.GetClosestObject(coords)
-    local ped = PlayerPedId()
+    local ped = cache.ped
     local objects = GetGamePool('CObject')
     local closestDistance = -1
     local closestObject = -1
@@ -281,225 +257,32 @@ function RSGCore.Functions.DeleteVehicle(vehicle)
     DeleteVehicle(vehicle)
 end
 
-function RSGCore.Functions.GetPlate(vehicle)
-    if vehicle == 0 then return end
-    return RSGCore.Shared.Trim(GetVehicleNumberPlateText(vehicle))
-end
-
-function RSGCore.Functions.GetVehicleLabel(vehicle)
-    if vehicle == nil or vehicle == 0 then return end
-    return GetLabelText(GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)))
-end
-
-function RSGCore.Functions.GetVehicleProperties(vehicle)
-    if DoesEntityExist(vehicle) then
-        local pearlescentColor, wheelColor = GetVehicleExtraColours(vehicle)
-
-        local colorPrimary, colorSecondary = GetVehicleColours(vehicle)
-        if GetIsVehiclePrimaryColourCustom(vehicle) then
-            local r, g, b = GetVehicleCustomPrimaryColour(vehicle)
-            colorPrimary = { r, g, b }
-        end
-
-        if GetIsVehicleSecondaryColourCustom(vehicle) then
-            local r, g, b = GetVehicleCustomSecondaryColour(vehicle)
-            colorSecondary = { r, g, b }
-        end
-
-        local extras = {}
-        for extraId = 0, 12 do
-            if DoesExtraExist(vehicle, extraId) then
-                local state = IsVehicleExtraTurnedOn(vehicle, extraId) == 1
-                extras[tostring(extraId)] = state
-            end
-        end
-
-        local tireHealth = {}
-        for i = 0, 3 do
-            tireHealth[i] = GetVehicleWheelHealth(vehicle, i)
-        end
-
-        local tireBurstState = {}
-        for i = 0, 5 do
-            tireBurstState[i] = IsVehicleTyreBurst(vehicle, i, false)
-        end
-
-        local tireBurstCompletely = {}
-        for i = 0, 5 do
-            tireBurstCompletely[i] = IsVehicleTyreBurst(vehicle, i, true)
-        end
-
-        local windowStatus = {}
-        for i = 0, 7 do
-            windowStatus[i] = IsVehicleWindowIntact(vehicle, i) == 1
-        end
-
-        local doorStatus = {}
-        for i = 0, 5 do
-            doorStatus[i] = IsVehicleDoorDamaged(vehicle, i) == 1
-        end
-
-        return {
-            model = GetEntityModel(vehicle),
-            plate = RSGCore.Functions.GetPlate(vehicle),
-            plateIndex = GetVehicleNumberPlateTextIndex(vehicle),
-            bodyHealth = RSGCore.Shared.Round(GetVehicleBodyHealth(vehicle), 0.1),
-            engineHealth = RSGCore.Shared.Round(GetVehicleEngineHealth(vehicle), 0.1),
-            tankHealth = RSGCore.Shared.Round(GetVehiclePetrolTankHealth(vehicle), 0.1),
-            fuelLevel = RSGCore.Shared.Round(GetVehicleFuelLevel(vehicle), 0.1),
-            dirtLevel = RSGCore.Shared.Round(GetVehicleDirtLevel(vehicle), 0.1),
-            oilLevel = RSGCore.Shared.Round(GetVehicleOilLevel(vehicle), 0.1),
-            color1 = colorPrimary,
-            color2 = colorSecondary,
-            pearlescentColor = pearlescentColor,
-            dashboardColor = GetVehicleDashboardColour(vehicle),
-            wheelColor = wheelColor,
-            wheels = GetVehicleWheelType(vehicle),
-            wheelSize = GetVehicleWheelSize(vehicle),
-            wheelWidth = GetVehicleWheelWidth(vehicle),
-            tireHealth = tireHealth,
-            tireBurstState = tireBurstState,
-            tireBurstCompletely = tireBurstCompletely,
-            windowTint = GetVehicleWindowTint(vehicle),
-            windowStatus = windowStatus,
-            doorStatus = doorStatus,
-        }
-    else
-        return
-    end
-end
-
-function RSGCore.Functions.SetVehicleProperties(vehicle, props)
-    if DoesEntityExist(vehicle) then
-        if props.extras then
-            for id, enabled in pairs(props.extras) do
-                if enabled then
-                    SetVehicleExtra(vehicle, tonumber(id), 0)
-                else
-                    SetVehicleExtra(vehicle, tonumber(id), 1)
-                end
-            end
-        end
-
-        local colorPrimary, colorSecondary = GetVehicleColours(vehicle)
-        local pearlescentColor, wheelColor = GetVehicleExtraColours(vehicle)
-        SetVehicleModKit(vehicle, 0)
-        if props.plate then
-            SetVehicleNumberPlateText(vehicle, props.plate)
-        end
-        if props.plateIndex then
-            SetVehicleNumberPlateTextIndex(vehicle, props.plateIndex)
-        end
-        if props.bodyHealth then
-            SetVehicleBodyHealth(vehicle, props.bodyHealth + 0.0)
-        end
-        if props.engineHealth then
-            SetVehicleEngineHealth(vehicle, props.engineHealth + 0.0)
-        end
-        if props.tankHealth then
-            SetVehiclePetrolTankHealth(vehicle, props.tankHealth)
-        end
-        if props.fuelLevel then
-            SetVehicleFuelLevel(vehicle, props.fuelLevel + 0.0)
-        end
-        if props.dirtLevel then
-            SetVehicleDirtLevel(vehicle, props.dirtLevel + 0.0)
-        end
-        if props.oilLevel then
-            SetVehicleOilLevel(vehicle, props.oilLevel)
-        end
-        if props.color1 then
-            if type(props.color1) == 'number' then
-                ClearVehicleCustomPrimaryColour(vehicle)
-                SetVehicleColours(vehicle, props.color1, colorSecondary)
-            else
-                SetVehicleCustomPrimaryColour(vehicle, props.color1[1], props.color1[2], props.color1[3])
-            end
-        end
-        if props.color2 then
-            if type(props.color2) == 'number' then
-                ClearVehicleCustomSecondaryColour(vehicle)
-                SetVehicleColours(vehicle, props.color1 or colorPrimary, props.color2)
-            else
-                SetVehicleCustomSecondaryColour(vehicle, props.color2[1], props.color2[2], props.color2[3])
-            end
-        end
-        if props.wheelColor then
-            SetVehicleExtraColours(vehicle, props.pearlescentColor or pearlescentColor, props.wheelColor)
-        end
-        if props.wheels then
-            SetVehicleWheelType(vehicle, props.wheels)
-        end
-        if props.tireHealth then
-            for wheelIndex, health in pairs(props.tireHealth) do
-                SetVehicleWheelHealth(vehicle, wheelIndex, health)
-            end
-        end
-        if props.tireBurstState then
-            for wheelIndex, burstState in pairs(props.tireBurstState) do
-                if burstState then
-                    SetVehicleTyreBurst(vehicle, tonumber(wheelIndex), false, 1000.0)
-                end
-            end
-        end
-        if props.tireBurstCompletely then
-            for wheelIndex, burstState in pairs(props.tireBurstCompletely) do
-                if burstState then
-                    SetVehicleTyreBurst(vehicle, tonumber(wheelIndex), true, 1000.0)
-                end
-            end
-        end
-        if props.windowTint then
-            SetVehicleWindowTint(vehicle, props.windowTint)
-        end
-        if props.windowStatus then
-            for windowIndex, smashWindow in pairs(props.windowStatus) do
-                if not smashWindow then SmashVehicleWindow(vehicle, windowIndex) end
-            end
-        end
-        if props.doorStatus then
-            for doorIndex, breakDoor in pairs(props.doorStatus) do
-                if breakDoor then
-                    SetVehicleDoorBroken(vehicle, tonumber(doorIndex), true)
-                end
-            end
-        end
-    end
-end
-
--- Unused
+-- Text drawing (RedM natives; the previous versions used GTA V natives that do not exist in RedM)
 
 function RSGCore.Functions.DrawText(x, y, width, height, scale, r, g, b, a, text)
-    -- Use local function instead
-    SetTextFont(4)
     SetTextScale(scale, scale)
-    SetTextColour(r, g, b, a)
-    BeginTextCommandDisplayText('STRING')
-    AddTextComponentSubstringPlayerName(text)
-    EndTextCommandDisplayText(x - width / 2, y - height / 2 + 0.005)
+    SetTextColor(r, g, b, a)
+    SetTextFontForCurrentCommand(1)
+    DisplayText(CreateVarString(10, 'LITERAL_STRING', text), x - width / 2, y - height / 2 + 0.005)
 end
 
 function RSGCore.Functions.DrawText3D(x, y, z, text)
-    -- Use local function instead
-    SetTextScale(0.35, 0.35)
-    SetTextFont(4)
-    SetTextProportional(1)
-    SetTextColour(255, 255, 255, 215)
-    BeginTextCommandDisplayText('STRING')
+    local onScreen, screenX, screenY = GetScreenCoordFromWorldCoord(x, y, z)
+    if not onScreen then return end
+    local camDistance = #(GetGameplayCamCoord() - vector3(x, y, z))
+    local scale = math.max(0.25, math.min(0.5, 200 / (GetGameplayCamFov() * camDistance) * 0.5))
+    SetTextScale(0.0, scale)
+    SetTextColor(255, 255, 255, 215)
+    SetTextFontForCurrentCommand(1)
     SetTextCentre(true)
-    AddTextComponentSubstringPlayerName(text)
-    SetDrawOrigin(x, y, z, 0)
-    EndTextCommandDisplayText(0.0, 0.0)
-    local factor = (string.len(text)) / 370
-    DrawRect(0.0, 0.0 + 0.0125, 0.017 + factor, 0.03, 0, 0, 0, 75)
-    ClearDrawOrigin()
+    DisplayText(CreateVarString(10, 'LITERAL_STRING', text), screenX, screenY)
 end
 
 ---@deprecated use lib.requestAnimDict from ox_lib
 RSGCore.Functions.RequestAnimDict = lib.requestAnimDict
 
 function RSGCore.Functions.GetClosestBone(entity, list)
-    local playerCoords, bone, coords, distance = GetEntityCoords(PlayerPedId())
+    local playerCoords, bone, coords, distance = GetEntityCoords(cache.ped)
     for _, element in pairs(list) do
         local boneCoords = GetWorldPositionOfEntityBone(entity, element.id or element)
         local boneDistance = #(playerCoords - boneCoords)
@@ -525,14 +308,14 @@ function RSGCore.Functions.GetBoneDistance(entity, boneType, boneIndex)
         bone = GetEntityBoneIndexByName(entity, boneIndex)
     end
     local boneCoords = GetWorldPositionOfEntityBone(entity, bone)
-    local playerCoords = GetEntityCoords(PlayerPedId())
+    local playerCoords = GetEntityCoords(cache.ped)
     return #(boneCoords - playerCoords)
 end
 
 function RSGCore.Functions.AttachProp(ped, model, boneId, x, y, z, xR, yR, zR, vertex)
     local modelHash = type(model) == 'string' and joaat(model) or model
     local bone = GetPedBoneIndex(ped, boneId)
-    RSGCore.Functions.LoadModel(modelHash)
+    lib.requestModel(modelHash)
     local prop = CreateObject(modelHash, 1.0, 1.0, 1.0, 1, 1, 0)
     AttachEntityToEntity(prop, ped, bone, x, y, z, xR, yR, zR, 1, 1, 0, 1, not vertex and 2 or 0, 1)
     SetModelAsNoLongerNeeded(modelHash)
@@ -543,29 +326,24 @@ function RSGCore.Functions.SpawnClear(coords, radius)
     if coords then
         coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
     else
-        coords = GetEntityCoords(PlayerPedId())
+        coords = GetEntityCoords(cache.ped)
     end
-    local vehicles = GetGamePool('CVehicle')
-    local closeVeh = {}
-    for i = 1, #vehicles, 1 do
-        local vehicleCoords = GetEntityCoords(vehicles[i])
-        local distance = #(vehicleCoords - coords)
-        if distance <= radius then
-            closeVeh[#closeVeh + 1] = vehicles[i]
-        end
+    radius = radius or 5.0
+    for _, vehicle in ipairs(GetGamePool('CVehicle')) do
+        if #(GetEntityCoords(vehicle) - coords) <= radius then return false end
     end
-    if #closeVeh > 0 then return false end
     return true
 end
 
----@deprecated use lib.requestAnimDict from ox_lib
+---@deprecated use lib.requestAnimSet from ox_lib
 RSGCore.Functions.LoadAnimSet = lib.requestAnimSet
 
 ---@deprecated use lib.requestNamedPtfxAsset from ox_lib
 RSGCore.Functions.LoadParticleDictionary = lib.requestNamedPtfxAsset
 
 ---@deprecated use ParticleFx natives directly
-function RSGCore.Functions.StartParticleAtCoord(dict, ptName, looped, coords, rot, scale, alpha, color, duration)    coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords or GetEntityCoords(cache.ped)
+function RSGCore.Functions.StartParticleAtCoord(dict, ptName, looped, coords, rot, scale, alpha, color, duration)
+    coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords or GetEntityCoords(cache.ped)
 
     lib.requestNamedPtfxAsset(dict)
     UseParticleFxAssetNextCall(dict)
@@ -633,17 +411,8 @@ function RSGCore.Functions.StartParticleOnEntity(dict, ptName, looped, entity, b
     return particleHandle
 end
 
-function RSGCore.Functions.GetStreetNametAtCoords(coords)
-    local streetname1, streetname2 = GetStreetNameAtCoord(coords.x, coords.y, coords.z)
-    return { main = GetStreetNameFromHashKey(streetname1), cross = GetStreetNameFromHashKey(streetname2) }
-end
-
-function RSGCore.Functions.GetZoneAtCoords(coords)
-    return GetLabelText(GetNameOfZone(coords))
-end
-
 function RSGCore.Functions.GetCardinalDirection(entity)
-    entity = DoesEntityExist(entity) and entity or PlayerPedId()
+    entity = entity and DoesEntityExist(entity) and entity or cache.ped
     if DoesEntityExist(entity) then
         local heading = GetEntityHeading(entity)
         if ((heading >= 0 and heading < 45) or (heading >= 315 and heading < 360)) then
@@ -664,15 +433,10 @@ function RSGCore.Functions.GetCurrentTime()
     local obj = {}
     obj.min = GetClockMinutes()
     obj.hour = GetClockHours()
-    if obj.hour <= 12 then
-        obj.ampm = 'AM'
-    elseif obj.hour >= 13 then
-        obj.ampm = 'PM'
-        obj.formattedHour = obj.hour - 12
-    end
-    if obj.min <= 9 then
-        obj.formattedMin = '0' .. obj.min
-    end
+    -- previously midnight showed as 0 AM, 12 as AM, and formattedHour/formattedMin were sometimes nil
+    obj.ampm = obj.hour < 12 and 'AM' or 'PM'
+    obj.formattedHour = obj.hour % 12 == 0 and 12 or obj.hour % 12
+    obj.formattedMin = ('%02d'):format(obj.min)
     return obj
 end
 
@@ -694,32 +458,37 @@ function RSGCore.Functions.GetGroundHash(entity)
     return materialHash, entityHit, surfaceNormal, endCoords, success, retval
 end
 
+local notifyTypes = {
+    primary = 'inform',
+    inform  = 'inform',
+    info    = 'inform',
+    success = 'success',
+    error   = 'error',
+    warning = 'warning',
+}
+
 ---@param title? string Optional notification title
 ---@param text string | table Notification text/description, or a full table of props
 ---@param notifyType? string 'primary', 'success', 'error', 'inform', 'warning'
 ---@param duration? number Duration in milliseconds (default: 5000)
 ---@param icon? string Optional FontAwesome or RedM icon string
 function RSGCore.Functions.Notify(title, text, notifyType, duration, icon)
-    -- If passed as a table, send directly to ox_lib
     if type(text) == 'table' then
         return lib.notify(text)
     end
+    if type(title) == 'table' then
+        return lib.notify(title)
+    end
 
-    -- Map standard RSG notification types to ox_lib NotificationTypes
-    local typeMap = {
-        primary = 'info',
-        inform  = 'info',
-        success = 'success',
-        error   = 'error',
-        warning = 'warning'
-    }
-
-    local parsedType = typeMap[notifyType] or 'info'
+    -- legacy QB-style call: Notify(text, type, duration)
+    if type(text) == 'string' and notifyTypes[text] and (notifyType == nil or type(notifyType) == 'number') then
+        return lib.notify({ description = title, type = notifyTypes[text], duration = notifyType or 5000 })
+    end
 
     lib.notify({
-        title = title or 'Notification',
+        title = title,
         description = text,
-        type = parsedType,
+        type = notifyTypes[notifyType] or 'inform',
         duration = duration or 5000,
         icon = icon
     })

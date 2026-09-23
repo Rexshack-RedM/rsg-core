@@ -21,6 +21,8 @@ local Translations = {
         tp_error                    = 'Error While Teleporting.',
         ban_table_not_found         = '[RSGCORE] - Unable to find the bans table in the database. Please ensure you have imported the SQL file correctly.',
         connecting_database_error   = '[RSGCORE] - An error occurred while connecting to the database. Ensure that the SQL server is running and that the details in the server.cfg file are correct.',
+        invalid_money               = 'Invalid money type or amount',
+        invalid_model               = 'That model does not exist',
         connecting_database_timeout = '[RSGCORE] - The database connection has timed out. Ensure that the SQL server is running and that the details in the server.cfg file are correct.',
     },
     success = {
@@ -29,6 +31,8 @@ local Translations = {
         teleported_waypoint = 'Teleported To Waypoint.',
         job_set = 'Job set successfully',
         gang_set = 'Gang set successfully',
+        money_given = 'Money given successfully',
+        money_set = 'Money set successfully',
     },
     info = {
         received_paycheck = 'You received your paycheck of $%{value}',
@@ -41,6 +45,15 @@ local Translations = {
         checking_whitelisted = 'Hello %s. We are checking your allowance.',
         exploit_banned = 'You have been banned for cheating. Check our Discord for more information: %{discord}',
         exploit_dropped = 'You Have Been Kicked For Exploitation',
+        checking_license = 'Hello %s. Your license is being checked.',
+        check_discord = '🔸 Check our Discord for further information: %{discord}',
+        ban_message = 'You have been banned from the server:\n%{reason}\nYour ban expires %{expires}\n',
+        character_deleted_by_admin = 'An admin deleted the character which you are currently using',
+        no_reason = 'No reason specified',
+        your_id = 'ID: %{value}',
+        your_cid = 'Citizen ID: %{value}',
+        yes = 'Yes',
+        no = 'No',
     },
     command = {
         tp = {
@@ -120,6 +133,8 @@ local Translations = {
             },
         },
         ooc = { help = 'OOC Chat Message' },
+        id = { help = 'Check your server ID' },
+        cid = { help = 'Check your Citizen ID' },
         me = {
             help = 'Show local message',
             params = {

@@ -115,3 +115,15 @@ RSGConfig.Commands.OOCColor = { 255, 151, 133 }          -- RGB color code for t
 
 RSGConfig.PromptDistance = 1.5
 RSGConfig.Player.RevealMap = true
+
+-- Metadata keys a client is allowed to change via the 'RSGCore:Server:SetMetaData' net event.
+-- Anything not listed here (isdead, injail, ishandcuffed, jailitems, rep, criminalrecord, ...) can only be set server-side.
+-- Add keys here only if one of your client scripts genuinely needs to set them.
+RSGConfig.ClientWritableMetadata = {
+    hunger = true,
+    thirst = true,
+    cleanliness = true,
+    stress = true,
+    health = true,
+    armor = true,
+}

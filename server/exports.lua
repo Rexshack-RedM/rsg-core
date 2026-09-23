@@ -319,7 +319,7 @@ RSGCore.Functions.GetCoreVersion = GetCoreVersion
 exports('GetCoreVersion', GetCoreVersion)
 
 local function ExploitBan(playerId, origin)
-    local name = GetPlayerName(playerId)
+    local name = GetPlayerName(playerId) or ('ID ' .. tostring(playerId))
     MySQL.insert('INSERT INTO bans (name, license, discord, ip, reason, expire, bannedby) VALUES (?, ?, ?, ?, ?, ?, ?)', {
         name,
         RSGCore.Functions.GetIdentifier(playerId, 'license'),

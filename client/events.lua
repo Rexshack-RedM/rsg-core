@@ -1,10 +1,8 @@
 -- Place Ped on ground properly
 local function PlacePedOnGroundProperly(ped, coord)
-    local x, y, z = table.unpack(coord)
-    local found, groundz, normal = GetGroundZAndNormalFor_3dCoord(x, y, z)
-
+    local found, groundz, normal = GetGroundZAndNormalFor_3dCoord(coord.x, coord.y, coord.z)
     if found then
-        SetEntityCoordsNoOffset(ped, x, y, groundz + normal.z, true)
+        SetEntityCoordsNoOffset(ped, coord.x, coord.y, groundz + normal.z, true)
     end
 end
 
@@ -14,9 +12,6 @@ end
 RegisterNetEvent('RSGCore:Client:OnPlayerLoaded', function()
     ShutdownLoadingScreenNui()
     LocalPlayer.state:set('isLoggedIn', true, false)
-    --if not RSGCore.Config.Server.PVP then return end
-    --SetCanAttackFriendly(PlayerPedId(), true, false)
-    --NetworkSetFriendlyFireOption(true)
     if RSGConfig.Server.PVP then
         Citizen.InvokeNative(0xF808475FA571D823, true)
         SetRelationshipBetweenGroups(5, `PLAYER`, `PLAYER`)
@@ -24,7 +19,7 @@ RegisterNetEvent('RSGCore:Client:OnPlayerLoaded', function()
     if RSGConfig.Player.RevealMap then
         SetMinimapHideFow(true)
     end
-    Citizen.InvokeNative(0x39363DFD04E91496, PlayerId(), true) -- enable mercy kil
+    Citizen.InvokeNative(0x39363DFD04E91496, PlayerId(), true) -- enable mercy kill
     Citizen.InvokeNative(0x8899C244EBCF70DE, PlayerPedId(), 0.0) -- SetPlayerHealthRechargeMultiplier
     Citizen.InvokeNative(0xDE1B1907A83A1550, PlayerPedId(), 0.0) -- SetHealthRechargeMultiplier
 end)
@@ -50,13 +45,13 @@ RegisterNetEvent('RSGCore:Command:TeleportToCoords', function(x, y, z, h)
 end)
 
 RegisterNetEvent('RSGCore:Command:GoToMarker', function()
+    if not IsWaypointActive() then
+        lib.notify({ title = Lang:t('error.no_waypoint'), type = 'error', duration = 5000 })
+        return
+    end
     local coords = GetWaypointCoords()
     local groundZ = GetHeightmapBottomZForPosition(coords.x, coords.y)
     local vehicle = GetVehiclePedIsIn(cache.ped, false)
-    if not IsWaypointActive() then
-        lib.notify({ title = Lang:t("error.no_waypoint"), type = 'error', duration = 5000 })
-        return
-    end
 
     SetEntityCoords(cache.ped, coords.x, coords.y, groundZ + 3.0)
     PlacePedOnGroundProperly(cache.ped, coords)
@@ -67,13 +62,13 @@ RegisterNetEvent('RSGCore:Command:GoToMarker', function()
         Citizen.InvokeNative(0x028F76B6E78246EB, cache.ped, cache.mount, -1)
     end
 
-    if vehicle then
+    if vehicle ~= 0 then -- GetVehiclePedIsIn returns 0 (truthy in Lua) when not in a vehicle
         SetEntityCoords(vehicle, coords.x, coords.y, groundZ + 3.0)
         PlacePedOnGroundProperly(vehicle, coords)
         Citizen.InvokeNative(0x028F76B6E78246EB, cache.ped, vehicle, -1)
     end
 
-    lib.notify({ title = Lang:t("success.teleported_waypoint"), type = 'success', duration = 5000 })
+    lib.notify({ title = Lang:t('success.teleported_waypoint'), type = 'success', duration = 5000 })
 end)
 
 -- Noclip Command
@@ -84,36 +79,33 @@ end)
 -- Vehicle Commands
 
 RegisterNetEvent('RSGCore:Command:SpawnVehicle', function(vehName)
-    local ped = PlayerPedId()
+    local ped = cache.ped
     local hash = joaat(vehName)
-    local veh = GetVehiclePedIsUsing(ped)
-    if not IsModelInCdimage(hash) then return end
-    RequestModel(hash)
-    while not HasModelLoaded(hash) do
-        Wait(0)
+    if not IsModelInCdimage(hash) then
+        return lib.notify({ title = Lang:t('error.invalid_model'), type = 'error', duration = 5000 })
     end
+    lib.requestModel(hash) -- has a built-in timeout (the old loop could hang forever)
 
-    if IsPedInAnyVehicle(ped) then
+    local veh = GetVehiclePedIsUsing(ped)
+    if veh ~= 0 then
         SetEntityAsMissionEntity(veh, true, true)
         DeleteVehicle(veh)
     end
 
     local vehicle = CreateVehicle(hash, GetEntityCoords(ped), GetEntityHeading(ped), true, false)
     TaskWarpPedIntoVehicle(ped, vehicle, -1)
-    SetVehicleDirtLevel(vehicle, 0.0)
     SetModelAsNoLongerNeeded(hash)
 end)
 
 RegisterNetEvent('RSGCore:Command:DeleteVehicle', function()
-    local ped = PlayerPedId()
+    local ped = cache.ped
     local veh = GetVehiclePedIsUsing(ped)
     if veh ~= 0 then
         SetEntityAsMissionEntity(veh, true, true)
         DeleteVehicle(veh)
     else
         local pcoords = GetEntityCoords(ped)
-        local vehicles = GetGamePool('CVehicle')
-        for _, v in pairs(vehicles) do
+        for _, v in ipairs(GetGamePool('CVehicle')) do
             if #(pcoords - GetEntityCoords(v)) <= 5.0 then
                 SetEntityAsMissionEntity(v, true, true)
                 DeleteVehicle(v)
@@ -130,12 +122,6 @@ end)
 
 RegisterNetEvent('RSGCore:Player:UpdatePlayerData', function()
     TriggerServerEvent('RSGCore:UpdatePlayer')
-end)
-
--- This event is exploitable and should not be used. It has been deprecated, and will be removed soon.
-RegisterNetEvent('RSGCore:Client:UseItem', function(item)
-    RSGCore.Debug(string.format('%s triggered RSGCore:Client:UseItem by ID %s with the following data. This event is deprecated due to exploitation, and will be removed soon. Check qb-inventory for the right use on this event.', GetInvokingResource(), GetPlayerServerId(PlayerId())))
-    RSGCore.Debug(item)
 end)
 
 -- Callback Events --
@@ -156,40 +142,21 @@ RegisterNetEvent('RSGCore:Client:TriggerCallback', function(name, ...)
 end)
 
 -- Me command
-local function Draw3DText(coords, str)
-    local onScreen, worldX, worldY = GetScreenCoordFromWorldCoord(coords.x, coords.y, coords.z)
-    local camCoords = GetGameplayCamCoord()
-    local scale = 200 / (GetGameplayCamFov() * #(camCoords - coords))
-
-    if onScreen then
-        -- Set the text color using SetTextColor (RedM version)
-        SetTextColor(255, 255, 255, 255) -- White color with full opacity
-
-        -- Set the text scale (RedM requires slight adjustment)
-        SetTextScale(0.0, 0.5 * scale) -- Adjust the scale values as needed
-
-        -- Set the font to the desired font using SetTextFontForCurrentCommand
-        SetTextFontForCurrentCommand(2) -- Use appropriate font ID here
-
-        -- Center the text
-        SetTextCentre(true)
-
-        -- Create the text to be displayed using a variable string
-        local varString = CreateVarString(10, "LITERAL_STRING", str)
-
-        -- Display the text at the world coordinates (converted to screen coordinates)
-        DisplayText(varString, worldX, worldY)
-    end
-end
+local ME_DURATION = 10000
+local ME_MAX_DISTANCE = 25.0
 
 RegisterNetEvent('RSGCore:Command:ShowMe3D', function(senderId, msg)
     local sender = GetPlayerFromServerId(senderId)
+    if sender == -1 then return end -- sender not in scope
     CreateThread(function()
-        local displayTime = 10000 + GetGameTimer()
-        while displayTime > GetGameTimer() do
+        local endTime = GetGameTimer() + ME_DURATION
+        while GetGameTimer() < endTime do
             local targetPed = GetPlayerPed(sender)
+            if not DoesEntityExist(targetPed) then return end
             local tCoords = GetEntityCoords(targetPed)
-            Draw3DText(tCoords, msg)
+            if #(GetEntityCoords(cache.ped) - tCoords) < ME_MAX_DISTANCE then
+                RSGCore.Functions.DrawText3D(tCoords.x, tCoords.y, tCoords.z + 1.0, msg)
+            end
             Wait(0)
         end
     end)
