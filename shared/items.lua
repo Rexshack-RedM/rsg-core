@@ -47,15 +47,15 @@ RSGShared.Items = {
     ammo_box_varmint_tranquilizer = { name = 'ammo_box_varmint_tranquilizer',  label = 'Ammo Box Varmint Tranquilizer (N)',  weight = 100,  type = 'item',  image = 'ammo_box_varmint_tranquilizer.png',  unique = false,  useable = true,  shouldClose = true,  description = 'Varmint Rifle Tranquilizer Ammo Box',  category = 'ammo_varmint' },
 
     -- consumable
-    animal_heart    = { name = 'animal_heart',      label = 'Animal Heart',     weight = 100,  type = 'item',  image = 'animal_heart.png',  unique = false,  useable = true,  shouldClose = true,  description = 'animal heart',       category = 'consumable' },
-    beer            = { name = 'beer',              label = 'Beer',             weight = 100,  type = 'item',  image = 'beer.png',          unique = false,  useable = true,  shouldClose = true,  description = 'Best beer in town',  category = 'consumable' },
-    bread           = { name = 'bread',             label = 'Bread',            weight = 100,  type = 'item',  image = 'bread.png',         unique = false,  useable = true,  shouldClose = true,  description = 'Bread Roll',         category = 'consumable' },
-    coffee          = { name = 'coffee',            label = 'Coffee',           weight = 100,  type = 'item',  image = 'coffee.png',        unique = false,  useable = true,  shouldClose = true,  description = 'Hot Coffee',         category = 'consumable' },
-    stew            = { name = 'stew',              label = 'Stew',             weight = 100,  type = 'item',  image = 'stew.png',          unique = false,  useable = true,  shouldClose = true,  description = 'Warm Stew',          category = 'consumable' },
-    sugarcube       = { name = 'sugarcube',         label = 'Sugar Cube',       weight = 100,  type = 'item',  image = 'sugarcube.png',     unique = false,  useable = true,  shouldClose = true,  description = 'Horses like these',  category = 'consumable' },
-    water           = { name = 'water',             label = 'Water',            weight = 100,  type = 'item',  image = 'water.png',         unique = false,  useable = true,  shouldClose = true,  description = 'Drinkable Water',    category = 'consumable' },
-    canned_apricots = { name = 'canned_apricots',   label = 'Canned Apricots',  weight = 100,  type = 'item',  image = 'canapricots.png',   unique = false,  useable = true,  shouldClose = true,  description = 'Can of Apricots',    category = 'consumable' },
-    
+    animal_heart    = { name = 'animal_heart',     label = 'Animal Heart',     weight = 100,  type = 'item',  image = 'animal_heart.png',     unique = false,  useable = true,  shouldClose = true,  description = 'animal heart',       category = 'consumable' },
+    beer            = { name = 'beer',             label = 'Beer',             weight = 100,  type = 'item',  image = 'beer.png',             unique = false,  useable = true,  shouldClose = true,  description = 'Best beer in town',  category = 'consumable' },
+    bread           = { name = 'bread',            label = 'Bread',            weight = 100,  type = 'item',  image = 'bread.png',            unique = false,  useable = true,  shouldClose = true,  description = 'Bread Roll',         category = 'consumable' },
+    canned_apricots = { name = 'canned_apricots',  label = 'Canned Apricots',  weight = 100,  type = 'item',  image = 'canned_apricots.png',  unique = false,  useable = true,  shouldClose = true,  description = 'Can of Apricots',    category = 'consumable' },
+    coffee          = { name = 'coffee',           label = 'Coffee',           weight = 100,  type = 'item',  image = 'coffee.png',           unique = false,  useable = true,  shouldClose = true,  description = 'Hot Coffee',         category = 'consumable' },
+    stew            = { name = 'stew',             label = 'Stew',             weight = 100,  type = 'item',  image = 'stew.png',             unique = false,  useable = true,  shouldClose = true,  description = 'Warm Stew',          category = 'consumable' },
+    sugarcube       = { name = 'sugarcube',        label = 'Sugar Cube',       weight = 100,  type = 'item',  image = 'sugarcube.png',        unique = false,  useable = true,  shouldClose = true,  description = 'Horses like these',  category = 'consumable' },
+    water           = { name = 'water',            label = 'Water',            weight = 100,  type = 'item',  image = 'water.png',            unique = false,  useable = true,  shouldClose = true,  description = 'Drinkable Water',    category = 'consumable' },
+
     -- financial
     blood_cent       = { name = 'blood_cent',        label = 'Bloodstained Cents',    weight = 0,  type = 'item',  image = 'blood_cent.png',        unique = false,  useable = false,  shouldClose = false,  description = 'Small change stained with the remnants of bloodshed',       category = 'financial' },
     blood_dollar     = { name = 'blood_dollar',      label = 'Bloodstained Dollars',  weight = 0,  type = 'item',  image = 'blood_dollar.png',      unique = false,  useable = false,  shouldClose = false,  description = 'Currency tainted by violence and crime',                    category = 'financial' },
@@ -111,7 +111,6 @@ RSGShared.Items = {
 
     -- general
     bucket           = { name = 'bucket',            label = 'Bucket',            weight = 100,  type = 'item',  image = 'bucket.png',            unique = false,  useable = true,  shouldClose = true,  description = 'Bucket — useful item to have around.',            category = 'general' },
-    fullbucket       = { name = 'fullbucket',        label = 'Fullbucket',        weight = 100,  type = 'item',  image = 'fullbucket.png',        unique = false,  useable = true,  shouldClose = true,  description = 'Fullbucket — useful item to have around.',        category = 'general' },
     goldbar          = { name = 'goldbar',           label = 'Goldbar',           weight = 100,  type = 'item',  image = 'goldbar.png',           unique = false,  useable = true,  shouldClose = true,  description = 'Goldbar — useful item to have around.',           category = 'general' },
     goldclaimlicense = { name = 'goldclaimlicense',  label = 'Goldclaimlicense',  weight = 100,  type = 'item',  image = 'goldclaimlicense.png',  unique = false,  useable = true,  shouldClose = true,  description = 'Goldclaimlicense — useful item to have around.',  category = 'general' },
     goldrocker       = { name = 'goldrocker',        label = 'Goldrocker',        weight = 100,  type = 'item',  image = 'goldrocker.png',        unique = false,  useable = true,  shouldClose = true,  description = 'Goldrocker — useful item to have around.',        category = 'general' },
@@ -201,6 +200,12 @@ RSGShared.Items = {
     bandage      = { name = 'bandage',       label = 'Bandage',        weight = 100,  type = 'item',  image = 'bandage.png',       unique = false,  useable = true,  shouldClose = true,  description = 'used to improve your health',            category = 'medical' },
     fieldbandage = { name = 'fieldbandage',  label = 'Field Bandage',  weight = 100,  type = 'item',  image = 'fieldbandage.png',  unique = false,  useable = true,  shouldClose = true,  description = 'patching yourself up',                   category = 'medical' },
     firstaid     = { name = 'firstaid',      label = 'First Aid',      weight = 100,  type = 'item',  image = 'firstaid.png',      unique = false,  useable = true,  shouldClose = true,  description = 'used by medics to improve your health',  category = 'medical' },
+
+    -- railroad
+    coal        = { name = 'coal',         label = 'Coal',          weight = 500,   type = 'item',  image = 'coal.png',         unique = false,  useable = true,  shouldClose = true,  description = 'Coal for fueling trains.',                   category = 'railroad' },
+    fullbucket  = { name = 'fullbucket',   label = 'Full Bucket',   weight = 1000,  type = 'item',  image = 'fullbucket.png',   unique = false,  useable = true,  shouldClose = true,  description = 'A full bucket of water for train boilers.',  category = 'railroad' },
+    oilcan      = { name = 'oilcan',       label = 'Oil Can',       weight = 300,   type = 'item',  image = 'oilcan.png',       unique = false,  useable = true,  shouldClose = true,  description = 'Oil can for train maintenance.',             category = 'railroad' },
+    trainticket = { name = 'trainticket',  label = 'Train Ticket',  weight = 300,   type = 'item',  image = 'trainticket.png',  unique = false,  useable = true,  shouldClose = true,  description = 'trainticket.',                               category = 'railroad' },
 
     -- resource
     a_c_bat_01                         = { name = 'a_c_bat_01',                          label = 'Bat',                        weight = 100,  type = 'item',  image = 'a_c_bat_01.png',                          unique = false,  useable = false,  shouldClose = true,  description = 'Bat — useful item to have around.',                        category = 'resource' },
