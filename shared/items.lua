@@ -46,6 +46,15 @@ RSGShared.Items = {
     ammo_box_varmint              = { name = 'ammo_box_varmint',               label = 'Ammo Box Varmint Rifle (N)',         weight = 100,  type = 'item',  image = 'ammo_box_varmint.png',               unique = false,  useable = true,  shouldClose = true,  description = 'Varmint Rifle Ammo Box',               category = 'ammo_varmint' },
     ammo_box_varmint_tranquilizer = { name = 'ammo_box_varmint_tranquilizer',  label = 'Ammo Box Varmint Tranquilizer (N)',  weight = 100,  type = 'item',  image = 'ammo_box_varmint_tranquilizer.png',  unique = false,  useable = true,  shouldClose = true,  description = 'Varmint Rifle Tranquilizer Ammo Box',  category = 'ammo_varmint' },
 
+    -- backpacks
+    backpack_ammo    = { name = 'backpack_ammo',     label = 'Backpack Ammo',     weight = 100,  type = 'item',  image = 'backpack_ammo.png',     unique = true,  useable = true,  shouldClose = true,  description = 'Backpack Ammo — useful item to have around.',     category = 'backpacks' },
+    backpack_big     = { name = 'backpack_big',      label = 'Backpack Big',      weight = 100,  type = 'item',  image = 'backpack_big.png',      unique = true,  useable = true,  shouldClose = true,  description = 'Backpack Big — useful item to have around.',      category = 'backpacks' },
+    backpack_fish    = { name = 'backpack_fish',     label = 'Backpack Fish',     weight = 100,  type = 'item',  image = 'backpack_fish.png',     unique = true,  useable = true,  shouldClose = true,  description = 'Backpack Fish — useful item to have around.',     category = 'backpacks' },
+    backpack_nat     = { name = 'backpack_nat',      label = 'Backpack Nat',      weight = 100,  type = 'item',  image = 'backpack_nat.png',      unique = true,  useable = true,  shouldClose = true,  description = 'Backpack Nat — useful item to have around.',      category = 'backpacks' },
+    backpack_normal  = { name = 'backpack_normal',   label = 'Backpack Normal',   weight = 100,  type = 'item',  image = 'backpack_normal.png',   unique = true,  useable = true,  shouldClose = true,  description = 'Backpack Normal — useful item to have around.',   category = 'backpacks' },
+    backpack_simple  = { name = 'backpack_simple',   label = 'Backpack Simple',   weight = 100,  type = 'item',  image = 'backpack_simple.png',   unique = true,  useable = true,  shouldClose = true,  description = 'Backpack Simple — useful item to have around.',   category = 'backpacks' },
+    backpack_trapper = { name = 'backpack_trapper',  label = 'Backpack Trapper',  weight = 100,  type = 'item',  image = 'backpack_trapper.png',  unique = true,  useable = true,  shouldClose = true,  description = 'Backpack Trapper — useful item to have around.',  category = 'backpacks' },
+
     -- consumable
     beer            = { name = 'beer',             label = 'Beer',             weight = 100,  type = 'item',  image = 'beer.png',             unique = false,  useable = true,  shouldClose = true,  description = 'Best beer in town',  category = 'consumable' },
     bread           = { name = 'bread',            label = 'Bread',            weight = 100,  type = 'item',  image = 'bread.png',            unique = false,  useable = true,  shouldClose = true,  description = 'Bread Roll',         category = 'consumable' },
@@ -234,6 +243,9 @@ RSGShared.Items = {
     horse_reviver   = { name = 'horse_reviver',    label = 'Horse Reviver',    weight = 100,  type = 'item',  image = 'horse_reviver.png',    unique = false,  useable = true,  shouldClose = true,  description = 'Given to horses',                 category = 'horse' },
     horse_stimulant = { name = 'horse_stimulant',  label = 'Horse Stimulant',  weight = 100,  type = 'item',  image = 'horse_stimulant.png',  unique = false,  useable = true,  shouldClose = true,  description = 'Given to horses',                 category = 'horse' },
     horsemeal       = { name = 'horsemeal',        label = 'Horse Meal',       weight = 100,  type = 'item',  image = 'horsemeal.png',        unique = false,  useable = true,  shouldClose = true,  description = 'A meal of oats for your horse',   category = 'horse' },
+
+    -- lumberjack
+    tree_seeds = { name = 'tree_seeds',  label = 'Tree Seeds',  weight = 100,  type = 'item',  image = 'tree_seeds.png',  unique = false,  useable = true,  shouldClose = true,  description = 'Tree Seeds — useful item to have around.',  category = 'lumberjack' },
 
     -- medical
     bandage      = { name = 'bandage',       label = 'Bandage',        weight = 100,  type = 'item',  image = 'bandage.png',       unique = false,  useable = true,  shouldClose = true,  description = 'used to improve your health',            category = 'medical' },
