@@ -12,16 +12,13 @@ end
 RegisterNetEvent('RSGCore:Client:OnPlayerLoaded', function()
     ShutdownLoadingScreenNui()
     LocalPlayer.state:set('isLoggedIn', true, false)
-    if RSGConfig.Server.PVP then
-        Citizen.InvokeNative(0xF808475FA571D823, true)
-        SetRelationshipBetweenGroups(5, `PLAYER`, `PLAYER`)
-    end
+    -- player relationships / friendly fire are handled by the loop in client/pvp.lua
     if RSGConfig.Player.RevealMap then
         SetMinimapHideFow(true)
     end
-    Citizen.InvokeNative(0x39363DFD04E91496, PlayerId(), true) -- enable mercy kill
-    Citizen.InvokeNative(0x8899C244EBCF70DE, PlayerPedId(), 0.0) -- SetPlayerHealthRechargeMultiplier
-    Citizen.InvokeNative(0xDE1B1907A83A1550, PlayerPedId(), 0.0) -- SetHealthRechargeMultiplier
+    Citizen.InvokeNative(0x39363DFD04E91496, cache.playerId, true) -- enable mercy kill
+    Citizen.InvokeNative(0x8899C244EBCF70DE, cache.playerId, 0.0) -- SetPlayerHealthRechargeMultiplier (takes a player, not a ped)
+    Citizen.InvokeNative(0xDE1B1907A83A1550, cache.ped, 0.0) -- SetHealthRechargeMultiplier
 end)
 
 RegisterNetEvent('RSGCore:Client:OnPlayerUnload', function()
@@ -30,7 +27,7 @@ end)
 
 RegisterNetEvent('RSGCore:Client:PvpHasToggled', function(pvp_state)
     RSGConfig.Server.PVP = pvp_state
-    SetCanAttackFriendly(PlayerPedId(), pvp_state, false)
+    SetCanAttackFriendly(cache.ped, pvp_state, false)
     NetworkSetFriendlyFireOption(pvp_state)
 end)
 
@@ -46,7 +43,7 @@ end)
 
 RegisterNetEvent('RSGCore:Command:GoToMarker', function()
     if not IsWaypointActive() then
-        lib.notify({ title = Lang:t('error.no_waypoint'), type = 'error', duration = 5000 })
+        lib.notify({ title = locale('error.no_waypoint'), type = 'error', duration = 5000 })
         return
     end
     local coords = GetWaypointCoords()
@@ -68,7 +65,7 @@ RegisterNetEvent('RSGCore:Command:GoToMarker', function()
         Citizen.InvokeNative(0x028F76B6E78246EB, cache.ped, vehicle, -1)
     end
 
-    lib.notify({ title = Lang:t('success.teleported_waypoint'), type = 'success', duration = 5000 })
+    lib.notify({ title = locale('success.teleported_waypoint'), type = 'success', duration = 5000 })
 end)
 
 -- Noclip Command
@@ -82,7 +79,7 @@ RegisterNetEvent('RSGCore:Command:SpawnVehicle', function(vehName)
     local ped = cache.ped
     local hash = joaat(vehName)
     if not IsModelInCdimage(hash) then
-        return lib.notify({ title = Lang:t('error.invalid_model'), type = 'error', duration = 5000 })
+        return lib.notify({ title = locale('error.invalid_model'), type = 'error', duration = 5000 })
     end
     lib.requestModel(hash) -- has a built-in timeout (the old loop could hang forever)
 
@@ -114,6 +111,11 @@ RegisterNetEvent('RSGCore:Command:DeleteVehicle', function()
     end
 end)
 
+-- Legacy notify event (TriggerClientEvent('RSGCore:Notify', src, text, type, duration)) -> ox_lib
+RegisterNetEvent('RSGCore:Notify', function(...)
+    RSGCore.Functions.Notify(...)
+end)
+
 -- Other stuff
 
 RegisterNetEvent('RSGCore:Player:SetPlayerData', function(val)
@@ -133,12 +135,20 @@ RegisterNetEvent('RSGCore:Client:TriggerClientCallback', function(name, ...)
     end, ...)
 end)
 
--- Server Callback
+-- Server Callback (legacy, keyed by name)
 RegisterNetEvent('RSGCore:Client:TriggerCallback', function(name, ...)
     if RSGCore.ServerCallbacks[name] then
         RSGCore.ServerCallbacks[name](...)
         RSGCore.ServerCallbacks[name] = nil
     end
+end)
+
+-- Server Callback (keyed by request id)
+RegisterNetEvent('RSGCore:Client:TriggerCallbackId', function(requestId, ...)
+    local cb = RSGCore.PendingCallbacks[requestId]
+    if not cb then return end
+    RSGCore.PendingCallbacks[requestId] = nil
+    cb(...)
 end)
 
 -- Me command
@@ -164,19 +174,17 @@ end)
 
 -- Listen to Shared being updated
 RegisterNetEvent('RSGCore:Client:OnSharedUpdate', function(tableName, key, value)
+    if not RSGCore.Shared[tableName] then return end
     RSGCore.Shared[tableName][key] = value
     TriggerEvent('RSGCore:Client:UpdateObject')
 end)
 
 RegisterNetEvent('RSGCore:Client:OnSharedUpdateMultiple', function(tableName, values)
+    if not RSGCore.Shared[tableName] then return end
     for key, value in pairs(values) do
-        RSGCore.Shared[tableName][key] = value
+        RSGCore.Shared[tableName][key] = value or nil -- false marks an entry removed at runtime
     end
     TriggerEvent('RSGCore:Client:UpdateObject')
-end)
-
-RegisterNetEvent('RSGCore:Client:SharedUpdate', function(table)
-    RSGCore.Shared = table
 end)
 
 if RSGConfig.HidePlayerNames then
@@ -185,7 +193,7 @@ if RSGConfig.HidePlayerNames then
             Wait(5000)
             for _, player in ipairs(GetActivePlayers()) do
                 local ped = GetPlayerPed(player)
-                SetPedPromptName(ped, "Stranger (" .. tostring(GetPlayerServerId(player)) .. ")")
+                SetPedPromptName(ped, locale('info.stranger', GetPlayerServerId(player)))
             end
         end
     end)

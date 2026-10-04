@@ -6,8 +6,11 @@ AddEventHandler('chatMessage', function(_, _, message)
     end
 end)
 
+local lastSave = {} -- per-source timestamp of the last client-requested save
+
 AddEventHandler('playerDropped', function(reason)
     local src = source
+    lastSave[src] = nil
     local Player = RSGCore.Players[src]
     if not Player then return end
     TriggerEvent('rsg-log:server:CreateLog', 'joinleave', 'Dropped', 'red', ('**%s** (%s) left..\n **Reason:** %s'):format(GetPlayerName(src) or 'unknown', Player.PlayerData.license, reason))
@@ -59,43 +62,41 @@ local function onPlayerConnecting(name, _, deferrals)
     end
 
     if not databaseConnected then
-        return deferrals.done(Lang:t('error.connecting_database_error'))
+        return deferrals.done(locale('error.connecting_database_error'))
     end
 
     if RSGCore.Config.Server.Whitelist then
         Wait(0)
-        deferrals.update(string.format(Lang:t('info.checking_whitelisted'), name))
+        deferrals.update(locale('info.checking_whitelisted', name))
         if not RSGCore.Functions.IsWhitelisted(src) then
-            return deferrals.done(Lang:t('error.not_whitelisted'))
+            return deferrals.done(locale('error.not_whitelisted'))
         end
     end
 
     Wait(0)
-    deferrals.update(string.format(Lang:t('info.checking_license'), name))
+    deferrals.update(locale('info.checking_license', name))
     local license = RSGCore.Functions.GetIdentifier(src, 'license')
 
     if not license then
-        return deferrals.done(Lang:t('error.no_valid_license'))
+        return deferrals.done(locale('error.no_valid_license'))
     elseif RSGCore.Config.Server.CheckDuplicateLicense and RSGCore.Functions.IsLicenseInUse(license) then
-        return deferrals.done(Lang:t('error.duplicate_license'))
+        return deferrals.done(locale('error.duplicate_license'))
     end
 
     Wait(0)
-    deferrals.update(string.format(Lang:t('info.checking_ban'), name))
+    deferrals.update(locale('info.checking_ban', name))
 
     if not bansTableExists then
-        return deferrals.done(Lang:t('error.ban_table_not_found'))
+        return deferrals.done(locale('error.ban_table_not_found'))
     end
 
     local success, isBanned, reason = pcall(RSGCore.Functions.IsPlayerBanned, src)
-    if not success then return deferrals.done(Lang:t('error.connecting_database_error')) end
+    if not success then return deferrals.done(locale('error.connecting_database_error')) end
     if isBanned then return deferrals.done(reason) end
 
     Wait(0)
-    deferrals.update(string.format(Lang:t('info.join_server'), name))
+    deferrals.update(locale('info.join_server', name))
     deferrals.done()
-
-    TriggerClientEvent('RSGCore:Client:SharedUpdate', src, RSGCore.Shared)
 end
 
 AddEventHandler('playerConnecting', onPlayerConnecting)
@@ -105,24 +106,17 @@ AddEventHandler('playerConnecting', onPlayerConnecting)
 RegisterNetEvent('RSGCore:Server:CloseServer', function(reason)
     local src = source
     if not RSGCore.Functions.HasPermission(src, 'admin') then
-        return RSGCore.Functions.Kick(src, Lang:t('error.no_permission'))
+        return RSGCore.Functions.Kick(src, locale('error.no_permission'))
     end
-    reason = type(reason) == 'string' and reason or Lang:t('info.no_reason')
-    RSGCore.Config.Server.Closed = true
-    RSGCore.Config.Server.ClosedReason = reason
-    for k in pairs(RSGCore.Players) do
-        if not RSGCore.Functions.HasPermission(k, RSGCore.Config.Server.WhitelistPermission) then
-            RSGCore.Functions.Kick(k, reason)
-        end
-    end
+    RSGCore.Functions.SetServerClosed(true, reason)
 end)
 
 RegisterNetEvent('RSGCore:Server:OpenServer', function()
     local src = source
     if not RSGCore.Functions.HasPermission(src, 'admin') then
-        return RSGCore.Functions.Kick(src, Lang:t('error.no_permission'))
+        return RSGCore.Functions.Kick(src, locale('error.no_permission'))
     end
-    RSGCore.Config.Server.Closed = false
+    RSGCore.Functions.SetServerClosed(false)
 end)
 
 -- Callback Events --
@@ -137,7 +131,7 @@ RegisterNetEvent('RSGCore:Server:TriggerClientCallback', function(name, ...)
     cb(...)
 end)
 
--- Server Callback
+-- Server Callback (legacy, keyed by name only - kept for resources that trigger it directly)
 RegisterNetEvent('RSGCore:Server:TriggerCallback', function(name, ...)
     local src = source
     if type(name) ~= 'string' then return end
@@ -146,10 +140,18 @@ RegisterNetEvent('RSGCore:Server:TriggerCallback', function(name, ...)
     end, ...)
 end)
 
+-- Server Callback with a request id, so concurrent calls to the same callback each get their own response
+RegisterNetEvent('RSGCore:Server:TriggerCallbackId', function(name, requestId, ...)
+    local src = source
+    if type(name) ~= 'string' or type(requestId) ~= 'number' then return end
+    RSGCore.Functions.TriggerCallback(name, src, function(...)
+        TriggerClientEvent('RSGCore:Client:TriggerCallbackId', src, requestId, ...)
+    end, ...)
+end)
+
 -- Player
 
 local SAVE_COOLDOWN = 30 -- seconds; prevents clients spamming database writes
-local lastSave = {}
 
 RegisterNetEvent('RSGCore:UpdatePlayer', function()
     local src = source
@@ -159,10 +161,6 @@ RegisterNetEvent('RSGCore:UpdatePlayer', function()
     if lastSave[src] and now - lastSave[src] < SAVE_COOLDOWN then return end
     lastSave[src] = now
     Player.Functions.Save()
-end)
-
-AddEventHandler('playerDropped', function()
-    lastSave[source] = nil
 end)
 
 RegisterNetEvent('RSGCore:Server:SetMetaData', function(meta, data)
@@ -180,7 +178,7 @@ RegisterNetEvent('RSGCore:ToggleDuty', function()
     if not Player then return end
     local onDuty = not Player.PlayerData.job.onduty
     Player.Functions.SetJobDuty(onDuty)
-    TriggerClientEvent('ox_lib:notify', src, { title = Lang:t(onDuty and 'info.on_duty' or 'info.off_duty'), type = 'inform', duration = 5000 })
+    TriggerClientEvent('ox_lib:notify', src, { title = locale(onDuty and 'info.on_duty' or 'info.off_duty'), type = 'inform', duration = 5000 })
     TriggerEvent('RSGCore:Server:SetDuty', src, onDuty)
     TriggerClientEvent('RSGCore:Client:SetDuty', src, onDuty)
 end)
@@ -196,10 +194,10 @@ RegisterNetEvent('RSGCore:CallCommand', function(command, args)
     args = type(args) == 'table' and args or {}
 
     if not RSGCore.Functions.HasPermission(src, 'command.' .. cmd.name) then
-        return TriggerClientEvent('ox_lib:notify', src, { title = Lang:t('error.no_access'), type = 'error', duration = 5000 })
+        return TriggerClientEvent('ox_lib:notify', src, { title = locale('error.no_access'), type = 'error', duration = 5000 })
     end
     if cmd.argsrequired and #cmd.arguments ~= 0 and not args[#cmd.arguments] then
-        return TriggerClientEvent('ox_lib:notify', src, { title = Lang:t('error.missing_args2'), type = 'error', duration = 5000 })
+        return TriggerClientEvent('ox_lib:notify', src, { title = locale('error.missing_args2'), type = 'error', duration = 5000 })
     end
     cmd.callback(src, args)
 end)
@@ -219,5 +217,5 @@ RSGCore.Functions.CreateCallback('RSGCore:Server:SpawnVehicle', function(source,
 end)
 
 RegisterNetEvent('RSGCore:Server:KickCSRF', function()
-    DropPlayer(source, 'CSRF validation failed')
+    DropPlayer(source, locale('error.csrf_failed'))
 end)

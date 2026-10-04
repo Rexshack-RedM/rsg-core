@@ -28,7 +28,7 @@ function RSGCore.Player.Login(source, citizenid, newData)
                 RSGCore.Player.CheckPlayerData(source, decodePlayerRow(PlayerData))
             else
                 TriggerEvent('rsg-log:server:CreateLog', 'anticheat', 'Anti-Cheat', 'white', playerLabel(source) .. ' Has Been Dropped For Character Joining Exploit', false)
-                DropPlayer(source, Lang:t('info.exploit_dropped'))
+                DropPlayer(source, locale('info.exploit_dropped'))
                 return false
             end
         else
@@ -567,7 +567,7 @@ function RSGCore.Player.Save(source)
     end
     savePlayerRow(PlayerData, pcoords)
     if GetResourceState('rsg-inventory') ~= 'missing' then exports['rsg-inventory']:SaveInventory(source) end
-    RSGCore.ShowSuccess(resourceName, PlayerData.name .. ' PLAYER SAVED!')
+    RSGCore.ShowSuccess(resourceName, tostring(PlayerData.name) .. ' PLAYER SAVED!')
 end
 
 function RSGCore.Player.SaveOffline(PlayerData)
@@ -576,7 +576,7 @@ function RSGCore.Player.SaveOffline(PlayerData)
     end
     savePlayerRow(PlayerData, PlayerData.position)
     if GetResourceState('rsg-inventory') ~= 'missing' then exports['rsg-inventory']:SaveInventory(PlayerData, true) end
-    RSGCore.ShowSuccess(resourceName, PlayerData.name .. ' OFFLINE PLAYER SAVED!')
+    RSGCore.ShowSuccess(resourceName, tostring(PlayerData.name) .. ' OFFLINE PLAYER SAVED!')
 end
 
 -- Delete character
@@ -610,7 +610,7 @@ function RSGCore.Player.DeleteCharacter(source, citizenid)
         end)
     else
         TriggerEvent('rsg-log:server:CreateLog', 'anticheat', 'Anti-Cheat', 'white', playerLabel(source) .. ' Has Been Dropped For Character Deletion Exploit', true)
-        DropPlayer(source, Lang:t('info.exploit_dropped'))
+        DropPlayer(source, locale('info.exploit_dropped'))
     end
 end
 
@@ -619,7 +619,7 @@ function RSGCore.Player.ForceDeleteCharacter(citizenid)
     if not result then return end
     local Player = RSGCore.Functions.GetPlayerByCitizenId(citizenid)
     if Player then
-        DropPlayer(Player.PlayerData.source, Lang:t('info.character_deleted_by_admin'))
+        DropPlayer(Player.PlayerData.source, locale('info.character_deleted_by_admin'))
     end
     deleteCharacterRows(citizenid, function()
         TriggerEvent('rsg-log:server:CreateLog', 'joinleave', 'Character Force Deleted', 'red', 'Character **' .. citizenid .. '** got deleted')

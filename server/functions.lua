@@ -44,11 +44,10 @@ end
 ---@param source any
 ---@return table
 function RSGCore.Functions.GetPlayer(source)
-    if type(source) == 'number' then
-        return RSGCore.Players[source]
-    else
-        return RSGCore.Players[RSGCore.Functions.GetSource(source)]
-    end
+    -- numeric strings (e.g. from GetPlayers() or command args) are treated as server ids
+    local id = tonumber(source)
+    if id then return RSGCore.Players[id] end
+    return RSGCore.Players[RSGCore.Functions.GetSource(source)]
 end
 
 ---Get player by citizen id
@@ -160,7 +159,7 @@ function RSGCore.Functions.GetClosestPlayer(source, coords)
             local playerCoords = GetEntityCoords(playerPed)
             local distance = #(playerCoords - coords)
             if closestDistance == -1 or distance < closestDistance then
-                closestPlayer = playerId
+                closestPlayer = tonumber(playerId) -- GetPlayers() returns strings
                 closestDistance = distance
             end
         end
@@ -362,12 +361,40 @@ function RSGCore.Functions.CreateVehicle(source, model, vehtype, coords, warp)
     return veh
 end
 
+-- Notifications (backwards compatibility - many resources, e.g. rsg-inventory /giveitem, still call these)
+
+local notifyTypes = { primary = 'inform', inform = 'inform', info = 'inform', success = 'success', error = 'error', warning = 'warning' }
+
+---Send an ox_lib notification to a player
+---@param source number
+---@param text string|table message, or a full lib.notify props table
+---@param notifyType? string 'primary' | 'inform' | 'success' | 'error' | 'warning'
+---@param duration? number milliseconds (default 5000)
+function RSGCore.Functions.Notify(source, text, notifyType, duration)
+    if not source or source == 0 then return end
+    local data = type(text) == 'table' and text or {
+        description = tostring(text),
+        type = notifyTypes[notifyType] or 'inform',
+        duration = tonumber(duration) or 5000,
+    }
+    TriggerClientEvent('ox_lib:notify', source, data)
+end
+
 ---Paychecks (standalone - don't touch)
 local function notifyPaycheck(src, title, notifyType)
     TriggerClientEvent('ox_lib:notify', src, { title = title, type = notifyType, duration = 5000 })
 end
 
+---Returns the society balance, or nil when society pay is disabled / rsg-banking is unavailable
+local function getSocietyBalance(jobName)
+    if not RSGCore.Config.Money.PayCheckSociety or GetResourceState('rsg-banking') ~= 'started' then return end
+    local ok, balance = pcall(function() return exports['rsg-banking']:GetAccountBalance(jobName) end)
+    return ok and tonumber(balance) or nil
+end
+
 function PaycheckInterval()
+    -- schedule the next run first so an error below can never stop paychecks permanently
+    SetTimeout(RSGCore.Config.Money.PayCheckTimeOut * (60 * 1000), PaycheckInterval)
     for _, Player in pairs(RSGCore.Players) do
         local job = Player.PlayerData.job
         local jobInfo = job and RSGShared.Jobs[job.name]
@@ -378,38 +405,35 @@ function PaycheckInterval()
 
         if jobInfo and payment > 0 and (jobInfo.offDutyPay or job.onduty) then
             local canPay = true
-            if RSGCore.Config.Money.PayCheckSociety then
-                local account = exports['rsg-banking']:GetAccountBalance(job.name)
-                if account ~= 0 then -- player is employed by a society
-                    if account < payment then
-                        canPay = false
-                        notifyPaycheck(src, Lang:t('error.company_too_poor'), 'error')
-                    else
-                        exports['rsg-banking']:RemoveMoney(job.name, payment, 'Employee Paycheck')
-                    end
+            local account = getSocietyBalance(job.name)
+            if account and account ~= 0 then -- player is employed by a society
+                if account < payment then
+                    canPay = false
+                    notifyPaycheck(src, locale('error.company_too_poor'), 'error')
+                else
+                    exports['rsg-banking']:RemoveMoney(job.name, payment, 'Employee Paycheck')
                 end
             end
             if canPay then
                 Player.Functions.AddMoney('bank', payment, 'paycheck')
-                notifyPaycheck(src, Lang:t('info.received_paycheck', { value = payment }), 'inform')
+                notifyPaycheck(src, locale('info.received_paycheck', payment), 'inform')
             end
         end
     end
-    SetTimeout(RSGCore.Config.Money.PayCheckTimeOut * (60 * 1000), PaycheckInterval)
 end
 
 -- Callback Functions --
+
+---Internal: key used to store a pending client callback for a specific player
+function RSGCore.Functions.ClientCallbackKey(source, name)
+    return ('%s:%s'):format(source, name)
+end
 
 ---Trigger Client Callback
 ---@param name string
 ---@param source any
 ---@param cb function
 ---@param ... any
----Internal: key used to store a pending client callback for a specific player
-function RSGCore.Functions.ClientCallbackKey(source, name)
-    return ('%s:%s'):format(source, name)
-end
-
 function RSGCore.Functions.TriggerClientCallback(name, source, cb, ...)
     RSGCore.ClientCallbacks[RSGCore.Functions.ClientCallbackKey(source, name)] = cb
     TriggerClientEvent('RSGCore:Client:TriggerClientCallback', source, name, ...)
@@ -462,7 +486,7 @@ end
 ---@param setKickReason boolean
 ---@param deferrals boolean
 function RSGCore.Functions.Kick(source, reason, setKickReason, deferrals)
-    reason = '\n' .. tostring(reason) .. '\n' .. Lang:t('info.check_discord', { discord = RSGCore.Config.Server.Discord })
+    reason = '\n' .. tostring(reason) .. '\n' .. locale('info.check_discord', RSGCore.Config.Server.Discord)
     if setKickReason then
         setKickReason(reason)
     end
@@ -477,6 +501,21 @@ function RSGCore.Functions.Kick(source, reason, setKickReason, deferrals)
     end)
 end
 
+---Open or close the server. Closing kicks everyone without the whitelist permission.
+---@param closed boolean
+---@param reason string?
+function RSGCore.Functions.SetServerClosed(closed, reason)
+    RSGCore.Config.Server.Closed = closed
+    if not closed then return end
+    reason = type(reason) == 'string' and reason ~= '' and reason or locale('info.no_reason')
+    RSGCore.Config.Server.ClosedReason = reason
+    for src in pairs(RSGCore.Players) do
+        if not RSGCore.Functions.HasPermission(src, RSGCore.Config.Server.WhitelistPermission) then
+            RSGCore.Functions.Kick(src, reason)
+        end
+    end
+end
+
 ---Check if player is whitelisted, kept like this for backwards compatibility or future plans
 ---@param source any
 ---@return boolean
@@ -488,21 +527,38 @@ end
 
 -- Setting & Removing Permissions
 
+---Returns true if the permission is one of RSGConfig.Server.Permissions
+---(also stops arbitrary text from being passed into ExecuteCommand)
+---@param permission any
+---@return boolean
+function RSGCore.Functions.IsValidPermission(permission)
+    if type(permission) ~= 'string' then return false end
+    for _, v in ipairs(RSGCore.Config.Server.Permissions) do
+        if v == permission then return true end
+    end
+    return false
+end
+
 ---Add permission for player
 ---@param source any
 ---@param permission string
+---@return boolean
 function RSGCore.Functions.AddPermission(source, permission)
+    if not RSGCore.Functions.IsValidPermission(permission) then return false end
     if not IsPlayerAceAllowed(source, permission) then
         ExecuteCommand(('add_principal player.%s rsgcore.%s'):format(source, permission))
         RSGCore.Commands.Refresh(source)
     end
+    return true
 end
 
----Remove permission from player
+---Remove permission from player (all configured permissions when permission is nil)
 ---@param source any
----@param permission string
+---@param permission string?
+---@return boolean
 function RSGCore.Functions.RemovePermission(source, permission)
     if permission then
+        if not RSGCore.Functions.IsValidPermission(permission) then return false end
         if IsPlayerAceAllowed(source, permission) then
             ExecuteCommand(('remove_principal player.%s rsgcore.%s'):format(source, permission))
             RSGCore.Commands.Refresh(source)
@@ -515,6 +571,7 @@ function RSGCore.Functions.RemovePermission(source, permission)
             end
         end
     end
+    return true
 end
 
 -- Checking for Permission Level
@@ -579,7 +636,7 @@ function RSGCore.Functions.IsPlayerBanned(source)
     if not result then return false end
     local expire = tonumber(result.expire) or 0
     if os.time() < expire then
-        return true, Lang:t('info.ban_message', { reason = result.reason or '', expires = os.date('%d/%m/%Y %H:%M', expire) })
+        return true, locale('info.ban_message', result.reason or '', os.date('%d/%m/%Y %H:%M', expire))
     else
         MySQL.query('DELETE FROM bans WHERE id = ?', { result.id })
     end

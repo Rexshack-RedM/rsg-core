@@ -30,281 +30,102 @@ end
 RSGCore.Functions.SetField = SetField
 exports('SetField', SetField)
 
--- Single add job function which should only be used if you planning on adding a single job
-local function AddJob(jobName, job)
-    if type(jobName) ~= 'string' then
-        return false, 'invalid_job_name'
-    end
+-- Shared table (Jobs / Items / Gangs) management
+-- Runtime changes are recorded so players joining later receive them too
+-- (previously late joiners only had the static shared files and missed any AddJob/AddItem/... changes).
 
-    if RSGCore.Shared.Jobs[jobName] then
-        return false, 'job_exists'
-    end
+local sharedChanges = { Jobs = {}, Items = {}, Gangs = {} } -- [table][key] = value | false (removed)
 
-    RSGCore.Shared.Jobs[jobName] = job
+local function recordChange(tableName, key, value)
+    sharedChanges[tableName][key] = value == nil and false or value
+end
 
-    TriggerClientEvent('RSGCore:Client:OnSharedUpdate', -1, 'Jobs', jobName, job)
+local function sharedUpdated(tableName, key, value)
+    recordChange(tableName, key, value)
+    TriggerClientEvent('RSGCore:Client:OnSharedUpdate', -1, tableName, key, value)
     TriggerEvent('RSGCore:Server:UpdateObject')
     return true, 'success'
 end
 
-RSGCore.Functions.AddJob = AddJob
-exports('AddJob', AddJob)
+---@param tableName 'Jobs'|'Items'|'Gangs'
+---@param prefix string error code prefix ('job', 'item', 'gang')
+local function makeSharedApi(tableName, prefix)
+    local api = {}
+    local invalidName = ('invalid_%s_name'):format(prefix)
+    local exists = ('%s_exists'):format(prefix)
+    local notExists = ('%s_not_exists'):format(prefix)
 
--- Multiple Add Jobs
-local function AddJobs(jobs)
-    local shouldContinue = true
-    local message = 'success'
-    local errorItem = nil
+    function api.add(name, data)
+        if type(name) ~= 'string' then return false, invalidName end
+        if RSGCore.Shared[tableName][name] then return false, exists end
+        RSGCore.Shared[tableName][name] = data
+        return sharedUpdated(tableName, name, data)
+    end
 
-    for key, value in pairs(jobs) do
-        if type(key) ~= 'string' then
-            message = 'invalid_job_name'
-            shouldContinue = false
-            errorItem = jobs[key]
-            break
+    -- validates every entry first, so a failure no longer leaves a half-applied, unsynced batch
+    function api.addMany(entries)
+        if type(entries) ~= 'table' then return false, invalidName, nil end
+        for name, data in pairs(entries) do
+            if type(name) ~= 'string' then return false, invalidName, data end
+            if RSGCore.Shared[tableName][name] then return false, exists, data end
         end
-
-        if RSGCore.Shared.Jobs[key] then
-            message = 'job_exists'
-            shouldContinue = false
-            errorItem = jobs[key]
-            break
+        for name, data in pairs(entries) do
+            RSGCore.Shared[tableName][name] = data
+            recordChange(tableName, name, data)
         end
-
-        RSGCore.Shared.Jobs[key] = value
+        TriggerClientEvent('RSGCore:Client:OnSharedUpdateMultiple', -1, tableName, entries)
+        TriggerEvent('RSGCore:Server:UpdateObject')
+        return true, 'success', nil
     end
 
-    if not shouldContinue then return false, message, errorItem end
-    TriggerClientEvent('RSGCore:Client:OnSharedUpdateMultiple', -1, 'Jobs', jobs)
-    TriggerEvent('RSGCore:Server:UpdateObject')
-    return true, message, nil
+    function api.update(name, data)
+        if type(name) ~= 'string' then return false, invalidName end
+        if not RSGCore.Shared[tableName][name] then return false, notExists end
+        RSGCore.Shared[tableName][name] = data
+        return sharedUpdated(tableName, name, data)
+    end
+
+    function api.remove(name)
+        if type(name) ~= 'string' then return false, invalidName end
+        if not RSGCore.Shared[tableName][name] then return false, notExists end
+        RSGCore.Shared[tableName][name] = nil
+        return sharedUpdated(tableName, name, nil)
+    end
+
+    return api
 end
 
-RSGCore.Functions.AddJobs = AddJobs
-exports('AddJobs', AddJobs)
-
--- Single Remove Job
-local function RemoveJob(jobName)
-    if type(jobName) ~= 'string' then
-        return false, 'invalid_job_name'
-    end
-
-    if not RSGCore.Shared.Jobs[jobName] then
-        return false, 'job_not_exists'
-    end
-
-    RSGCore.Shared.Jobs[jobName] = nil
-
-    TriggerClientEvent('RSGCore:Client:OnSharedUpdate', -1, 'Jobs', jobName, nil)
-    TriggerEvent('RSGCore:Server:UpdateObject')
-    return true, 'success'
+local function register(name, fn)
+    RSGCore.Functions[name] = fn
+    exports(name, fn)
 end
 
-RSGCore.Functions.RemoveJob = RemoveJob
-exports('RemoveJob', RemoveJob)
+local jobs, items, gangs = makeSharedApi('Jobs', 'job'), makeSharedApi('Items', 'item'), makeSharedApi('Gangs', 'gang')
 
--- Single Update Job
-local function UpdateJob(jobName, job)
-    if type(jobName) ~= 'string' then
-        return false, 'invalid_job_name'
-    end
+register('AddJob', jobs.add)
+register('AddJobs', jobs.addMany)
+register('UpdateJob', jobs.update)
+register('RemoveJob', jobs.remove)
 
-    if not RSGCore.Shared.Jobs[jobName] then
-        return false, 'job_not_exists'
-    end
+register('AddItem', items.add)
+register('AddItems', items.addMany)
+register('UpdateItem', items.update)
+register('RemoveItem', items.remove)
 
-    RSGCore.Shared.Jobs[jobName] = job
+register('AddGang', gangs.add)
+register('AddGangs', gangs.addMany)
+register('UpdateGang', gangs.update)
+register('RemoveGang', gangs.remove)
 
-    TriggerClientEvent('RSGCore:Client:OnSharedUpdate', -1, 'Jobs', jobName, job)
-    TriggerEvent('RSGCore:Server:UpdateObject')
-    return true, 'success'
-end
-
-RSGCore.Functions.UpdateJob = UpdateJob
-exports('UpdateJob', UpdateJob)
-
--- Single add item
-local function AddItem(itemName, item)
-    if type(itemName) ~= 'string' then
-        return false, 'invalid_item_name'
-    end
-
-    if RSGCore.Shared.Items[itemName] then
-        return false, 'item_exists'
-    end
-
-    RSGCore.Shared.Items[itemName] = item
-
-    TriggerClientEvent('RSGCore:Client:OnSharedUpdate', -1, 'Items', itemName, item)
-    TriggerEvent('RSGCore:Server:UpdateObject')
-    return true, 'success'
-end
-
-RSGCore.Functions.AddItem = AddItem
-exports('AddItem', AddItem)
-
--- Single update item
-local function UpdateItem(itemName, item)
-    if type(itemName) ~= 'string' then
-        return false, 'invalid_item_name'
-    end
-    if not RSGCore.Shared.Items[itemName] then
-        return false, 'item_not_exists'
-    end
-    RSGCore.Shared.Items[itemName] = item
-    TriggerClientEvent('RSGCore:Client:OnSharedUpdate', -1, 'Items', itemName, item)
-    TriggerEvent('RSGCore:Server:UpdateObject')
-    return true, 'success'
-end
-
-RSGCore.Functions.UpdateItem = UpdateItem
-exports('UpdateItem', UpdateItem)
-
--- Multiple Add Items
-local function AddItems(items)
-    local shouldContinue = true
-    local message = 'success'
-    local errorItem = nil
-
-    for key, value in pairs(items) do
-        if type(key) ~= 'string' then
-            message = 'invalid_item_name'
-            shouldContinue = false
-            errorItem = items[key]
-            break
+-- send runtime shared changes to a player once their character is loaded
+AddEventHandler('RSGCore:Server:PlayerLoaded', function(Player)
+    local src = Player.PlayerData.source
+    for tableName, changes in pairs(sharedChanges) do
+        if next(changes) then
+            TriggerClientEvent('RSGCore:Client:OnSharedUpdateMultiple', src, tableName, changes)
         end
-
-        if RSGCore.Shared.Items[key] then
-            message = 'item_exists'
-            shouldContinue = false
-            errorItem = items[key]
-            break
-        end
-
-        RSGCore.Shared.Items[key] = value
     end
-
-    if not shouldContinue then return false, message, errorItem end
-    TriggerClientEvent('RSGCore:Client:OnSharedUpdateMultiple', -1, 'Items', items)
-    TriggerEvent('RSGCore:Server:UpdateObject')
-    return true, message, nil
-end
-
-RSGCore.Functions.AddItems = AddItems
-exports('AddItems', AddItems)
-
--- Single Remove Item
-local function RemoveItem(itemName)
-    if type(itemName) ~= 'string' then
-        return false, 'invalid_item_name'
-    end
-
-    if not RSGCore.Shared.Items[itemName] then
-        return false, 'item_not_exists'
-    end
-
-    RSGCore.Shared.Items[itemName] = nil
-
-    TriggerClientEvent('RSGCore:Client:OnSharedUpdate', -1, 'Items', itemName, nil)
-    TriggerEvent('RSGCore:Server:UpdateObject')
-    return true, 'success'
-end
-
-RSGCore.Functions.RemoveItem = RemoveItem
-exports('RemoveItem', RemoveItem)
-
--- Single Add Gang
-local function AddGang(gangName, gang)
-    if type(gangName) ~= 'string' then
-        return false, 'invalid_gang_name'
-    end
-
-    if RSGCore.Shared.Gangs[gangName] then
-        return false, 'gang_exists'
-    end
-
-    RSGCore.Shared.Gangs[gangName] = gang
-
-    TriggerClientEvent('RSGCore:Client:OnSharedUpdate', -1, 'Gangs', gangName, gang)
-    TriggerEvent('RSGCore:Server:UpdateObject')
-    return true, 'success'
-end
-
-RSGCore.Functions.AddGang = AddGang
-exports('AddGang', AddGang)
-
--- Multiple Add Gangs
-local function AddGangs(gangs)
-    local shouldContinue = true
-    local message = 'success'
-    local errorItem = nil
-
-    for key, value in pairs(gangs) do
-        if type(key) ~= 'string' then
-            message = 'invalid_gang_name'
-            shouldContinue = false
-            errorItem = gangs[key]
-            break
-        end
-
-        if RSGCore.Shared.Gangs[key] then
-            message = 'gang_exists'
-            shouldContinue = false
-            errorItem = gangs[key]
-            break
-        end
-
-        RSGCore.Shared.Gangs[key] = value
-    end
-
-    if not shouldContinue then return false, message, errorItem end
-    TriggerClientEvent('RSGCore:Client:OnSharedUpdateMultiple', -1, 'Gangs', gangs)
-    TriggerEvent('RSGCore:Server:UpdateObject')
-    return true, message, nil
-end
-
-RSGCore.Functions.AddGangs = AddGangs
-exports('AddGangs', AddGangs)
-
--- Single Remove Gang
-local function RemoveGang(gangName)
-    if type(gangName) ~= 'string' then
-        return false, 'invalid_gang_name'
-    end
-
-    if not RSGCore.Shared.Gangs[gangName] then
-        return false, 'gang_not_exists'
-    end
-
-    RSGCore.Shared.Gangs[gangName] = nil
-
-    TriggerClientEvent('RSGCore:Client:OnSharedUpdate', -1, 'Gangs', gangName, nil)
-    TriggerEvent('RSGCore:Server:UpdateObject')
-    return true, 'success'
-end
-
-RSGCore.Functions.RemoveGang = RemoveGang
-exports('RemoveGang', RemoveGang)
-
--- Single Update Gang
-local function UpdateGang(gangName, gang)
-    if type(gangName) ~= 'string' then
-        return false, 'invalid_gang_name'
-    end
-
-    if not RSGCore.Shared.Gangs[gangName] then
-        return false, 'gang_not_exists'
-    end
-
-    RSGCore.Shared.Gangs[gangName] = gang
-
-    TriggerClientEvent('RSGCore:Client:OnSharedUpdate', -1, 'Gangs', gangName, gang)
-    TriggerEvent('RSGCore:Server:UpdateObject')
-    return true, 'success'
-end
-
-RSGCore.Functions.UpdateGang = UpdateGang
-exports('UpdateGang', UpdateGang)
+end)
 
 local resourceName = GetCurrentResourceName()
 local function GetCoreVersion(InvokingResource)
@@ -329,7 +150,7 @@ local function ExploitBan(playerId, origin)
         2147483647,
         'Anti Cheat'
     })
-    DropPlayer(playerId, Lang:t('info.exploit_banned', { discord = RSGCore.Config.Server.Discord }))
+    DropPlayer(playerId, locale('info.exploit_banned', RSGCore.Config.Server.Discord))
     TriggerEvent('rsg-log:server:CreateLog', 'anticheat', 'Anti-Cheat', 'red', name .. ' has been banned for exploiting ' .. origin, true)
 end
 

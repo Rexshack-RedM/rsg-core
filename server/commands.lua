@@ -5,6 +5,7 @@ local function notify(src, title, notifyType)
     if not src or src == 0 then return print(title) end -- console
     TriggerClientEvent('ox_lib:notify', src, { title = title, type = notifyType or 'inform', duration = 5000 })
 end
+
 RSGCore.Commands.IgnoreList = { -- Ignore old perm levels while keeping backwards compatibility
     ['god'] = true,            -- We don't need to create an ace because god is allowed all commands
     ['user'] = true            -- We don't need to create an ace because builtin.everyone
@@ -30,7 +31,7 @@ function RSGCore.Commands.Add(name, help, arguments, argsrequired, callback, per
             return TriggerClientEvent('chat:addMessage', source, {
                 color = { 255, 0, 0 },
                 multiline = true,
-                args = { 'System', Lang:t('error.missing_args2') }
+                args = { locale('info.system'), locale('error.missing_args2') }
             })
         end
         callback(source, args, rawCommand)
@@ -86,7 +87,7 @@ function RSGCore.Commands.Refresh(source)
 end
 
 -- Teleport
-RSGCore.Commands.Add('tp', Lang:t('command.tp.help'), { { name = Lang:t('command.tp.params.x.name'), help = Lang:t('command.tp.params.x.help') }, { name = Lang:t('command.tp.params.y.name'), help = Lang:t('command.tp.params.y.help') }, { name = Lang:t('command.tp.params.z.name'), help = Lang:t('command.tp.params.z.help') } }, false, function(source, args)
+RSGCore.Commands.Add('tp', locale('command.tp.help'), { { name = locale('command.tp.params.x.name'), help = locale('command.tp.params.x.help') }, { name = locale('command.tp.params.y.name'), help = locale('command.tp.params.y.help') }, { name = locale('command.tp.params.z.name'), help = locale('command.tp.params.z.help') } }, false, function(source, args)
     if args[1] and not args[2] and not args[3] then
         local targetId = tonumber(args[1])
         if targetId then
@@ -94,14 +95,14 @@ RSGCore.Commands.Add('tp', Lang:t('command.tp.help'), { { name = Lang:t('command
             if target ~= 0 then
                 TriggerClientEvent('RSGCore:Command:TeleportToPlayer', source, GetEntityCoords(target))
             else
-                notify(source, Lang:t('error.not_online'), 'error')
+                notify(source, locale('error.not_online'), 'error')
             end
         else
             local location = RSGShared.Locations[args[1]]
             if location then
                 TriggerClientEvent('RSGCore:Command:TeleportToCoords', source, location.x, location.y, location.z, location.w)
             else
-                notify(source, Lang:t('error.location_not_exist'), 'error')
+                notify(source, locale('error.location_not_exist'), 'error')
             end
         end
     elseif args[1] and args[2] and args[3] then
@@ -112,95 +113,76 @@ RSGCore.Commands.Add('tp', Lang:t('command.tp.help'), { { name = Lang:t('command
         if x and y and z then
             TriggerClientEvent('RSGCore:Command:TeleportToCoords', source, x + 0.0, y + 0.0, z + 0.0)
         else
-            notify(source, Lang:t('error.wrong_format'), 'error')
+            notify(source, locale('error.wrong_format'), 'error')
         end
     else
-        notify(source, Lang:t('error.missing_args'), 'error')
+        notify(source, locale('error.missing_args'), 'error')
     end
 end, 'admin')
 
-RSGCore.Commands.Add('tpm', Lang:t('command.tpm.help'), {}, false, function(source)
+RSGCore.Commands.Add('tpm', locale('command.tpm.help'), {}, false, function(source)
     TriggerClientEvent('RSGCore:Command:GoToMarker', source)
 end, 'admin')
 
-RSGCore.Commands.Add('togglepvp', Lang:t('command.togglepvp.help'), {}, false, function()
+RSGCore.Commands.Add('togglepvp', locale('command.togglepvp.help'), {}, false, function()
     RSGCore.Config.Server.PVP = not RSGCore.Config.Server.PVP
     TriggerClientEvent('RSGCore:Client:PvpHasToggled', -1, RSGCore.Config.Server.PVP)
 end, 'admin')
 
 -- admin noclip
-RSGCore.Commands.Add('noclip', Lang:t("command.noclip.help"), {}, false, function(source)
+RSGCore.Commands.Add('noclip', locale('command.noclip.help'), {}, false, function(source)
     TriggerClientEvent('RSGCore:Command:ToggleNoClip', source)
 end, 'admin')
 
 -- Permissions
 
-RSGCore.Commands.Add('addpermission', Lang:t('command.addpermission.help'), { { name = Lang:t('command.addpermission.params.id.name'), help = Lang:t('command.addpermission.params.id.help') }, { name = Lang:t('command.addpermission.params.permission.name'), help = Lang:t('command.addpermission.params.permission.help') } }, true, function(source, args)
+RSGCore.Commands.Add('addpermission', locale('command.addpermission.help'), { { name = locale('command.addpermission.params.id.name'), help = locale('command.addpermission.params.id.help') }, { name = locale('command.addpermission.params.permission.name'), help = locale('command.addpermission.params.permission.help') } }, true, function(source, args)
     local Player = RSGCore.Functions.GetPlayer(tonumber(args[1]))
-    local permission = tostring(args[2]):lower()
-    if Player then
-        RSGCore.Functions.AddPermission(Player.PlayerData.source, permission)
-    else
-        notify(source, Lang:t('error.not_online'), 'error')
+    if not Player then return notify(source, locale('error.not_online'), 'error') end
+    if not RSGCore.Functions.AddPermission(Player.PlayerData.source, tostring(args[2]):lower()) then
+        return notify(source, locale('error.invalid_permission'), 'error')
     end
+    notify(source, locale('success.permission_updated'), 'success')
 end, 'god')
 
-RSGCore.Commands.Add('removepermission', Lang:t('command.removepermission.help'), { { name = Lang:t('command.removepermission.params.id.name'), help = Lang:t('command.removepermission.params.id.help') }, { name = Lang:t('command.removepermission.params.permission.name'), help = Lang:t('command.removepermission.params.permission.help') } }, true, function(source, args)
+RSGCore.Commands.Add('removepermission', locale('command.removepermission.help'), { { name = locale('command.removepermission.params.id.name'), help = locale('command.removepermission.params.id.help') }, { name = locale('command.removepermission.params.permission.name'), help = locale('command.removepermission.params.permission.help') } }, true, function(source, args)
     local Player = RSGCore.Functions.GetPlayer(tonumber(args[1]))
-    local permission = tostring(args[2]):lower()
-    if Player then
-        RSGCore.Functions.RemovePermission(Player.PlayerData.source, permission)
-    else
-        notify(source, Lang:t('error.not_online'), 'error')
+    if not Player then return notify(source, locale('error.not_online'), 'error') end
+    if not RSGCore.Functions.RemovePermission(Player.PlayerData.source, tostring(args[2]):lower()) then
+        return notify(source, locale('error.invalid_permission'), 'error')
     end
+    notify(source, locale('success.permission_updated'), 'success')
 end, 'god')
 
--- Open & Close Server
+-- Open & Close Server (commands are ace-restricted to admin, so no extra permission check is needed)
 
-RSGCore.Commands.Add('openserver', Lang:t('command.openserver.help'), {}, false, function(source)
+RSGCore.Commands.Add('openserver', locale('command.openserver.help'), {}, false, function(source)
     if not RSGCore.Config.Server.Closed then
-        notify(source, Lang:t('error.server_already_open'), 'error')
-        return
+        return notify(source, locale('error.server_already_open'), 'error')
     end
-    if RSGCore.Functions.HasPermission(source, 'admin') then
-        RSGCore.Config.Server.Closed = false
-        notify(source, Lang:t('success.server_opened'), 'success')
-    else
-        RSGCore.Functions.Kick(source, Lang:t('error.no_permission'))
-    end
+    RSGCore.Functions.SetServerClosed(false)
+    notify(source, locale('success.server_opened'), 'success')
 end, 'admin')
 
-RSGCore.Commands.Add('closeserver', Lang:t('command.closeserver.help'), { { name = Lang:t('command.closeserver.params.reason.name'), help = Lang:t('command.closeserver.params.reason.help') } }, false, function(source, args)
+RSGCore.Commands.Add('closeserver', locale('command.closeserver.help'), { { name = locale('command.closeserver.params.reason.name'), help = locale('command.closeserver.params.reason.help') } }, false, function(source, args)
     if RSGCore.Config.Server.Closed then
-        notify(source, Lang:t('error.server_already_closed'), 'error')
-        return
+        return notify(source, locale('error.server_already_closed'), 'error')
     end
-    if RSGCore.Functions.HasPermission(source, 'admin') then
-        local reason = #args > 0 and table.concat(args, ' ') or Lang:t('info.no_reason')
-        RSGCore.Config.Server.Closed = true
-        RSGCore.Config.Server.ClosedReason = reason
-        for k in pairs(RSGCore.Players) do
-            if not RSGCore.Functions.HasPermission(k, RSGCore.Config.Server.WhitelistPermission) then
-                RSGCore.Functions.Kick(k, reason)
-            end
-        end
-        notify(source, Lang:t('success.server_closed'), 'success')
-    else
-        RSGCore.Functions.Kick(source, Lang:t('error.no_permission'))
-    end
+    RSGCore.Functions.SetServerClosed(true, table.concat(args, ' '))
+    notify(source, locale('success.server_closed'), 'success')
 end, 'admin')
 
 -- Vehicle
 
-RSGCore.Commands.Add('vehicle', Lang:t('command.car.help'), { { name = Lang:t('command.car.params.model.name'), help = Lang:t('command.car.params.model.help') } }, true, function(source, args)
+RSGCore.Commands.Add('vehicle', locale('command.car.help'), { { name = locale('command.car.params.model.name'), help = locale('command.car.params.model.help') } }, true, function(source, args)
     TriggerClientEvent('RSGCore:Command:SpawnVehicle', source, args[1])
 end, 'admin')
 
-RSGCore.Commands.Add('dv', Lang:t('command.dv.help'), {}, false, function(source)
+RSGCore.Commands.Add('dv', locale('command.dv.help'), {}, false, function(source)
     TriggerClientEvent('RSGCore:Command:DeleteVehicle', source)
 end, 'admin')
 
-RSGCore.Commands.Add('dvall', Lang:t('command.dvall.help'), {}, false, function()
+RSGCore.Commands.Add('dvall', locale('command.dvall.help'), {}, false, function()
     for _, vehicle in ipairs(GetAllVehicles()) do
         DeleteEntity(vehicle)
     end
@@ -208,7 +190,7 @@ end, 'admin')
 
 -- Peds
 
-RSGCore.Commands.Add('dvp', Lang:t('command.dvp.help'), {}, false, function()
+RSGCore.Commands.Add('dvp', locale('command.dvp.help'), {}, false, function()
     for _, ped in ipairs(GetAllPeds()) do
         -- never delete player peds (previously /dvp deleted every player's character ped)
         if not IsPedAPlayer(ped) then
@@ -219,7 +201,7 @@ end, 'admin')
 
 -- Objects
 
-RSGCore.Commands.Add('dvo', Lang:t('command.dvo.help'), {}, false, function()
+RSGCore.Commands.Add('dvo', locale('command.dvo.help'), {}, false, function()
     for _, object in ipairs(GetAllObjects()) do
         DeleteEntity(object)
     end
@@ -227,90 +209,85 @@ end, 'admin')
 
 -- Money
 
-RSGCore.Commands.Add('givemoney', Lang:t('command.givemoney.help'), { { name = Lang:t('command.givemoney.params.id.name'), help = Lang:t('command.givemoney.params.id.help') }, { name = Lang:t('command.givemoney.params.moneytype.name'), help = Lang:t('command.givemoney.params.moneytype.help') }, { name = Lang:t('command.givemoney.params.amount.name'), help = Lang:t('command.givemoney.params.amount.help') } }, true, function(source, args)
+RSGCore.Commands.Add('givemoney', locale('command.givemoney.help'), { { name = locale('command.givemoney.params.id.name'), help = locale('command.givemoney.params.id.help') }, { name = locale('command.givemoney.params.moneytype.name'), help = locale('command.givemoney.params.moneytype.help') }, { name = locale('command.givemoney.params.amount.name'), help = locale('command.givemoney.params.amount.help') } }, true, function(source, args)
     local Player = RSGCore.Functions.GetPlayer(tonumber(args[1]))
     if Player then
         if Player.Functions.AddMoney(tostring(args[2]), tonumber(args[3]), 'Admin give money') then
-            notify(source, Lang:t('success.money_given'), 'success')
+            notify(source, locale('success.money_given'), 'success')
         else
-            notify(source, Lang:t('error.invalid_money'), 'error')
+            notify(source, locale('error.invalid_money'), 'error')
         end
     else
-        notify(source, Lang:t('error.not_online'), 'error')
+        notify(source, locale('error.not_online'), 'error')
     end
 end, 'admin')
 
-RSGCore.Commands.Add('setmoney', Lang:t('command.setmoney.help'), { { name = Lang:t('command.setmoney.params.id.name'), help = Lang:t('command.setmoney.params.id.help') }, { name = Lang:t('command.setmoney.params.moneytype.name'), help = Lang:t('command.setmoney.params.moneytype.help') }, { name = Lang:t('command.setmoney.params.amount.name'), help = Lang:t('command.setmoney.params.amount.help') } }, true, function(source, args)
+RSGCore.Commands.Add('setmoney', locale('command.setmoney.help'), { { name = locale('command.setmoney.params.id.name'), help = locale('command.setmoney.params.id.help') }, { name = locale('command.setmoney.params.moneytype.name'), help = locale('command.setmoney.params.moneytype.help') }, { name = locale('command.setmoney.params.amount.name'), help = locale('command.setmoney.params.amount.help') } }, true, function(source, args)
     local Player = RSGCore.Functions.GetPlayer(tonumber(args[1]))
     if Player then
         if Player.Functions.SetMoney(tostring(args[2]), tonumber(args[3]), 'Admin set money') then
-            notify(source, Lang:t('success.money_set'), 'success')
+            notify(source, locale('success.money_set'), 'success')
         else
-            notify(source, Lang:t('error.invalid_money'), 'error')
+            notify(source, locale('error.invalid_money'), 'error')
         end
     else
-        notify(source, Lang:t('error.not_online'), 'error')
+        notify(source, locale('error.not_online'), 'error')
     end
 end, 'admin')
 
 -- Job
 
-RSGCore.Commands.Add('job', Lang:t('command.job.help'), {}, false, function(source)
+RSGCore.Commands.Add('job', locale('command.job.help'), {}, false, function(source)
     local Player = RSGCore.Functions.GetPlayer(source)
     if not Player then return end
     local PlayerJob = Player.PlayerData.job
-    notify(source, Lang:t('info.job_info', { value = PlayerJob.label, value2 = PlayerJob.grade.name, value3 = PlayerJob.onduty and Lang:t('info.yes') or Lang:t('info.no') }), 'inform')
+    notify(source, locale('info.job_info', PlayerJob.label, PlayerJob.grade.name, PlayerJob.onduty and locale('info.yes') or locale('info.no')), 'inform')
 end, 'user')
 
-RSGCore.Commands.Add('setjob', Lang:t('command.setjob.help'), { { name = Lang:t('command.setjob.params.id.name'), help = Lang:t('command.setjob.params.id.help') }, { name = Lang:t('command.setjob.params.job.name'), help = Lang:t('command.setjob.params.job.help') }, { name = Lang:t('command.setjob.params.grade.name'), help = Lang:t('command.setjob.params.grade.help') } }, true, function(source, args)
+RSGCore.Commands.Add('setjob', locale('command.setjob.help'), { { name = locale('command.setjob.params.id.name'), help = locale('command.setjob.params.id.help') }, { name = locale('command.setjob.params.job.name'), help = locale('command.setjob.params.job.help') }, { name = locale('command.setjob.params.grade.name'), help = locale('command.setjob.params.grade.help') } }, true, function(source, args)
     local Player = RSGCore.Functions.GetPlayer(tonumber(args[1]))
-    if Player then
-        local job = tostring(args[2])
-        local grade = tonumber(args[3])
-        if not RSGCore.Shared.Jobs[job] then
-            notify(source, Lang:t('error.job_not_exist'), 'error')
-            return
-        end
-        if GetResourceState('rsg-multijob') == 'started' then
-            exports['rsg-multijob']:AddJobToPlayer(Player.PlayerData.citizenid, job, grade)
-        end
-        Player.Functions.SetJob(job, grade)
-        notify(source, Lang:t('success.job_set'), 'success')
-    else
-        notify(source, Lang:t('error.not_online'), 'error')
+    if not Player then return notify(source, locale('error.not_online'), 'error') end
+    local job = tostring(args[2]):lower()
+    local grade = tonumber(args[3]) or 0
+    local jobInfo = RSGCore.Shared.Jobs[job]
+    if not jobInfo then return notify(source, locale('error.job_not_exist'), 'error') end
+    if not jobInfo.grades[tostring(grade)] then return notify(source, locale('error.grade_not_exist'), 'error') end
+    if GetResourceState('rsg-multijob') == 'started' then
+        exports['rsg-multijob']:AddJobToPlayer(Player.PlayerData.citizenid, job, grade)
     end
+    Player.Functions.SetJob(job, grade)
+    notify(source, locale('success.job_set'), 'success')
 end, 'admin')
 
 -- Gang
 
-RSGCore.Commands.Add('gang', Lang:t('command.gang.help'), {}, false, function(source)
+RSGCore.Commands.Add('gang', locale('command.gang.help'), {}, false, function(source)
     local Player = RSGCore.Functions.GetPlayer(source)
     if not Player then return end
     local PlayerGang = Player.PlayerData.gang
-    notify(source, Lang:t('info.gang_info', { value = PlayerGang.label, value2 = PlayerGang.grade.name }), 'inform')
+    notify(source, locale('info.gang_info', PlayerGang.label, PlayerGang.grade.name), 'inform')
 end, 'user')
 
-RSGCore.Commands.Add('setgang', Lang:t('command.setgang.help'), { { name = Lang:t('command.setgang.params.id.name'), help = Lang:t('command.setgang.params.id.help') }, { name = Lang:t('command.setgang.params.gang.name'), help = Lang:t('command.setgang.params.gang.help') }, { name = Lang:t('command.setgang.params.grade.name'), help = Lang:t('command.setgang.params.grade.help') } }, true, function(source, args)
+RSGCore.Commands.Add('setgang', locale('command.setgang.help'), { { name = locale('command.setgang.params.id.name'), help = locale('command.setgang.params.id.help') }, { name = locale('command.setgang.params.gang.name'), help = locale('command.setgang.params.gang.help') }, { name = locale('command.setgang.params.grade.name'), help = locale('command.setgang.params.grade.help') } }, true, function(source, args)
     local Player = RSGCore.Functions.GetPlayer(tonumber(args[1]))
-    if Player then
-        if Player.Functions.SetGang(tostring(args[2]), tonumber(args[3])) then
-            notify(source, Lang:t('success.gang_set'), 'success')
-        else
-            notify(source, Lang:t('error.gang_not_exist'), 'error')
-        end
-    else
-        notify(source, Lang:t('error.not_online'), 'error')
-    end
+    if not Player then return notify(source, locale('error.not_online'), 'error') end
+    local gang = tostring(args[2]):lower()
+    local grade = tonumber(args[3]) or 0
+    local gangInfo = RSGCore.Shared.Gangs[gang]
+    if not gangInfo then return notify(source, locale('error.gang_not_exist'), 'error') end
+    if not gangInfo.grades[tostring(grade)] then return notify(source, locale('error.grade_not_exist'), 'error') end
+    Player.Functions.SetGang(gang, grade)
+    notify(source, locale('success.gang_set'), 'success')
 end, 'admin')
 
 -- Out of Character Chat
 local OOC_RANGE = 20.0
 
-RSGCore.Commands.Add('ooc', Lang:t('command.ooc.help'), {}, false, function(source, args)
+RSGCore.Commands.Add('ooc', locale('command.ooc.help'), {}, false, function(source, args)
     local Player = RSGCore.Functions.GetPlayer(source)
     if not Player then return end
     local message = table.concat(args, ' '):gsub('[~<].-[>~]', '')
-    if message == '' then return notify(source, Lang:t('error.missing_args2'), 'error') end
+    if message == '' then return notify(source, locale('error.missing_args2'), 'error') end
 
     local name = GetPlayerName(source) or ('ID ' .. source)
     local playerCoords = GetEntityCoords(GetPlayerPed(source))
@@ -319,9 +296,9 @@ RSGCore.Commands.Add('ooc', Lang:t('command.ooc.help'), {}, false, function(sour
     for _, v in pairs(RSGCore.Functions.GetPlayers()) do
         local prefix
         if v == source or #(playerCoords - GetEntityCoords(GetPlayerPed(v))) < OOC_RANGE then
-            prefix = 'OOC | '
+            prefix = locale('info.ooc_prefix')
         elseif RSGCore.Functions.IsOptin(v) then
-            prefix = 'Proximity OOC | '
+            prefix = locale('info.ooc_proximity_prefix')
             sentToAdmin = true
         end
         if prefix then
@@ -341,9 +318,9 @@ end, 'user')
 
 -- Me command
 
-RSGCore.Commands.Add('me', Lang:t('command.me.help'), { { name = Lang:t('command.me.params.message.name'), help = Lang:t('command.me.params.message.help') } }, false, function(source, args)
+RSGCore.Commands.Add('me', locale('command.me.help'), { { name = locale('command.me.params.message.name'), help = locale('command.me.params.message.help') } }, false, function(source, args)
     if #args < 1 then
-        notify(source, Lang:t('error.missing_args2'), 'error')
+        notify(source, locale('error.missing_args2'), 'error')
         return
     end
     local ped = GetPlayerPed(source)
@@ -358,12 +335,12 @@ RSGCore.Commands.Add('me', Lang:t('command.me.help'), { { name = Lang:t('command
 end, 'user')
 
 -- ids
-RSGCore.Commands.Add('id', Lang:t('command.id.help'), {}, false, function(source)
-    notify(source, Lang:t('info.your_id', { value = source }), 'inform')
+RSGCore.Commands.Add('id', locale('command.id.help'), {}, false, function(source)
+    notify(source, locale('info.your_id', source), 'inform')
 end, 'user')
 
-RSGCore.Commands.Add('cid', Lang:t('command.cid.help'), {}, false, function(source)
+RSGCore.Commands.Add('cid', locale('command.cid.help'), {}, false, function(source)
     local Player = RSGCore.Functions.GetPlayer(source)
     if not Player then return end
-    notify(source, Lang:t('info.your_cid', { value = Player.PlayerData.citizenid }), 'inform')
+    notify(source, locale('info.your_cid', Player.PlayerData.citizenid), 'inform')
 end, 'user')

@@ -11,9 +11,14 @@ function RSGCore.Functions.TriggerClientCallback(name, cb, ...)
     RSGCore.ClientCallbacks[name](cb, ...)
 end
 
+-- each request gets its own id, so two calls to the same callback no longer overwrite each other
+RSGCore.PendingCallbacks = {}
+local callbackRequestId = 0
+
 function RSGCore.Functions.TriggerCallback(name, cb, ...)
-    RSGCore.ServerCallbacks[name] = cb
-    TriggerServerEvent('RSGCore:Server:TriggerCallback', name, ...)
+    callbackRequestId = callbackRequestId + 1
+    RSGCore.PendingCallbacks[callbackRequestId] = cb
+    TriggerServerEvent('RSGCore:Server:TriggerCallbackId', name, callbackRequestId, ...)
 end
 
 -- Prints to the client (F8) console. Previously this was sent to the server through an
@@ -40,6 +45,7 @@ function RSGCore.Functions.GetCoords(entity)
 end
 
 function RSGCore.Functions.HasItem(items, amount)
+    if GetResourceState('rsg-inventory') ~= 'started' then return false end
     return exports['rsg-inventory']:HasItem(items, amount)
 end
 
@@ -71,12 +77,11 @@ function RSGCore.Functions.LookAtEntity(entity, timeout, speed)
 end
 
 -- Function to run an animation
----@deprecated use lib.requestAnimDict from ox_lib, and the TaskPlayAnim and RemoveAnimDict natives directly
---- @param animDic string: The name of the animation dictionary
---- @param animName string - The name of the animation within the dictionary
---- @param duration number - The duration of the animation in milliseconds. -1 will play the animation indefinitely
---- @param upperbodyOnly boolean - If true, the animation will only affect the upper body of the ped
---- @return number - The timestamp indicating when the animation concluded. For animations set to loop indefinitely, this will still return the maximum duration of the animation.
+---@deprecated use lib.playAnim from ox_lib
+---@param animDict string The name of the animation dictionary
+---@param animName string The name of the animation within the dictionary
+---@param upperbodyOnly? boolean If true, the animation will only affect the upper body of the ped
+---@param duration? number Duration in milliseconds (-1 / nil plays indefinitely)
 function RSGCore.Functions.PlayAnim(animDict, animName, upperbodyOnly, duration)
     local flags = upperbodyOnly and 16 or 0
     local runTime = duration or -1
@@ -228,7 +233,7 @@ end
 ---@deprecated use lib.requestModel from ox_lib
 RSGCore.Functions.LoadModel = lib.requestModel
 
----@deprecated use qbx.spawnVehicle from modules/lib.lua
+---@deprecated use the server-side RSGCore.Functions.CreateVehicle where possible
 ---@param model string|number
 ---@param cb? fun(vehicle: number)
 ---@param coords? vector4 player position if not specified
@@ -414,7 +419,7 @@ end
 function RSGCore.Functions.GetCardinalDirection(entity)
     entity = entity and DoesEntityExist(entity) and entity or cache.ped
     if DoesEntityExist(entity) then
-        local heading = GetEntityHeading(entity)
+        local heading = GetEntityHeading(entity) % 360 -- a heading of exactly 360 previously returned nil
         if ((heading >= 0 and heading < 45) or (heading >= 315 and heading < 360)) then
             return 'North'
         elseif (heading >= 45 and heading < 135) then

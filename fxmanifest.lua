@@ -3,16 +3,14 @@ rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aw
 game 'rdr3'
 
 lua54 'yes'
+ox_lib 'locale'
 
 description 'rsg-core'
-version '3.0.0'
+version '3.0.2'
 
 shared_scripts {
     '@ox_lib/init.lua',
-    'config.lua',
-    'shared/locale.lua',
-    'locale/en.lua',
-    'locale/*.lua',
+    'shared/config.lua',
     'shared/main.lua',
     'shared/items.lua',
     'shared/jobs.lua',
@@ -21,6 +19,10 @@ shared_scripts {
     'shared/weapons.lua',
     'shared/locations.lua',
     'shared/keybinds.lua'
+}
+
+files {
+    'locales/*.json'
 }
 
 client_scripts {
