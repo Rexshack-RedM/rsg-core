@@ -1,4 +1,4 @@
-![Logo](https://rsgcore.com/logo_new.png)
+<img width="2288" height="464" alt="rsg_banner" src="https://github.com/user-attachments/assets/8c1b5a18-9a1f-4308-af78-8c7b43a1d030" />
 
 # rsg-core
 
