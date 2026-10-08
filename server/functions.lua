@@ -385,11 +385,15 @@ local function notifyPaycheck(src, title, notifyType)
     TriggerClientEvent('ox_lib:notify', src, { title = title, type = notifyType, duration = 5000 })
 end
 
----Returns the society balance, or nil when society pay is disabled / rsg-banking is unavailable
-local function getSocietyBalance(jobName)
-    if not RSGCore.Config.Money.PayCheckSociety or GetResourceState('rsg-banking') ~= 'started' then return end
-    local ok, balance = pcall(function() return exports['rsg-banking']:GetAccountBalance(jobName) end)
-    return ok and tonumber(balance) or nil
+---Pays into the player's rsg-banking home branch. Falls back to cash if they have no home branch yet.
+local function payWage(Player, payment)
+    if GetResourceState('rsg-banking') == 'started' then
+        local ok, branch = pcall(function()
+            return exports['rsg-banking']:AddHomeMoney(Player.PlayerData.citizenid, payment, 'Paycheck')
+        end)
+        if ok and branch then return true end
+    end
+    return Player.Functions.AddMoney('cash', payment, 'paycheck')
 end
 
 function PaycheckInterval()
@@ -404,18 +408,10 @@ function PaycheckInterval()
         local src = Player.PlayerData.source
 
         if jobInfo and payment > 0 and (jobInfo.offDutyPay or job.onduty) then
-            local canPay = true
-            local account = getSocietyBalance(job.name)
-            if account and account ~= 0 then -- player is employed by a society
-                if account < payment then
-                    canPay = false
-                    notifyPaycheck(src, locale('error.company_too_poor'), 'error')
-                else
-                    exports['rsg-banking']:RemoveMoney(job.name, payment, 'Employee Paycheck')
-                end
+            if RSGCore.Config.Money.PayCheckSociety then
+                print('^3[rsg-core] PayCheckSociety is not supported with rsg-banking v3 - paying normally^7')
             end
-            if canPay then
-                Player.Functions.AddMoney('bank', payment, 'paycheck')
+            if payWage(Player, payment) then
                 notifyPaycheck(src, locale('info.received_paycheck', payment), 'inform')
             end
         end

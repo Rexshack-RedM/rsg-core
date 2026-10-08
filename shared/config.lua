@@ -6,11 +6,12 @@ RSGConfig.UpdateInterval = 5                             -- how often to save pl
 RSGConfig.HidePlayerNames = true
 
 RSGConfig.Money = {}
-RSGConfig.Money.MoneyTypes = { cash = 50, gold = 0, bank = 0, valbank = 0, rhobank = 0, blkbank = 0, armbank = 0, bloodmoney = 0 } -- type = startamount - Add or remove money types for your server (for ex. blackmoney = 0), remember once added it will not be removed from the database!
-RSGConfig.Money.DontAllowMinus = { 'cash', 'gold', 'bloodmoney' }    -- Money that is not allowed going in minus
+RSGConfig.Money.MoneyTypes = { cash = 50, gold = 0, bank = 0, bloodmoney = 0 } -- valbank/rhobank/blkbank/armbank removed: rsg-banking branches replace them ('bank' kept so old scripts don't break; rsg-banking forwards it to the home branch)
+-- -- type = startamount - Add or remove money types for your server (for ex. blackmoney = 0), remember once added it will not be removed from the database!
+RSGConfig.Money.DontAllowMinus = { 'cash', 'gold', 'bloodmoney', 'bank' }    -- Money that is not allowed going in minus
 RSGConfig.Money.MinusLimit = -5000                                   -- The maximum amount you can be negative 
 RSGConfig.Money.PayCheckTimeOut = 10                                 -- The time in minutes that it will give the paycheck
-RSGConfig.Money.PayCheckSociety = false                              -- If true paycheck will come from the society account that the player is employed at, requires rsg-management
+RSGConfig.Money.PayCheckSociety = false                              -- NOT supported by rsg-banking v3 (no society accounts) - leave false
 RSGConfig.Money.EnableMoneyItems = true                              -- If true cash and bloodmoney will be represented wih inventory items
 RSGConfig.Money.GoldItem = 'gold'                                    -- Inventory item used to represent gold when EnableGoldItems is true
 
