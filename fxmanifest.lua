@@ -6,7 +6,7 @@ lua54 'yes'
 ox_lib 'locale'
 
 description 'rsg-core'
-version '3.0.2'
+version '3.0.3'
 
 shared_scripts {
     '@ox_lib/init.lua',
