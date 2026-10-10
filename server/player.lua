@@ -585,16 +585,24 @@ local playertables = { -- Add tables as needed
     { table = 'players'},
     { table = 'playeroutfit'},
     { table = 'playerskins'},
-    { table = 'player_horses'},
+    { table = 'rsg_stables_horses'},
+    { table = 'rsg_stables_breeding'},
     { table = 'player_weapons'},
     { table = 'address_book'},
     { table = 'telegrams'},
 }
 
 local function deleteCharacterRows(citizenid, onDone)
-    local queries = table.create(#playertables, 0)
+    -- only delete from tables that actually exist, so a missing resource table doesn't abort the whole transaction
+    local existing = {}
+    local rows = MySQL.query.await('SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE()') or {}
+    for _, row in ipairs(rows) do existing[row.TABLE_NAME] = true end
+    local queries = {}
     for i = 1, #playertables do
-        queries[i] = { query = ('DELETE FROM %s WHERE citizenid = ?'):format(playertables[i].table), values = { citizenid } }
+        local name = playertables[i].table
+        if existing[name] then
+            queries[#queries + 1] = { query = ('DELETE FROM `%s` WHERE citizenid = ?'):format(name), values = { citizenid } }
+        end
     end
     MySQL.transaction(queries, function(result)
         if result then onDone() end
