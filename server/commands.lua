@@ -249,11 +249,29 @@ RSGCore.Commands.Add('setjob', locale('command.setjob.help'), { { name = locale(
     if not Player then return notify(source, locale('error.not_online'), 'error') end
     local job = tostring(args[2]):lower()
     local grade = tonumber(args[3]) or 0
-    local jobInfo = RSGCore.Shared.Jobs[job]
+    local multijob = GetResourceState('rsg-multijob') == 'started'
+    local jobInfo
+    if multijob then
+        -- job definitions live in the multijob_jobs table, owned by rsg-multijob
+        local ok, def = pcall(function() return exports['rsg-multijob']:GetJobDefinition(job) end)
+        jobInfo = ok and def or nil
+    else
+        jobInfo = RSGCore.Shared.Jobs[job]
+    end
     if not jobInfo then return notify(source, locale('error.job_not_exist'), 'error') end
-    if not jobInfo.grades[tostring(grade)] then return notify(source, locale('error.grade_not_exist'), 'error') end
-    if GetResourceState('rsg-multijob') == 'started' then
-        exports['rsg-multijob']:AddJobToPlayer(Player.PlayerData.citizenid, job, grade)
+    if not jobInfo.grades or not jobInfo.grades[tostring(grade)] then return notify(source, locale('error.grade_not_exist'), 'error') end
+    if multijob then
+        local ok, added, reason = pcall(function() return exports['rsg-multijob']:AddJob(Player.PlayerData.source, job, grade, false) end)
+        if not ok then
+            print(('[rsg-core] setjob: rsg-multijob AddJob errored (%s)'):format(tostring(added)))
+            return notify(source, 'Could not add job via rsg-multijob', 'error')
+        end
+        if not added then
+            if reason == 'max_jobs' then
+                return notify(source, 'Player already has the maximum number of jobs', 'error')
+            end
+            return notify(source, ('Could not add job (%s)'):format(tostring(reason)), 'error')
+        end
     end
     Player.Functions.SetJob(job, grade)
     notify(source, locale('success.job_set'), 'success')
