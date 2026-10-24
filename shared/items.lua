@@ -160,6 +160,14 @@ RSGShared.Items = {
     trainticket                 = { name = 'trainticket',                  label = 'Train Ticket',        weight = 300,  type = 'item',  image = 'trainticket.png',                  unique = false,  useable = true,  shouldClose = true,  description = 'Rail passage ticket.',                                     category = 'documents' },
     treasure_map                = { name = 'treasure_map',                 label = 'Treasure Map',        weight = 50,   type = 'item',  image = 'treasure_map.png',                 unique = true,   useable = true,  shouldClose = true,  description = 'An old map marking buried loot.',                          category = 'documents' },
 
+    -- drugs
+    weed_dried      = { name = 'weed_dried',     label = 'Dried Weed',     weight = 1,    type = 'item', image = 'weed_dried.png',     unique = false, useable = false, shouldClose = true, description = 'Dried weed for production.',                        category = 'drugs' },
+    weed_processed  = { name = 'weed_processed', label = 'Processed Weed', weight = 1,    type = 'item', image = 'weed_processed.png', unique = false, useable = false, shouldClose = true, description = 'Processed weed for packing.',                       category = 'drugs' },
+    weed_brick      = { name = 'weed_brick',     label = 'Weed Brick',     weight = 1000, type = 'item', image = 'weed_brick.png',     unique = false, useable = false, shouldClose = true, description = 'A wholesale brick of weed.',                        category = 'drugs' },
+    weed_bag        = { name = 'weed_bag',       label = 'Bag of Weed',    weight = 2,    type = 'item', image = 'weed_bag.png',       unique = false, useable = false, shouldClose = true, description = 'A weed bag ready for distribution.',                category = 'drugs' },
+    weed_joint      = { name = 'weed_joint',     label = 'Weed Joint',     weight = 1,    type = 'item', image = 'weed_joint.png',     unique = false, useable = true,  shouldClose = true, description = 'A weed joint ready to enjoy.',                      category = 'drugs' },
+    rolling_papers  = { name = 'rolling_papers', label = 'Rolling Papers', weight = 1,    type = 'item', image = 'rolling_papers.png', unique = false, useable = false, shouldClose = true, description = 'Papers to roll a cigarette or something stronger.', category = 'drugs' },
+
     -- farming
     cotton         = { name = 'cotton',          label = 'Cotton',           weight = 100,  type = 'item',  image = 'cotton.png',          unique = false,  useable = false,  shouldClose = true,  description = 'Crop produced from farming.',      category = 'farming' },
     fertilizer     = { name = 'fertilizer',      label = 'Fertilizer',       weight = 100,  type = 'item',  image = 'fertilizer.png',      unique = false,  useable = false,  shouldClose = true,  description = 'Helps things grow',                category = 'farming' },
