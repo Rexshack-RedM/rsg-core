@@ -109,3 +109,52 @@ window.addEventListener('message', (e) => {
     textui.textContent = String(msg.data.text);
 });
 })();
+
+// progress bar / circle
+(() => {
+    const root = document.getElementById('progress');
+    const fill = document.getElementById('progressFill');
+    const ring = document.getElementById('progressRing');
+    const pct = document.getElementById('progressPct');
+    const ringPct = document.getElementById('progressRingPct');
+    const label = document.getElementById('progressLabel');
+    const ringLabel = document.getElementById('progressRingLabel');
+    const hint = document.getElementById('progressHint');
+    const CIRC = 276.46; // 2 * PI * 44
+    let raf = null, hideTimer = null, start = 0, duration = 0;
+
+    const setProgress = (p) => {
+        const v = Math.max(0, Math.min(1, p));
+        fill.style.width = (v * 100) + '%';
+        ring.style.strokeDashoffset = CIRC * (1 - v);
+        pct.textContent = ringPct.textContent = Math.floor(v * 100) + '%';
+    };
+
+    const tick = (t) => {
+        setProgress((t - start) / duration);
+        if (t - start < duration) raf = requestAnimationFrame(tick);
+    };
+
+    window.addEventListener('message', (e) => {
+        const msg = e.data;
+        if (!msg || msg.action !== 'progress' || !msg.data) return;
+        const d = msg.data;
+        cancelAnimationFrame(raf);
+        clearTimeout(hideTimer);
+        if (!d.show) {
+            if (d.cancelled) root.classList.add('cancelled');
+            root.classList.add('fade');
+            hideTimer = setTimeout(() => { root.className = 'progress hidden'; }, d.cancelled ? 600 : 250);
+            return;
+        }
+        const kind = d.kind === 'circle' ? 'circle' : 'bar';
+        const pos = d.position === 'middle' ? 'middle' : 'bottom';
+        root.className = `progress ${kind} ${pos}`;
+        label.textContent = ringLabel.textContent = d.label ? String(d.label) : '';
+        hint.textContent = d.cancelHint ? String(d.cancelHint) : '';
+        duration = Math.max(1, Number(d.duration) || 1);
+        setProgress(0);
+        start = performance.now();
+        raf = requestAnimationFrame(tick);
+    });
+})();

@@ -113,6 +113,25 @@ Server API (`RSGCore.Functions.*` and `exports['rsg-core']:*`, `id` = server id 
 
 `AddJob` / `UpdateJob` / `RemoveJob` on rsg-core are for job *definitions*, not player jobs. Old `exports['rsg-multijob']:*` calls and `rsg-multijob:*` events still work because rsg-core `provide`s rsg-multijob.
 
+### Progress bar / circle
+Replaces `lib.progressBar`, `lib.progressCircle`, `lib.progressActive` and `lib.cancelProgress` with the same option table, so migrating is a rename. It blocks (call it from a thread) and returns `true` when finished, `false` when cancelled or interrupted.
+```lua
+local done = RSGCore.Functions.ProgressBar({      -- or exports['rsg-core']:ProgressBar({...})
+    duration = 5000,
+    label = locale('searching'),
+    canCancel = true,                              -- X by default (RSGConfig.Progress.CancelKey)
+    useWhileDead = false,                          -- also: allowRagdoll, allowSwimming, allowFalling, allowCuffed, allowMounted
+    disable = { move = true, sprint = true, mount = true, combat = true, mouse = false },
+    anim = { scenario = 'WORLD_HUMAN_CROUCH_INSPECT' },   -- or { dict, clip, flag, blendIn, blendOut, playbackRate, lockX/Y/Z }
+    prop = { model = 'p_bottle01x', bone = 'SKEL_R_Hand', pos = vec3(0.0, 0.0, 0.0), rot = vec3(0.0, 0.0, 0.0) }, -- or a list of props
+})
+```
+- `RSGCore.Functions.ProgressCircle(data)` takes the same options plus `position = 'middle' | 'bottom'`.
+- `RSGCore.Functions.IsProgressActive()` / `exports['rsg-core']:IsProgressActive()`.
+- `RSGCore.Functions.CancelProgress()` / `exports['rsg-core']:CancelProgress()` / `TriggerClientEvent('rsg-core:client:CancelProgress', src)`.
+- Only one progress runs at a time (a second call returns `false`). It is cancelled automatically if the calling resource stops.
+- Props and anims are cleaned up on finish and on cancel. The cancel hint text is the `info.progress_cancel` locale key.
+
 ### Other client helpers
 - `RSGCore.Functions.RequestModel / RequestAnimDict / RequestAnimSet / RequestNamedPtfxAsset(name, timeout?)` (also exports)
 - `RSGCore.Functions.PlayAnimOnPed(ped, dict, name, blendIn, blendOut, duration, flag, ...)`

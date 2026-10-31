@@ -288,5 +288,6 @@
     "adm_err_max_jobs": "Ce joueur a déjà le nombre maximum de métiers.",
     "adm_err_not_held": "Ce joueur n'a pas ce métier.",
     "command.ooc.params.message.name": "message",
-    "command.ooc.params.message.help": "Message"
+    "command.ooc.params.message.help": "Message",
+    "info.progress_cancel": "[%s] Annuler"
 }

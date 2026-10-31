@@ -288,5 +288,6 @@
     "adm_err_max_jobs": "Die speler heeft al het maximale aantal banen.",
     "adm_err_not_held": "Die speler heeft deze baan niet.",
     "command.ooc.params.message.name": "message",
-    "command.ooc.params.message.help": "Bericht dat je wil versturen"
+    "command.ooc.params.message.help": "Bericht dat je wil versturen",
+    "info.progress_cancel": "[%s] Annuleren"
 }

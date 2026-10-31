@@ -5,7 +5,7 @@ game 'rdr3'
 lua54 'yes'
 
 description 'rsg-core'
-version '3.1.1'
+version '3.1.2'
 
 shared_scripts {
     'shared/locale.lua',
@@ -43,6 +43,7 @@ client_scripts {
     'client/loops.lua',
     'client/events.lua',
     'client/drawtext.lua',
+    'client/progress.lua',
     'client/prompts.lua',
     'client/pvp.lua',
     'client/multijob.lua'

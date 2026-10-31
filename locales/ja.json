@@ -288,5 +288,6 @@
     "adm_err_max_jobs": "このプレイヤーはすでに職業の上限に達しています。",
     "adm_err_not_held": "このプレイヤーはこの職業を持っていません。",
     "command.ooc.params.message.name": "message",
-    "command.ooc.params.message.help": "メッセージを送信"
+    "command.ooc.params.message.help": "メッセージを送信",
+    "info.progress_cancel": "[%s] キャンセル"
 }

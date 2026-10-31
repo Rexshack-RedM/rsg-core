@@ -288,5 +288,6 @@
     "adm_err_max_jobs": "Acest jucător are deja numărul maxim de joburi.",
     "adm_err_not_held": "Acest jucător nu are acest job.",
     "command.ooc.params.message.name": "message",
-    "command.ooc.params.message.help": "Mesajul de trimis"
+    "command.ooc.params.message.help": "Mesajul de trimis",
+    "info.progress_cancel": "[%s] Anulează"
 }

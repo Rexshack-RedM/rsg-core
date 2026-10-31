@@ -288,5 +288,6 @@
     "adm_err_max_jobs": "Ο παίκτης έχει ήδη τον μέγιστο αριθμό εργασιών.",
     "adm_err_not_held": "Ο παίκτης δεν έχει αυτή την εργασία.",
     "command.ooc.params.message.name": "message",
-    "command.ooc.params.message.help": "Μήνυμα προς αποστολή"
+    "command.ooc.params.message.help": "Μήνυμα προς αποστολή",
+    "info.progress_cancel": "[%s] Ακύρωση"
 }

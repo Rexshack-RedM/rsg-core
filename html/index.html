@@ -143,6 +143,26 @@
     <div id="notify-root"></div>
     <div id="textui" class="textui hidden"></div>
 
+    <!-- ============ PROGRESS (bar / circle) ============ -->
+    <div id="progress" class="progress hidden">
+        <div class="progress-bar">
+            <div class="progress-head">
+                <span class="progress-label" id="progressLabel"></span>
+                <span class="progress-pct" id="progressPct">0%</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+        <div class="progress-circle">
+            <svg viewBox="0 0 100 100">
+                <circle class="ring-track" cx="50" cy="50" r="44"></circle>
+                <circle class="ring-fill" id="progressRing" cx="50" cy="50" r="44"></circle>
+            </svg>
+            <span class="progress-pct ring-pct" id="progressRingPct">0%</span>
+            <span class="progress-label ring-label" id="progressRingLabel"></span>
+        </div>
+        <div class="progress-hint" id="progressHint"></div>
+    </div>
+
     <script src="multijob/script.js"></script>
     <script src="multijob/admin.js"></script>
     <script src="script.js"></script>

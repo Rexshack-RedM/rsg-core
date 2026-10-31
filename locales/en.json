@@ -288,5 +288,6 @@
     "adm_err_max_jobs": "That player already has the maximum number of jobs.",
     "adm_err_not_held": "That player doesn't hold this job.",
     "command.ooc.params.message.name": "message",
-    "command.ooc.params.message.help": "Message to send"
+    "command.ooc.params.message.help": "Message to send",
+    "info.progress_cancel": "[%s] Cancel"
 }
