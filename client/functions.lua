@@ -21,6 +21,36 @@ function RSGCore.Functions.TriggerCallback(name, cb, ...)
     TriggerServerEvent('RSGCore:Server:TriggerCallbackId', name, callbackRequestId, ...)
 end
 
+---Await a server callback (synchronous, replaces lib.callback.await)
+---Must be called from inside a thread. Returns nil if the server doesn't answer in time.
+---@param name string
+---@param timeout? number milliseconds, defaults to 10000 (false/0 to wait forever)
+---@param ... any
+---@return ...
+function RSGCore.Functions.AwaitCallback(name, timeout, ...)
+    local p = promise.new()
+    callbackRequestId = callbackRequestId + 1
+    local requestId = callbackRequestId
+    RSGCore.PendingCallbacks[requestId] = function(...)
+        p:resolve(table.pack(...))
+    end
+    TriggerServerEvent('RSGCore:Server:TriggerCallbackId', name, requestId, ...)
+
+    timeout = timeout == nil and 10000 or timeout
+    if timeout and timeout > 0 then
+        SetTimeout(timeout, function()
+            if RSGCore.PendingCallbacks[requestId] then
+                RSGCore.PendingCallbacks[requestId] = nil
+                print(('^3[rsg-core] callback "%s" timed out after %dms^7'):format(name, timeout))
+                p:resolve(table.pack())
+            end
+        end)
+    end
+
+    local result = Citizen.Await(p)
+    return table.unpack(result, 1, result.n)
+end
+
 -- Prints to the client (F8) console. Previously this was sent to the server through an
 -- unprotected net event, which let any client flood the server console.
 function RSGCore.Debug(...)
@@ -77,7 +107,6 @@ function RSGCore.Functions.LookAtEntity(entity, timeout, speed)
 end
 
 -- Function to run an animation
----@deprecated use lib.playAnim from ox_lib
 ---@param animDict string The name of the animation dictionary
 ---@param animName string The name of the animation within the dictionary
 ---@param upperbodyOnly? boolean If true, the animation will only affect the upper body of the ped
@@ -85,7 +114,7 @@ end
 function RSGCore.Functions.PlayAnim(animDict, animName, upperbodyOnly, duration)
     local flags = upperbodyOnly and 16 or 0
     local runTime = duration or -1
-    lib.playAnim(cache.ped, animDict, animName, 8.0, 3.0, runTime, flags, 0.0, false, false, true)
+    RSGCore.Functions.PlayAnimOnPed(cache.ped, animDict, animName, 8.0, 3.0, runTime, flags, 0.0, false, false, true)
 end
 
 -- World Getters
@@ -230,8 +259,7 @@ end
 
 -- Vehicle
 
----@deprecated use lib.requestModel from ox_lib
-RSGCore.Functions.LoadModel = lib.requestModel
+RSGCore.Functions.LoadModel = function(...) return RSGCore.Functions.RequestModel(...) end
 
 ---@deprecated use the server-side RSGCore.Functions.CreateVehicle where possible
 ---@param model string|number
@@ -247,7 +275,7 @@ function RSGCore.Functions.SpawnVehicle(model, cb, coords, isnetworked, teleport
     if not IsModelInCdimage(model) then return end
 
     isnetworked = isnetworked == nil or isnetworked
-    lib.requestModel(model)
+    RSGCore.Functions.RequestModel(model)
     local veh = CreateVehicle(model, coords.x, coords.y, coords.z, coords.w, isnetworked, false)
     local netid = NetworkGetNetworkIdFromEntity(veh)
     SetVehicleHasBeenOwnedByPlayer(veh, true)
@@ -283,8 +311,6 @@ function RSGCore.Functions.DrawText3D(x, y, z, text)
     DisplayText(CreateVarString(10, 'LITERAL_STRING', text), screenX, screenY)
 end
 
----@deprecated use lib.requestAnimDict from ox_lib
-RSGCore.Functions.RequestAnimDict = lib.requestAnimDict
 
 function RSGCore.Functions.GetClosestBone(entity, list)
     local playerCoords, bone, coords, distance = GetEntityCoords(cache.ped)
@@ -320,7 +346,7 @@ end
 function RSGCore.Functions.AttachProp(ped, model, boneId, x, y, z, xR, yR, zR, vertex)
     local modelHash = type(model) == 'string' and joaat(model) or model
     local bone = GetPedBoneIndex(ped, boneId)
-    lib.requestModel(modelHash)
+    RSGCore.Functions.RequestModel(modelHash)
     local prop = CreateObject(modelHash, 1.0, 1.0, 1.0, 1, 1, 0)
     AttachEntityToEntity(prop, ped, bone, x, y, z, xR, yR, zR, 1, 1, 0, 1, not vertex and 2 or 0, 1)
     SetModelAsNoLongerNeeded(modelHash)
@@ -340,17 +366,15 @@ function RSGCore.Functions.SpawnClear(coords, radius)
     return true
 end
 
----@deprecated use lib.requestAnimSet from ox_lib
-RSGCore.Functions.LoadAnimSet = lib.requestAnimSet
+RSGCore.Functions.LoadAnimSet = function(...) return RSGCore.Functions.RequestAnimSet(...) end
 
----@deprecated use lib.requestNamedPtfxAsset from ox_lib
-RSGCore.Functions.LoadParticleDictionary = lib.requestNamedPtfxAsset
+RSGCore.Functions.LoadParticleDictionary = function(...) return RSGCore.Functions.RequestNamedPtfxAsset(...) end
 
 ---@deprecated use ParticleFx natives directly
 function RSGCore.Functions.StartParticleAtCoord(dict, ptName, looped, coords, rot, scale, alpha, color, duration)
     coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords or GetEntityCoords(cache.ped)
 
-    lib.requestNamedPtfxAsset(dict)
+    RSGCore.Functions.RequestNamedPtfxAsset(dict)
     UseParticleFxAssetNextCall(dict)
     SetPtfxAssetNextCall(dict)
     local particleHandle
@@ -376,7 +400,7 @@ end
 
 ---@deprecated use ParticleFx natives directly
 function RSGCore.Functions.StartParticleOnEntity(dict, ptName, looped, entity, bone, offset, rot, scale, alpha, color, evolution, duration)
-    lib.requestNamedPtfxAsset(dict)
+    RSGCore.Functions.RequestNamedPtfxAsset(dict)
     UseParticleFxAssetNextCall(dict)
     local particleHandle = nil
     ---@cast bone number
@@ -470,31 +494,62 @@ local notifyTypes = {
     success = 'success',
     error   = 'error',
     warning = 'warning',
+    warn    = 'warning',
 }
 
----@param title? string Optional notification title
----@param text string | table Notification text/description, or a full table of props
----@param notifyType? string 'primary', 'success', 'error', 'inform', 'warning'
----@param duration? number Duration in milliseconds (default: 5000)
----@param icon? string Optional FontAwesome or RedM icon string
+local notifySounds = {
+    inform  = { 'INFO', 'HUD_SHOP_SOUNDSET' },
+    success = { 'PURCHASE', 'HUD_SHOP_SOUNDSET' },
+    error   = { 'UNAFFORDABLE', 'Ledger_Sounds' },
+    warning = { 'INFO', 'HUD_SHOP_SOUNDSET' },
+}
+
+---Show an rsg-core notification. Accepts:
+---  Notify({ title, description, type, duration, icon, position, id, sound })   (ox_lib-style table)
+---  Notify(title, text, type, duration, icon)
+---  Notify(text, type, duration)                                              (legacy QB-style)
+---@param title? string|table
+---@param text? string|table
+---@param notifyType? string 'primary' | 'inform' | 'success' | 'error' | 'warning'
+---@param duration? number milliseconds
+---@param icon? string Font Awesome class, e.g. 'fa-solid fa-horse'
 function RSGCore.Functions.Notify(title, text, notifyType, duration, icon)
-    if type(text) == 'table' then
-        return lib.notify(text)
-    end
+    local data
     if type(title) == 'table' then
-        return lib.notify(title)
+        data = title
+    elseif type(text) == 'table' then
+        data = text
+    elseif type(text) == 'string' and notifyTypes[text] and (notifyType == nil or type(notifyType) == 'number') then
+        data = { description = title, type = text, duration = notifyType }
+    else
+        data = { title = title, description = text, type = notifyType, duration = duration, icon = icon }
     end
 
-    -- legacy QB-style call: Notify(text, type, duration)
-    if type(text) == 'string' and notifyTypes[text] and (notifyType == nil or type(notifyType) == 'number') then
-        return lib.notify({ description = title, type = notifyTypes[text], duration = notifyType or 5000 })
-    end
+    local cfg = RSGConfig.Notify or {}
+    local nType = notifyTypes[data.type] or 'inform'
+    if not data.title and not data.description then return end
 
-    lib.notify({
-        title = title,
-        description = text,
-        type = notifyTypes[notifyType] or 'inform',
-        duration = duration or 5000,
-        icon = icon
+    SendNUIMessage({
+        action = 'notify',
+        data = {
+            id = data.id,
+            title = data.title and tostring(data.title) or nil,
+            description = data.description and tostring(data.description) or nil,
+            type = nType,
+            duration = tonumber(data.duration) or cfg.Duration or 5000,
+            icon = type(data.icon) == 'string' and data.icon or nil,
+            position = data.position or cfg.Position or 'top-right',
+            max = cfg.MaxVisible or 5,
+        }
     })
+
+    local playSound = data.sound
+    if playSound == nil then playSound = cfg.Sound end
+    if playSound then
+        local snd = notifySounds[nType]
+        PlaySoundFrontend(snd[1], snd[2], true, 0)
+    end
 end
+
+-- exports['rsg-core']:Notify({ title, description, type, duration, icon })
+exports('Notify', function(...) return RSGCore.Functions.Notify(...) end)

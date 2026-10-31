@@ -2,37 +2,37 @@
 
 # rsg-core
 
-The core framework for RSG RedM servers: players, characters, money, jobs, gangs, permissions, commands, callbacks and shared data.
+The core framework for RSG RedM servers: players, characters, money, jobs (with built-in multi-job), gangs, permissions, commands, callbacks, notifications and shared data.
 
 Documentation: https://rsgcore.com/docs
 
 ## Dependencies
 
 - [oxmysql](https://github.com/overextended/oxmysql)
-- [ox_lib](https://github.com/overextended/ox_lib) (notifications, text UI, locales, callbacks)
-- Optional: `rsg-inventory`, `rsg-banking` (society paychecks), `rsg-multijob`, `rsg-log`
+- Optional: `rsg-inventory`, `rsg-banking` (paychecks go to the home branch), `rsg-log`
+
+rsg-core no longer needs ox_lib. Notifications, callbacks, locales, text UI and the model/anim loaders are built in. Other resources may still need ox_lib for their own locales.
 
 ## Installation
 
-1. Import the SQL for `players` and `bans` (the `weight` / `slots` columns are added automatically if missing).
-2. Ensure the resources in this order in `server.cfg`:
+1. Import the SQL for `players` and `bans`. The `weight` / `slots` columns and the multi-job tables (`multijob_jobs`, `player_jobs`) are created automatically.
+2. Remove `rsg-multijob` if you had it: it is built in now, and its tables are reused as they are.
+3. Ensure the resources in this order in `server.cfg`:
    ```cfg
    ensure oxmysql
-   ensure ox_lib
    ensure rsg-core
    ```
-3. Set the server language (see below) and review `config.lua`.
+4. Set the language (below) and review `shared/config.lua` and `shared/multijob.lua`. Put Discord webhook URLs in `server/multijob/sv_config.lua` (server only).
 
 ## Language / Locales
 
-Translations live in `locales/*.json` and are loaded by ox_lib.
-Supported languages: `en`, `de`, `el`, `es`, `fr`, `ja`, `nl`, `pl`, `pt-br`, `ro`.
+Translations live in `locales/*.json`. Supported languages: `en`, `de`, `el`, `es`, `fr`, `ja`, `nl`, `pl`, `pt-br`, `ro`.
 
 ```cfg
-setr ox:locale en
+setr rsg:locale en   # falls back to ox:locale, then en
 ```
 
-To add a language, copy `locales/en.json` to `locales/<code>.json` and translate the values. Keep `%s` placeholders in the same order.
+Missing keys fall back to English. To add a language, copy `locales/en.json` to `locales/<code>.json` and translate the values, keeping `%s` placeholders in the same order.
 
 ## Permissions
 
@@ -62,27 +62,75 @@ add_principal identifier.license:xxxxxxxx rsgcore.god
 | `/setgang [id] [gang] [grade]` | admin | Set gang (gang and grade are validated) |
 | `/job` `/gang` `/id` `/cid` | user | Show your job, gang, server id, citizen id |
 | `/ooc [msg]` `/me [msg]` | user | Proximity OOC chat / 3D emote text |
+| `/myjobs` | user | Open your jobs menu (switch / leave jobs, toggle duty) |
+| `/jobadmin` | admin | Create, edit and delete server jobs, and give players jobs / set their grade (Employees tab) |
+| `/removejob [id \| citizenid] [job]` | admin | Remove a job from a player's job list |
 
 ## Usage
 
 ```lua
 local RSGCore = exports['rsg-core']:GetCoreObject()
-
--- server
-local Player = RSGCore.Functions.GetPlayer(source)
-Player.Functions.AddMoney('cash', 10, 'reason')
-
--- client: server callbacks (concurrent calls to the same callback are safe)
-RSGCore.Functions.TriggerCallback('my:callback', function(result) end, arg1)
 ```
+
+### Callbacks
+```lua
+-- server
+RSGCore.Functions.CreateCallback('my:server:getData', function(source, cb, arg)
+    cb({ ok = true })
+end)
+
+-- client (async)
+RSGCore.Functions.TriggerCallback('my:server:getData', function(result) end, arg)
+
+-- client (await, inside a thread/event). Timeout in ms, default 10000; returns nil on timeout
+local result = RSGCore.Functions.AwaitCallback('my:server:getData', 5000, arg)
+```
+The server can ask a client with `CreateClientCallback` (client) and `TriggerClientCallback` / `AwaitClientCallback(name, source, timeout, ...)` (server).
+
+### Notifications
+```lua
+-- client
+RSGCore.Functions.Notify({ title = 'Title', description = 'Message', type = 'success', duration = 5000, icon = 'fa-solid fa-horse' })
+-- server
+TriggerClientEvent('RSGCore:Client:Notify', source, { title = 'Title', description = 'Message', type = 'error' })
+```
+Types: `success`, `error`, `warning`, `inform`. Optional `position` and `id` (a notification with the same id replaces the old one). Defaults are in `RSGConfig.Notify`. The older `Notify(text, type, duration)` form and the `RSGCore:Notify` event still work, and `ox_lib:notify` is picked up once ox_lib is stopped.
+
+### Multi-job
+Players can hold several jobs (`RSGConfig.MultiJob.MaxJobs`) and switch with `/myjobs`. Job definitions live in the `multijob_jobs` table and are managed with `/jobadmin`. Its **Employees** tab lists everyone holding the selected job (online and offline), and lets admins give the job to a player (server ID or citizen ID) at any grade, change grades and remove holders.
+
+Server API (`RSGCore.Functions.*` and `exports['rsg-core']:*`, `id` = server id or citizenid):
+
+| Function | Returns |
+|---|---|
+| `AddPlayerJob(id, job, grade, bypassMax?)` | `ok, reason` |
+| `RemovePlayerJob(id, job)` | `ok, reason` |
+| `GetPlayerJobs(id)` | `{ job, salary, jobLabel, gradeLabel, grade, icon }[]` |
+| `HasPlayerJob(id, job)` | `held, grade` |
+| `CanTakePlayerJob(id, job, bypassMax?)` | `ok, reason` |
+| `GetPlayerJobCount(id)` | `count, max` |
+| `GetJobDefinition(name)` / `GetJobDefinitions()` | job definition(s) |
+
+`AddJob` / `UpdateJob` / `RemoveJob` on rsg-core are for job *definitions*, not player jobs. Old `exports['rsg-multijob']:*` calls and `rsg-multijob:*` events still work because rsg-core `provide`s rsg-multijob.
+
+### Other client helpers
+- `RSGCore.Functions.RequestModel / RequestAnimDict / RequestAnimSet / RequestNamedPtfxAsset(name, timeout?)` (also exports)
+- `RSGCore.Functions.PlayAnimOnPed(ped, dict, name, blendIn, blendOut, duration, flag, ...)`
+- `exports['rsg-core']:DrawText(text, 'left' | 'right' | 'top')`, `HideText()`, `IsTextShown()`
 
 Runtime shared-data exports (`AddJob(s)`, `UpdateJob`, `RemoveJob`, `AddItem(s)`, `UpdateItem`, `RemoveItem`, `AddGang(s)`, `UpdateGang`, `RemoveGang`) sync to all clients, including players who join later. The batch versions are all-or-nothing.
 
 ## Security notes
 
 - Money and metadata are only changed on the server. Clients can only set the metadata keys listed in `RSGConfig.ClientWritableMetadata`, and the values are clamped.
-- Client-requested saves are rate limited, and character login/deletion is checked against the player's license.
-- The server vehicle spawn callback only allows models in `RSGShared.Vehicles`.
+- Client-requested saves, duty toggles, `/me` and job menu actions are rate limited. Character login/deletion is checked against the player's license.
+- The server vehicle spawn callback only allows models in `RSGShared.Vehicles`, only near the player, and at most once every 5 seconds.
+- `SetJob` / `SetGang` refuse grades that don't exist.
+- Notification and text UI content is always rendered as plain text.
+
+## Support
+
+Support: https://buymeacoffee.com/rexshack
 
 ## Credits
 

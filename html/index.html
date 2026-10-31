@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>rsg-core</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="multijob/style.css">
+    <link rel="stylesheet" href="multijob/admin.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ============ JOBS MENU (/myjobs) ============ -->
+    <div id="app" class="hidden">
+        <div class="stage">
+            <!-- ============ MAIN PANEL ============ -->
+            <div class="panel" id="mainContainer">
+                <div class="panel-head" id="dragHandle">
+                    <div class="seal-badge"><i class="fa-solid fa-briefcase"></i></div>
+                    <div class="panel-titles">
+                        <h1 class="panel-title" id="panelTitle"></h1>
+                        <div class="panel-subtitle" id="panelSubtitle"></div>
+                    </div>
+                    <button class="circle-btn" id="closeBtn">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="section-divider"><span>&#9670;</span></div>
+
+                <!-- Duty Toggle -->
+                <div class="duty-section" id="dutySection">
+                    <div class="row-card duty-card" id="dutyToggle">
+                        <div class="icon-badge" id="dutyIcon">
+                            <i class="fa-solid fa-toggle-off"></i>
+                        </div>
+                        <div class="row-main">
+                            <span class="row-title" id="dutyLabel"></span>
+                            <span class="row-desc duty-status" id="dutyStatus"></span>
+                        </div>
+                        <div class="duty-indicator" id="dutyIndicator"></div>
+                    </div>
+                </div>
+
+                <div class="section-divider"><span>&#9670;</span></div>
+
+                <!-- Jobs List -->
+                <div class="jobs-container" id="jobsContainer"></div>
+
+                <!-- Capacity / stat bar -->
+                <div class="capacity-wrap">
+                    <div class="capacity-label">
+                        <span id="capacityLabel"></span>
+                        <span><span id="jobCount">0</span> / <span id="maxJobs">6</span></span>
+                    </div>
+                    <div class="stat-track">
+                        <div class="stat-fill stat-good" id="capacityFill" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div class="panel-footer">
+                    <span id="maxJobsFooterLabel"></span> <span id="maxJobsFooter">6</span>
+                </div>
+            </div>
+
+            <!-- ============ CHOICE PANEL ============ -->
+            <div class="panel choice-panel hidden" id="choiceContainer">
+                <div class="panel-head" id="choiceDragHandle">
+                    <button class="circle-btn" id="backBtn">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <div class="panel-titles">
+                        <h2 class="panel-title panel-title-sm" id="choiceTitle"></h2>
+                        <div class="panel-subtitle" id="choiceSubtitle"></div>
+                    </div>
+                    <button class="circle-btn" id="choiceCloseBtn">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="section-divider"><span>&#9670;</span></div>
+
+                <div class="choice-job-name" id="choiceJobName"></div>
+
+                <div class="choice-actions">
+                    <button class="row-card action-btn" id="switchJobBtn">
+                        <div class="icon-badge">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <div class="row-main">
+                            <span class="row-title" id="switchJobTitle"></span>
+                            <span class="row-desc"><i id="switchJobDesc"></i></span>
+                        </div>
+                        <div class="row-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </button>
+
+                    <button class="row-card action-btn" id="deleteJobBtn">
+                        <div class="icon-badge">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </div>
+                        <div class="row-main">
+                            <span class="row-title" id="deleteJobTitle"></span>
+                            <span class="row-desc"><i id="deleteJobDesc"></i></span>
+                        </div>
+                        <div class="row-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ CONFIRM MODAL ============ -->
+        <div class="modal-wrap hidden" id="confirmModal">
+            <div class="modal">
+                <div class="icon-badge modal-icon">
+                    <i class="fa-solid fa-exclamation"></i>
+                </div>
+                <h3 class="modal-title" id="confirmTitle"></h3>
+                <div class="ink-divider"></div>
+                <p class="modal-text" id="confirmText"></p>
+                <div class="modal-actions">
+                    <button class="wood-btn" id="confirmYes">
+                        <i class="fa-solid fa-check"></i> <span id="confirmYesLabel"></span>
+                    </button>
+                    <button class="wood-btn wood-btn-muted" id="confirmNo">
+                        <i class="fa-solid fa-xmark"></i> <span id="confirmNoLabel"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ JOB ADMIN (rendered by admin.js) ============ -->
+    <div id="adminApp" class="hidden"></div>
+
+    <!-- ============ NOTIFY + TEXT UI ============ -->
+    <div id="notify-root"></div>
+    <div id="textui" class="textui hidden"></div>
+
+    <script src="multijob/script.js"></script>
+    <script src="multijob/admin.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

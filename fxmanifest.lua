@@ -3,13 +3,12 @@ rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aw
 game 'rdr3'
 
 lua54 'yes'
-ox_lib 'locale'
 
 description 'rsg-core'
-version '3.0.6'
+version '3.1.0'
 
 shared_scripts {
-    '@ox_lib/init.lua',
+    'shared/locale.lua',
     'shared/config.lua',
     'shared/main.lua',
     'shared/items.lua',
@@ -18,21 +17,33 @@ shared_scripts {
     'shared/gangs.lua',
     'shared/weapons.lua',
     'shared/locations.lua',
-    'shared/keybinds.lua'
+    'shared/keybinds.lua',
+    'shared/multijob.lua'
 }
 
+ui_page 'html/index.html'
+
 files {
-    'locales/*.json'
+    'locales/*.json',
+    'html/index.html',
+    'html/style.css',
+    'html/script.js',
+    'html/multijob/style.css',
+    'html/multijob/admin.css',
+    'html/multijob/script.js',
+    'html/multijob/admin.js'
 }
 
 client_scripts {
     'client/main.lua',
     'client/functions.lua',
+    'client/lib.lua',
     'client/loops.lua',
     'client/events.lua',
     'client/drawtext.lua',
     'client/prompts.lua',
-    'client/pvp.lua'
+    'client/pvp.lua',
+    'client/multijob.lua'
 }
 
 server_scripts {
@@ -44,11 +55,19 @@ server_scripts {
     'server/events.lua',
     'server/commands.lua',
     'server/exports.lua',
+    'server/multijob/sv_config.lua',
+    'server/multijob/default_jobs.lua',
+    'server/multijob/webhook.lua',
+    'server/multijob/jobs.lua',
+    'server/multijob/server.lua',
+    'server/multijob/admin.lua',
     'server/debug.lua',
     'server/versionchecker.lua'
 }
 
+-- rsg-multijob is built in; old dependencies and exports['rsg-multijob'] calls still resolve
+provide 'rsg-multijob'
+
 dependencies {
     'oxmysql',
-    'ox_lib',
 }

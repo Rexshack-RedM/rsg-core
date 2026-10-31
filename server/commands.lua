@@ -3,7 +3,7 @@ RSGCore.Commands.List = {}
 
 local function notify(src, title, notifyType)
     if not src or src == 0 then return print(title) end -- console
-    TriggerClientEvent('ox_lib:notify', src, { title = title, type = notifyType or 'inform', duration = 5000 })
+    TriggerClientEvent('RSGCore:Client:Notify', src, { title = title, type = notifyType or 'inform', duration = 5000 })
 end
 
 RSGCore.Commands.IgnoreList = { -- Ignore old perm levels while keeping backwards compatibility
@@ -65,26 +65,54 @@ function RSGCore.Commands.Add(name, help, arguments, argsrequired, callback, per
     }
 end
 
-function RSGCore.Commands.Refresh(source)
-    local src = source
-    local Player = RSGCore.Functions.GetPlayer(src)
-    local suggestions = {}
-    if Player then
-        for command, info in pairs(RSGCore.Commands.List) do
-            local hasPerm = IsPlayerAceAllowed(tostring(src), 'command.' .. command)
-            if hasPerm then
-                suggestions[#suggestions + 1] = {
-                    name = '/' .. command,
-                    help = info.help,
-                    params = info.arguments
-                }
-            else
-                TriggerClientEvent('chat:removeSuggestion', src, '/' .. command)
-            end
+---Whether a player may use a registered command ('user' commands have no ace, everyone may use them)
+---@param src number
+---@param info table entry from RSGCore.Commands.List
+---@return boolean
+local function canUseCommand(src, info)
+    local perm = info.permission
+    if perm == 'user' then return true end
+    if type(perm) == 'table' then
+        for _, p in pairs(perm) do
+            if p == 'user' then return true end
         end
-        TriggerClientEvent('chat:addSuggestions', src, suggestions)
     end
+    return IsPlayerAceAllowed(tostring(src), 'command.' .. info.name)
 end
+
+---Sends the chat suggestions (command helpers) a player is allowed to see, and removes the rest
+---@param source number
+function RSGCore.Commands.Refresh(source)
+    local src = tonumber(source)
+    if not src or src <= 0 or not GetPlayerName(src) then return end
+    local suggestions = {}
+    for command, info in pairs(RSGCore.Commands.List) do
+        if canUseCommand(src, info) then
+            suggestions[#suggestions + 1] = {
+                name = '/' .. command,
+                help = info.help,
+                params = info.arguments or {}
+            }
+        else
+            TriggerClientEvent('chat:removeSuggestion', src, '/' .. command)
+        end
+    end
+    TriggerClientEvent('chat:addSuggestions', src, suggestions)
+end
+
+-- previously Refresh was only called when permissions changed, so players never got the helpers
+AddEventHandler('RSGCore:Server:PlayerLoaded', function(Player)
+    RSGCore.Commands.Refresh(Player.PlayerData.source)
+end)
+
+-- after a restart of rsg-core, re-send helpers to everyone already online
+-- (delayed so commands registered later in the resource are included)
+CreateThread(function()
+    Wait(2000)
+    for src in pairs(RSGCore.Players) do
+        RSGCore.Commands.Refresh(src)
+    end
+end)
 
 -- Teleport
 RSGCore.Commands.Add('tp', locale('command.tp.help'), { { name = locale('command.tp.params.x.name'), help = locale('command.tp.params.x.help') }, { name = locale('command.tp.params.y.name'), help = locale('command.tp.params.y.help') }, { name = locale('command.tp.params.z.name'), help = locale('command.tp.params.z.help') } }, false, function(source, args)
@@ -249,29 +277,19 @@ RSGCore.Commands.Add('setjob', locale('command.setjob.help'), { { name = locale(
     if not Player then return notify(source, locale('error.not_online'), 'error') end
     local job = tostring(args[2]):lower()
     local grade = tonumber(args[3]) or 0
-    local multijob = GetResourceState('rsg-multijob') == 'started'
-    local jobInfo
-    if multijob then
-        -- job definitions live in the multijob_jobs table, owned by rsg-multijob
-        local ok, def = pcall(function() return exports['rsg-multijob']:GetJobDefinition(job) end)
-        jobInfo = ok and def or nil
-    else
-        jobInfo = RSGCore.Shared.Jobs[job]
-    end
+    -- job definitions live in the multijob_jobs table (server/multijob/jobs.lua)
+    local jobInfo = RSGCore.Functions.GetJobDefinition(job)
     if not jobInfo then return notify(source, locale('error.job_not_exist'), 'error') end
     if not jobInfo.grades or not jobInfo.grades[tostring(grade)] then return notify(source, locale('error.grade_not_exist'), 'error') end
-    if multijob then
-        local ok, added, reason = pcall(function() return exports['rsg-multijob']:AddJob(Player.PlayerData.source, job, grade, false) end)
-        if not ok then
-            print(('[rsg-core] setjob: rsg-multijob AddJob errored (%s)'):format(tostring(added)))
-            return notify(source, 'Could not add job via rsg-multijob', 'error')
+    local added, reason = true, nil
+    if job ~= 'unemployed' then -- unemployed is never stored in the multijob list
+        added, reason = RSGCore.Functions.AddPlayerJob(Player.PlayerData.source, job, grade, false)
+    end
+    if not added then
+        if reason == 'max_jobs' then
+            return notify(source, locale('job_max'), 'error')
         end
-        if not added then
-            if reason == 'max_jobs' then
-                return notify(source, 'Player already has the maximum number of jobs', 'error')
-            end
-            return notify(source, ('Could not add job (%s)'):format(tostring(reason)), 'error')
-        end
+        return notify(source, ('%s (%s)'):format(locale('title_error'), tostring(reason)), 'error')
     end
     Player.Functions.SetJob(job, grade)
     notify(source, locale('success.job_set'), 'success')
@@ -301,7 +319,7 @@ end, 'admin')
 -- Out of Character Chat
 local OOC_RANGE = 20.0
 
-RSGCore.Commands.Add('ooc', locale('command.ooc.help'), {}, false, function(source, args)
+RSGCore.Commands.Add('ooc', locale('command.ooc.help'), { { name = locale('command.ooc.params.message.name'), help = locale('command.ooc.params.message.help') } }, false, function(source, args)
     local Player = RSGCore.Functions.GetPlayer(source)
     if not Player then return end
     local message = table.concat(args, ' '):gsub('[~<].-[>~]', '')
@@ -336,11 +354,18 @@ end, 'user')
 
 -- Me command
 
+local ME_COOLDOWN_MS = 2000
+local lastMe = {}
+AddEventHandler('playerDropped', function() lastMe[source] = nil end)
+
 RSGCore.Commands.Add('me', locale('command.me.help'), { { name = locale('command.me.params.message.name'), help = locale('command.me.params.message.help') } }, false, function(source, args)
     if #args < 1 then
         notify(source, locale('error.missing_args2'), 'error')
         return
     end
+    local now = GetGameTimer()
+    if lastMe[source] and now - lastMe[source] < ME_COOLDOWN_MS then return end -- spam protection
+    lastMe[source] = now
     local ped = GetPlayerPed(source)
     local pCoords = GetEntityCoords(ped)
     local msg = table.concat(args, ' '):gsub('[~<].-[>~]', ''):sub(1, 128)

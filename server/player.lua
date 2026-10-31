@@ -209,31 +209,23 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         if type(job) ~= 'string' then return false end
         job = job:lower()
         grade = grade or '0'
-        if not RSGCore.Shared.Jobs[job] then return false end
+        local jobInfo = RSGCore.Shared.Jobs[job]
+        local gradeInfo = jobInfo and jobInfo.grades and jobInfo.grades[tostring(grade)]
+        if not gradeInfo then return false end -- unknown job or grade
         self.PlayerData.job = {
             name = job,
-            label = RSGCore.Shared.Jobs[job].label,
-            onduty = RSGCore.Shared.Jobs[job].defaultDuty,
-            type = RSGCore.Shared.Jobs[job].type or 'none',
-            payment = 0,
-            isboss = false,
+            label = jobInfo.label,
+            onduty = jobInfo.defaultDuty,
+            type = jobInfo.type or 'none',
+            payment = gradeInfo.payment or 0,
+            isboss = gradeInfo.isboss or false,
             grade = {
-                name = 'No Grades',
-                level = 0,
-                payment = 30,
-                isboss = false
+                name = gradeInfo.name,
+                level = tonumber(grade),
+                payment = gradeInfo.payment or 0,
+                isboss = gradeInfo.isboss or false,
             }
         }
-        local gradeKey = tostring(grade)
-        local jobGradeInfo = RSGCore.Shared.Jobs[job].grades[gradeKey]
-        if jobGradeInfo then
-            self.PlayerData.job.grade.name = jobGradeInfo.name
-            self.PlayerData.job.grade.level = tonumber(gradeKey)
-            self.PlayerData.job.grade.payment = jobGradeInfo.payment
-            self.PlayerData.job.payment = jobGradeInfo.payment or 0
-            self.PlayerData.job.grade.isboss = jobGradeInfo.isboss or false
-            self.PlayerData.job.isboss = jobGradeInfo.isboss or false
-        end
 
         if not self.Offline then
             self.Functions.UpdatePlayerData()
@@ -248,25 +240,19 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         if type(gang) ~= 'string' then return false end
         gang = gang:lower()
         grade = grade or '0'
-        if not RSGCore.Shared.Gangs[gang] then return false end
+        local gangInfo = RSGCore.Shared.Gangs[gang]
+        local gradeInfo = gangInfo and gangInfo.grades and gangInfo.grades[tostring(grade)]
+        if not gradeInfo then return false end -- unknown gang or grade
         self.PlayerData.gang = {
             name = gang,
-            label = RSGCore.Shared.Gangs[gang].label,
-            isboss = false,
+            label = gangInfo.label,
+            isboss = gradeInfo.isboss or false,
             grade = {
-                name = 'No Grades',
-                level = 0,
-                isboss = false
+                name = gradeInfo.name,
+                level = tonumber(grade),
+                isboss = gradeInfo.isboss or false,
             }
         }
-        local gradeKey = tostring(grade)
-        local gangGradeInfo = RSGCore.Shared.Gangs[gang].grades[gradeKey]
-        if gangGradeInfo then
-            self.PlayerData.gang.grade.name = gangGradeInfo.name
-            self.PlayerData.gang.grade.level = tonumber(gradeKey)
-            self.PlayerData.gang.grade.isboss = gangGradeInfo.isboss or false
-            self.PlayerData.gang.isboss = gangGradeInfo.isboss or false
-        end
 
         if not self.Offline then
             self.Functions.UpdatePlayerData()
@@ -283,6 +269,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
 
     function self.Functions.SetJobDuty(onDuty)
         self.PlayerData.job.onduty = not not onDuty
+        if self.Offline then return end
         TriggerEvent('RSGCore:Server:OnJobUpdate', self.PlayerData.source, self.PlayerData.job)
         TriggerClientEvent('RSGCore:Client:OnJobUpdate', self.PlayerData.source, self.PlayerData.job)
         self.Functions.UpdatePlayerData()
@@ -300,7 +287,7 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
                 -- non-numeric values (e.g. a client-set statebag) previously crashed Save()
                 value = tonumber(value)
                 if not value or value ~= value then return self.PlayerData.metadata[key] end
-                value = lib.math.clamp(value, clampedMeta[key][1], clampedMeta[key][2])
+                value = math.max(clampedMeta[key][1], math.min(clampedMeta[key][2], value))
             end
             return value
         end
@@ -590,6 +577,7 @@ local playertables = { -- Add tables as needed
     { table = 'player_weapons'},
     { table = 'address_book'},
     { table = 'telegrams'},
+    { table = 'player_jobs'}, -- multi-job list (built into rsg-core)
 }
 
 local function deleteCharacterRows(citizenid, onDone)

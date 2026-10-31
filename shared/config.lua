@@ -115,6 +115,13 @@ RSGConfig.Commands = {}                                  -- Command Configuratio
 RSGConfig.Commands.OOCColor = { 255, 151, 133 }          -- RGB color code for the OOC command
 
 RSGConfig.PromptDistance = 1.5
+
+RSGConfig.Notify = {
+    Position = 'top-right',   -- top-right | top-left | top | bottom-right | bottom-left | bottom | center-right | center-left
+    Duration = 5000,          -- default ms
+    MaxVisible = 5,           -- oldest are removed when exceeded
+    Sound = true,             -- play a frontend sound on notify
+}
 RSGConfig.Player.RevealMap = true
 
 -- Metadata keys a client is allowed to change via the 'RSGCore:Server:SetMetaData' net event.

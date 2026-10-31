@@ -43,7 +43,7 @@ end)
 
 RegisterNetEvent('RSGCore:Command:GoToMarker', function()
     if not IsWaypointActive() then
-        lib.notify({ title = locale('error.no_waypoint'), type = 'error', duration = 5000 })
+        RSGCore.Functions.Notify({ title = locale('error.no_waypoint'), type = 'error', duration = 5000 })
         return
     end
     local coords = GetWaypointCoords()
@@ -65,7 +65,7 @@ RegisterNetEvent('RSGCore:Command:GoToMarker', function()
         Citizen.InvokeNative(0x028F76B6E78246EB, cache.ped, vehicle, -1)
     end
 
-    lib.notify({ title = locale('success.teleported_waypoint'), type = 'success', duration = 5000 })
+    RSGCore.Functions.Notify({ title = locale('success.teleported_waypoint'), type = 'success', duration = 5000 })
 end)
 
 -- Noclip Command
@@ -79,9 +79,9 @@ RegisterNetEvent('RSGCore:Command:SpawnVehicle', function(vehName)
     local ped = cache.ped
     local hash = joaat(vehName)
     if not IsModelInCdimage(hash) then
-        return lib.notify({ title = locale('error.invalid_model'), type = 'error', duration = 5000 })
+        return RSGCore.Functions.Notify({ title = locale('error.invalid_model'), type = 'error', duration = 5000 })
     end
-    lib.requestModel(hash) -- has a built-in timeout (the old loop could hang forever)
+    RSGCore.Functions.RequestModel(hash) -- has a built-in timeout (the old loop could hang forever)
 
     local veh = GetVehiclePedIsUsing(ped)
     if veh ~= 0 then
@@ -111,10 +111,25 @@ RegisterNetEvent('RSGCore:Command:DeleteVehicle', function()
     end
 end)
 
--- Legacy notify event (TriggerClientEvent('RSGCore:Notify', src, text, type, duration)) -> ox_lib
+-- Notify events
+-- Preferred: TriggerClientEvent('RSGCore:Client:Notify', src, { title, description, type, duration, icon })
+RegisterNetEvent('RSGCore:Client:Notify', function(...)
+    RSGCore.Functions.Notify(...)
+end)
+
+-- Legacy: TriggerClientEvent('RSGCore:Notify', src, text, type, duration)
 RegisterNetEvent('RSGCore:Notify', function(...)
     RSGCore.Functions.Notify(...)
 end)
+
+-- ox_lib compatibility: once ox_lib is no longer running, scripts that still send
+-- 'ox_lib:notify' are shown through rsg-core instead (skipped while ox_lib is started,
+-- otherwise every notification would show twice)
+if GetResourceState('ox_lib') ~= 'started' and GetResourceState('ox_lib') ~= 'starting' then
+    RegisterNetEvent('ox_lib:notify', function(data)
+        RSGCore.Functions.Notify(data)
+    end)
+end
 
 -- Other stuff
 

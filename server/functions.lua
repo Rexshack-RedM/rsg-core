@@ -365,9 +365,9 @@ end
 
 local notifyTypes = { primary = 'inform', inform = 'inform', info = 'inform', success = 'success', error = 'error', warning = 'warning' }
 
----Send an ox_lib notification to a player
+---Send an rsg-core notification to a player
 ---@param source number
----@param text string|table message, or a full lib.notify props table
+---@param text string|table message, or a full props table { title, description, type, duration, icon }
 ---@param notifyType? string 'primary' | 'inform' | 'success' | 'error' | 'warning'
 ---@param duration? number milliseconds (default 5000)
 function RSGCore.Functions.Notify(source, text, notifyType, duration)
@@ -377,12 +377,12 @@ function RSGCore.Functions.Notify(source, text, notifyType, duration)
         type = notifyTypes[notifyType] or 'inform',
         duration = tonumber(duration) or 5000,
     }
-    TriggerClientEvent('ox_lib:notify', source, data)
+    TriggerClientEvent('RSGCore:Client:Notify', source, data)
 end
 
 ---Paychecks (standalone - don't touch)
 local function notifyPaycheck(src, title, notifyType)
-    TriggerClientEvent('ox_lib:notify', src, { title = title, type = notifyType, duration = 5000 })
+    TriggerClientEvent('RSGCore:Client:Notify', src, { title = title, type = notifyType, duration = 5000 })
 end
 
 ---Pays into the player's rsg-banking home branch. Falls back to cash if they have no home branch yet.
@@ -394,6 +394,10 @@ local function payWage(Player, payment)
         if ok and branch then return true end
     end
     return Player.Functions.AddMoney('cash', payment, 'paycheck')
+end
+
+if RSGCore.Config.Money.PayCheckSociety then
+    print('^3[rsg-core] PayCheckSociety is not supported with rsg-banking v3 - paying normally^7')
 end
 
 function PaycheckInterval()
@@ -408,9 +412,6 @@ function PaycheckInterval()
         local src = Player.PlayerData.source
 
         if jobInfo and payment > 0 and (jobInfo.offDutyPay or job.onduty) then
-            if RSGCore.Config.Money.PayCheckSociety then
-                print('^3[rsg-core] PayCheckSociety is not supported with rsg-banking v3 - paying normally^7')
-            end
             if payWage(Player, payment) then
                 notifyPaycheck(src, locale('info.received_paycheck', payment), 'inform')
             end
@@ -433,6 +434,38 @@ end
 function RSGCore.Functions.TriggerClientCallback(name, source, cb, ...)
     RSGCore.ClientCallbacks[RSGCore.Functions.ClientCallbackKey(source, name)] = cb
     TriggerClientEvent('RSGCore:Client:TriggerClientCallback', source, name, ...)
+end
+
+---Await a client callback (synchronous)
+---Must be called from inside a thread. Returns nil if the client doesn't answer in time.
+---@param name string
+---@param source number
+---@param timeout? number milliseconds, defaults to 10000 (false/0 to wait forever)
+---@param ... any
+---@return ...
+function RSGCore.Functions.AwaitClientCallback(name, source, timeout, ...)
+    local p = promise.new()
+    local key = RSGCore.Functions.ClientCallbackKey(source, name)
+    local handler
+    handler = function(...)
+        p:resolve(table.pack(...))
+    end
+    RSGCore.ClientCallbacks[key] = handler
+    TriggerClientEvent('RSGCore:Client:TriggerClientCallback', source, name, ...)
+
+    timeout = timeout == nil and 10000 or timeout
+    if timeout and timeout > 0 then
+        SetTimeout(timeout, function()
+            if RSGCore.ClientCallbacks[key] == handler then
+                RSGCore.ClientCallbacks[key] = nil
+                print(('^3[rsg-core] client callback "%s" for %s timed out after %dms^7'):format(name, source, timeout))
+                p:resolve(table.pack())
+            end
+        end)
+    end
+
+    local result = Citizen.Await(p)
+    return table.unpack(result, 1, result.n)
 end
 
 ---Create Server Callback
