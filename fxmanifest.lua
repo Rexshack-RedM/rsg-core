@@ -5,9 +5,10 @@ game 'rdr3'
 lua54 'yes'
 
 description 'rsg-core'
-version '3.1.2'
+version '3.1.3'
 
 shared_scripts {
+    'shared/table.lua',
     'shared/locale.lua',
     'shared/config.lua',
     'shared/main.lua',
@@ -26,6 +27,8 @@ ui_page 'html/index.html'
 files {
     'shared/locale.lua',  -- shared: other resources use '@rsg-core/shared/locale.lua'
     'shared/require.lua', -- shared: other resources use '@rsg-core/shared/require.lua'
+    'shared/table.lua',   -- shared: other resources use '@rsg-core/shared/table.lua'
+    'client/zones.lua',   -- shared: other resources use '@rsg-core/client/zones.lua'
     'locales/*.json',
     'html/index.html',
     'html/style.css',

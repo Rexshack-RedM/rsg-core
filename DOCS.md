@@ -750,3 +750,36 @@ TriggerEvent('hud:client:UpdateThirst', math.max(0, math.min(100, (LocalPlayer.s
 - `RSGCore:CallCommand` checks command permissions server-side.
 - `PrepForSQL` validates strings before raw SQL; always prefer parameterised `MySQL` queries.
 - Multi-job admin callbacks are permission- and rate-limited.
+
+## ox_lib replacements: zones, raycast, nearby entities, table helpers
+
+### Zones – `@rsg-core/client/zones.lua` (replaces `lib.zones`)
+Include it in the resource that owns the zones (callbacks stay local to that resource):
+```lua
+client_scripts { '@rsg-core/client/zones.lua', 'client/*.lua' }
+```
+```lua
+local z = zones.sphere({ coords = vec3(0, 0, 0), radius = 2.0, debug = false,
+    onEnter = function(self) end, onExit = function(self) end, inside = function(self) end })
+zones.box({ coords = vec3(...), size = vec3(2, 2, 2), rotation = 45.0 })
+zones.poly({ points = { vec3(...), vec3(...), vec3(...) }, thickness = 4.0 })
+z:contains(coords)   z:remove()
+zones.getAllZones()  zones.getCurrentZones()  zones.getNearbyZones()
+```
+Each zone has `id`, `coords`, `distance` (to the player, updated every 300 ms) and `insideZone`. Extra fields you pass are kept. The global `Zones` (id → zone) and `lib.zones` are set for ox_lib-style code. `inside` and debug drawing run per frame only while needed.
+
+### Raycast (replaces `lib.raycast`)
+```lua
+local hit, entity, endCoords, normal = RSGCore.Functions.RaycastCamera(flags, ignore, distance)
+local hit, entity, endCoords, normal = RSGCore.Functions.Raycast(fromVec3, toVec3, flags, ignore)
+```
+`flags` defaults to 511 and `ignore` to 4. Both yield, so call them from a thread.
+
+### Nearby entities (replaces `lib.getNearbyPeds/Vehicles/Objects`)
+`RSGCore.Functions.GetNearbyPeds(coords, maxDist)` returns `{ { ped, coords, distance } }` (non-player peds). `GetNearbyVehicles(coords, maxDist, includePlayerVehicle)` and `GetNearbyObjects(coords, maxDist)` return the same shape with a `vehicle` / `object` key.
+
+### Other
+- `RSGCore.Functions.RequestStreamedTextureDict(dict, timeout)` replaces `lib.requestStreamedTextureDict`.
+- `@rsg-core/shared/table.lua` adds `table.type`, `table.wipe`, `table.clone` and `table.contains` when the runtime lacks them. It is also loaded by rsg-core itself (`server/player.lua` already uses `table.type`).
+- Progress detection: `RSGCore.Functions.IsProgressActive()` replaces `lib.progressActive`.
+- rsg-core has no context menu, so there is no `lib.getOpenContextMenu` equivalent.
