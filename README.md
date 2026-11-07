@@ -113,6 +113,16 @@ Server API (`RSGCore.Functions.*` and `exports['rsg-core']:*`, `id` = server id 
 
 `AddJob` / `UpdateJob` / `RemoveJob` on rsg-core are for job *definitions*, not player jobs. Old `exports['rsg-multijob']:*` calls and `rsg-multijob:*` events still work because rsg-core `provide`s rsg-multijob.
 
+### Cron scheduler
+Replaces `lib.cron.new` with the same arguments (server side).
+```lua
+local task = RSGCore.Functions.CreateCron('0 * * * *', function(task, date)
+    -- every hour on the hour
+end)                                   -- or exports['rsg-core']:CreateCron(...)
+RSGCore.Functions.StopCron(task.id)
+```
+Standard 5-field cron (`*`, ranges, lists, steps, month/day names, `@hourly`/`@daily`/…). Tasks stop automatically with the resource that created them. Full details in DOCS.md.
+
 ### Progress bar / circle
 Replaces `lib.progressBar`, `lib.progressCircle`, `lib.progressActive` and `lib.cancelProgress` with the same option table, so migrating is a rename. It blocks (call it from a thread) and returns `true` when finished, `false` when cancelled or interrupted.
 ```lua
