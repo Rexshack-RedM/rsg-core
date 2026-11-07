@@ -184,4 +184,4 @@ Thanks to Kakarot and the QB Team for the original work: https://discord.gg/qbco
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 ## ox_lib replacements
-Zones (`@rsg-core/client/zones.lua`), camera raycast (`RSGCore.Functions.RaycastCamera`), nearby peds/vehicles/objects, texture dict loading and `table.type`/`clone`/`wipe`/`contains` (`@rsg-core/shared/table.lua`) are built in. See DOCS.md.
+Zones (`@rsg-core/client/zones.lua`), points (`@rsg-core/client/points.lua`), camera raycast (`RSGCore.Functions.RaycastCamera`), nearby peds/vehicles/objects, texture dict loading and `table.type`/`clone`/`wipe`/`contains` (`@rsg-core/shared/table.lua`) are built in. See DOCS.md.

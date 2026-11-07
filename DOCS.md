@@ -790,6 +790,20 @@ zones.getAllZones()  zones.getCurrentZones()  zones.getNearbyZones()
 ```
 Each zone has `id`, `coords`, `distance` (to the player, updated every 300 ms) and `insideZone`. Extra fields you pass are kept. The global `Zones` (id → zone) and `lib.zones` are set for ox_lib-style code. `inside` and debug drawing run per frame only while needed.
 
+### Points – `@rsg-core/client/points.lua` (replaces `lib.points`)
+Include it in the resource that owns the points:
+```lua
+client_scripts { '@rsg-core/client/points.lua', 'client/*.lua' }
+```
+```lua
+local p = points.new({ coords = vec3(0, 0, 0), distance = 50.0,
+    onEnter = function(self) end, onExit = function(self) end, nearby = function(self) end })
+points.new(coords, distance, { onEnter = ... })   -- ox_lib positional form
+p:remove()
+points.getAllPoints()  points.getNearbyPoints()  points.getClosestPoint()
+```
+Each point has `id`, `coords`, `distance`, `currentDistance` (while nearby, updated every 300 ms) and `isClosest`. Extra fields you pass are kept. `nearby` runs every frame only while the player is in range. Points are removed (with `onExit`) when the owning resource stops. Global `points` and `lib.points` are set for ox_lib-style code. Migrating is usually just a matter of swapping `lib.points.new` for `points.new`.
+
 ### Raycast (replaces `lib.raycast`)
 ```lua
 local hit, entity, endCoords, normal = RSGCore.Functions.RaycastCamera(flags, ignore, distance)
