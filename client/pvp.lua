@@ -1,38 +1,55 @@
--- Keeps players hostile to each other while PVP is enabled.
--- Briefly switches to "respect" after pressing E (interact) / F so greeting or
--- interacting with another player doesn't start a fight, and while mounted/in a vehicle.
+-- Keeps player-vs-player state in sync with the server.
+-- PVP ON : players are hostile and friendly fire is on. Briefly switches to "respect"
+--          after pressing E (interact) / F so greeting/interacting doesn't start a fight,
+--          and while mounted/in a vehicle.
+-- PVP OFF: players are friendly, friendly fire is off and players can't attack each other.
+-- Everything is re-applied every second because the game (respawn, model change) and
+-- other scripts can reset these natives.
 
-local RELATIONSHIP_HOSTILE = 3
-local RELATIONSHIP_FRIENDLY = 1
+local RELATIONSHIP_HATE = 5
+local RELATIONSHIP_RESPECT = 1
 local INTERACT_GRACE_MS = 3500
-local REAPPLY_MS = 1000 -- re-apply periodically in case another script/game event resets it
+local REAPPLY_MS = 1000
 
 local keyE = RSGShared.Keybinds['E']
 local keyF = RSGShared.Keybinds['F']
 
-local applied, lastApply = nil, 0
+local applied, appliedPvp, appliedPed, lastApply = nil, nil, nil, 0
 
-local function apply(relationship, now)
-    if relationship == applied and now - lastApply < REAPPLY_MS then return end
-    SetRelationshipBetweenGroups(relationship, `PLAYER`, `PLAYER`)
-    if RSGCore.Config.Server.PVP then Citizen.InvokeNative(0xF808475FA571D823, true) end -- NetworkSetFriendlyFireOption
-    applied, lastApply = relationship, now
+-- server state wins (correct for late joiners); config is only the fallback
+local function pvpEnabled()
+    local state = GlobalState.pvp
+    if state == nil then return RSGCore.Config.Server.PVP == true end
+    return state == true
 end
+
+local function apply(relationship, pvp, now)
+    local ped = cache.ped
+    if relationship == applied and pvp == appliedPvp and ped == appliedPed and now - lastApply < REAPPLY_MS then return end
+    SetRelationshipBetweenGroups(relationship, `PLAYER`, `PLAYER`)
+    Citizen.InvokeNative(0xF808475FA571D823, pvp)           -- NetworkSetFriendlyFireOption
+    Citizen.InvokeNative(0xB3B1CB349FF9C75D, ped, pvp, false) -- SetCanAttackFriendly
+    applied, appliedPvp, appliedPed, lastApply = relationship, pvp, ped, now
+end
+
+AddStateBagChangeHandler('pvp', 'global', function(_, _, value)
+    RSGCore.Config.Server.PVP = value == true
+    lastApply = 0 -- force immediate re-apply
+end)
 
 CreateThread(function()
     local friendlyUntil = 0
     while true do
         local now = GetGameTimer()
-        if not RSGCore.Config.Server.PVP then
-            apply(RELATIONSHIP_FRIENDLY, now)
+        if not pvpEnabled() then
+            apply(RELATIONSHIP_RESPECT, false, now)
             Wait(1000)
         else
-            -- key presses must be read every frame; the natives only run when the state changes
             if IsControlJustPressed(0, keyE) or IsControlJustPressed(0, keyF) then
                 friendlyUntil = now + INTERACT_GRACE_MS
             end
             local friendly = now < friendlyUntil or IsPedOnMount(cache.ped) or IsPedInAnyVehicle(cache.ped, false)
-            apply(friendly and RELATIONSHIP_FRIENDLY or RELATIONSHIP_HOSTILE, now)
+            apply(friendly and RELATIONSHIP_RESPECT or RELATIONSHIP_HATE, true, now)
             Wait(0)
         end
     end

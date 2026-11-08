@@ -289,5 +289,9 @@
     "adm_err_not_held": "このプレイヤーはこの職業を持っていません。",
     "command.ooc.params.message.name": "message",
     "command.ooc.params.message.help": "メッセージを送信",
-    "info.progress_cancel": "[%s] キャンセル"
+    "info.progress_cancel": "[%s] キャンセル",
+    "info.pvp_on_title": "PVP 有効",
+    "info.pvp_on": "サーバー全体でPVPがONになりました。プレイヤー同士で攻撃できます。",
+    "info.pvp_off_title": "PVP 無効",
+    "info.pvp_off": "サーバー全体でPVPがOFFになりました。プレイヤー同士で攻撃できなくなりました。"
 }

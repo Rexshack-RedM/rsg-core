@@ -289,5 +289,9 @@
     "adm_err_not_held": "Die speler heeft deze baan niet.",
     "command.ooc.params.message.name": "message",
     "command.ooc.params.message.help": "Bericht dat je wil versturen",
-    "info.progress_cancel": "[%s] Annuleren"
+    "info.progress_cancel": "[%s] Annuleren",
+    "info.pvp_on_title": "PVP ingeschakeld",
+    "info.pvp_on": "PVP is serverbreed AANGEZET. Spelers kunnen elkaar nu aanvallen.",
+    "info.pvp_off_title": "PVP uitgeschakeld",
+    "info.pvp_off": "PVP is serverbreed UITGEZET. Spelers kunnen elkaar niet meer aanvallen."
 }

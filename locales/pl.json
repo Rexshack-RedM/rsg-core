@@ -289,5 +289,9 @@
     "adm_err_not_held": "Ten gracz nie ma tej pracy.",
     "command.ooc.params.message.name": "message",
     "command.ooc.params.message.help": "Wiadomość do wysłania",
-    "info.progress_cancel": "[%s] Anuluj"
+    "info.progress_cancel": "[%s] Anuluj",
+    "info.pvp_on_title": "PVP włączone",
+    "info.pvp_on": "PVP zostało WŁĄCZONE na całym serwerze. Gracze mogą teraz atakować się nawzajem.",
+    "info.pvp_off_title": "PVP wyłączone",
+    "info.pvp_off": "PVP zostało WYŁĄCZONE na całym serwerze. Gracze nie mogą już atakować się nawzajem."
 }

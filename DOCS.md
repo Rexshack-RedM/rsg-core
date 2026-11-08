@@ -479,7 +479,7 @@ Signature: `Add(name, help, arguments, argsrequired, callback, permission?)`. Ch
 |---|---|---|
 | `/tp [id \| x y z \| location]`, `/tpm` | admin | Teleport |
 | `/noclip` | admin | |
-| `/togglepvp` | admin | |
+| `/togglepvp` | admin | Flips PVP for the whole server; sets `GlobalState.pvp` and shows every player an ON/OFF notification (`info.pvp_on*` / `info.pvp_off*` locales) |
 | `/addpermission`, `/removepermission` | god | |
 | `/openserver`, `/closeserver [reason]` | admin | |
 | `/vehicle`, `/dv`, `/dvall`, `/dvp`, `/dvo` | admin | Spawn / delete vehicles, peds, objects |
@@ -652,6 +652,8 @@ Use `RSGCore.Shared.Keybinds` (`shared/keybinds.lua`) for key hashes.
 | `RSGCore:Client:OnMoneyChange` | `moneytype, amount, operation, reason` |
 | `RSGCore:Client:SetDuty` | `onDuty` |
 | `RSGCore:Client:PvpHasToggled` | `pvp` |
+
+> **PVP state:** read `GlobalState.pvp` (bool) for the live server value. `client/pvp.lua` enforces it every second (relationship 5/1, `NetworkSetFriendlyFireOption`, `SetCanAttackFriendly`), so other scripts should not set PLAYER↔PLAYER relationships or friendly fire themselves.
 | `RSGCore:Client:OnSharedUpdate` / `OnSharedUpdateMultiple` | `tableName, key, value` / `tableName, entries` |
 | `RSGCore:Client:UpdateObject` | — |
 | `RSGCore:Client:Notify` | notify table |

@@ -289,5 +289,9 @@
     "adm_err_not_held": "Ce joueur n'a pas ce métier.",
     "command.ooc.params.message.name": "message",
     "command.ooc.params.message.help": "Message",
-    "info.progress_cancel": "[%s] Annuler"
+    "info.progress_cancel": "[%s] Annuler",
+    "info.pvp_on_title": "PVP activé",
+    "info.pvp_on": "Le PVP a été ACTIVÉ sur tout le serveur. Les joueurs peuvent désormais s'attaquer entre eux.",
+    "info.pvp_off_title": "PVP désactivé",
+    "info.pvp_off": "Le PVP a été DÉSACTIVÉ sur tout le serveur. Les joueurs ne peuvent plus s'attaquer entre eux."
 }

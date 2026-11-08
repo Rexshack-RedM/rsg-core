@@ -289,5 +289,9 @@
     "adm_err_not_held": "Acest jucător nu are acest job.",
     "command.ooc.params.message.name": "message",
     "command.ooc.params.message.help": "Mesajul de trimis",
-    "info.progress_cancel": "[%s] Anulează"
+    "info.progress_cancel": "[%s] Anulează",
+    "info.pvp_on_title": "PVP activat",
+    "info.pvp_on": "PVP a fost ACTIVAT pe tot serverul. Jucătorii se pot ataca acum între ei.",
+    "info.pvp_off_title": "PVP dezactivat",
+    "info.pvp_off": "PVP a fost DEZACTIVAT pe tot serverul. Jucătorii nu se mai pot ataca între ei."
 }

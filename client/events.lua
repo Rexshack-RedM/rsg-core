@@ -26,9 +26,17 @@ RegisterNetEvent('RSGCore:Client:OnPlayerUnload', function()
 end)
 
 RegisterNetEvent('RSGCore:Client:PvpHasToggled', function(pvp_state)
-    RSGConfig.Server.PVP = pvp_state
-    SetCanAttackFriendly(cache.ped, pvp_state, false)
-    NetworkSetFriendlyFireOption(pvp_state)
+    -- client/pvp.lua applies the natives on its next tick (and keeps them applied)
+    RSGConfig.Server.PVP = pvp_state == true
+    local on = RSGConfig.Server.PVP
+    RSGCore.Functions.Notify({
+        id = 'rsg_pvp_toggle',
+        title = locale(on and 'info.pvp_on_title' or 'info.pvp_off_title'),
+        description = locale(on and 'info.pvp_on' or 'info.pvp_off'),
+        type = on and 'error' or 'success',
+        icon = on and 'fa-solid fa-gun' or 'fa-solid fa-shield',
+        duration = 8000,
+    })
 end)
 
 -- Teleport Commands

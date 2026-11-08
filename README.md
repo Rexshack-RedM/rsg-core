@@ -51,7 +51,7 @@ add_principal identifier.license:xxxxxxxx rsgcore.god
 | `/tp [id \| x y z \| location]` | admin | Teleport to a player, coords or a named location |
 | `/tpm` | admin | Teleport to waypoint |
 | `/noclip` | admin | Toggle noclip (txAdmin) |
-| `/togglepvp` | admin | Toggle PVP for everyone |
+| `/togglepvp` | admin | Toggle PVP for everyone (synced via `GlobalState.pvp`, applies to late joiners; notifies all players) |
 | `/addpermission [id] [level]` | god | Give a permission level |
 | `/removepermission [id] [level]` | god | Remove a permission level |
 | `/openserver` / `/closeserver [reason]` | admin | Open / close the server to non-whitelisted players |

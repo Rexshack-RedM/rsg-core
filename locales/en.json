@@ -289,5 +289,9 @@
     "adm_err_not_held": "That player doesn't hold this job.",
     "command.ooc.params.message.name": "message",
     "command.ooc.params.message.help": "Message to send",
-    "info.progress_cancel": "[%s] Cancel"
+    "info.progress_cancel": "[%s] Cancel",
+    "info.pvp_on_title": "PVP Enabled",
+    "info.pvp_on": "PVP has been turned ON server-wide. Players can now attack each other.",
+    "info.pvp_off_title": "PVP Disabled",
+    "info.pvp_off": "PVP has been turned OFF server-wide. Players can no longer attack each other."
 }

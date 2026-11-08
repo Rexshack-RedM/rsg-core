@@ -5,7 +5,7 @@ game 'rdr3'
 lua54 'yes'
 
 description 'rsg-core'
-version '3.1.6'
+version '3.1.7'
 
 shared_scripts {
     'shared/table.lua',

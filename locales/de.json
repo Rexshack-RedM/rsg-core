@@ -289,5 +289,9 @@
     "adm_err_not_held": "Dieser Spieler hat diesen Job nicht.",
     "command.ooc.params.message.name": "message",
     "command.ooc.params.message.help": "Nachricht zu senden",
-    "info.progress_cancel": "[%s] Abbrechen"
+    "info.progress_cancel": "[%s] Abbrechen",
+    "info.pvp_on_title": "PVP aktiviert",
+    "info.pvp_on": "PVP wurde serverweit EINGESCHALTET. Spieler können sich jetzt gegenseitig angreifen.",
+    "info.pvp_off_title": "PVP deaktiviert",
+    "info.pvp_off": "PVP wurde serverweit AUSGESCHALTET. Spieler können sich nicht mehr gegenseitig angreifen."
 }

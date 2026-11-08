@@ -289,5 +289,9 @@
     "adm_err_not_held": "Ο παίκτης δεν έχει αυτή την εργασία.",
     "command.ooc.params.message.name": "message",
     "command.ooc.params.message.help": "Μήνυμα προς αποστολή",
-    "info.progress_cancel": "[%s] Ακύρωση"
+    "info.progress_cancel": "[%s] Ακύρωση",
+    "info.pvp_on_title": "PVP Ενεργό",
+    "info.pvp_on": "Το PVP ΕΝΕΡΓΟΠΟΙΗΘΗΚΕ σε όλο τον διακομιστή. Οι παίκτες μπορούν πλέον να επιτεθούν ο ένας στον άλλον.",
+    "info.pvp_off_title": "PVP Ανενεργό",
+    "info.pvp_off": "Το PVP ΑΠΕΝΕΡΓΟΠΟΙΗΘΗΚΕ σε όλο τον διακομιστή. Οι παίκτες δεν μπορούν πλέον να επιτεθούν ο ένας στον άλλον."
 }

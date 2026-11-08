@@ -152,8 +152,12 @@ RSGCore.Commands.Add('tpm', locale('command.tpm.help'), {}, false, function(sour
     TriggerClientEvent('RSGCore:Command:GoToMarker', source)
 end, 'admin')
 
-RSGCore.Commands.Add('togglepvp', locale('command.togglepvp.help'), {}, false, function()
+-- replicated PVP state so players who join after a toggle get the live value, not the config default
+GlobalState.pvp = RSGCore.Config.Server.PVP
+
+RSGCore.Commands.Add('togglepvp', locale('command.togglepvp.help'), {}, false, function(source)
     RSGCore.Config.Server.PVP = not RSGCore.Config.Server.PVP
+    GlobalState.pvp = RSGCore.Config.Server.PVP
     TriggerClientEvent('RSGCore:Client:PvpHasToggled', -1, RSGCore.Config.Server.PVP)
 end, 'admin')
 
