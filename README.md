@@ -110,6 +110,7 @@ Server API (`RSGCore.Functions.*` and `exports['rsg-core']:*`, `id` = server id 
 | `CanTakePlayerJob(id, job, bypassMax?)` | `ok, reason` |
 | `GetPlayerJobCount(id)` | `count, max` |
 | `GetJobDefinition(name)` / `GetJobDefinitions()` | job definition(s) |
+| `SaveJobDefinition(def)` / `DeleteJobDefinition(name)` | create/update or delete a job at runtime (no restart needed) |
 
 `AddJob` / `UpdateJob` / `RemoveJob` on rsg-core are for job *definitions*, not player jobs. Old `exports['rsg-multijob']:*` calls and `rsg-multijob:*` events still work because rsg-core `provide`s rsg-multijob.
 

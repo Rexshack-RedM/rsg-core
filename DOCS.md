@@ -373,6 +373,8 @@ Players see their jobs with `/myjobs` and can switch (cooldown `JobSwitchCooldow
 | `GetPlayerJobCount(identifier)` | `count, max` |
 | `GetJobDefinition(name)` | job table |
 | `GetJobDefinitions()` | all jobs |
+| `SaveJobDefinition(def)` | `def, err` — creates or updates a job at runtime (validated, saved to `multijob_jobs`, synced to clients). `def = { name, label, type?, icon?, defaultDuty?, offDutyPay?, grades = { ['0'] = { name, payment, isboss? } } }`. `err`: `'not_loaded'` or an `adm_err_*` key |
+| `DeleteJobDefinition(name)` | `ok, err, holders` — deletes a job at runtime; anyone holding it drops to unemployed |
 
 ```lua
 local ok, reason = exports['rsg-core']:AddPlayerJob(source, 'vallaw', 0)
@@ -738,7 +740,7 @@ TriggerEvent('hud:client:UpdateThirst', math.max(0, math.min(100, (LocalPlayer.s
 
 **Shared:** `GetCoreObject`, `GetWeapons`
 
-**Server:** `SetMethod`, `SetField`, `CreateCron`, `StopCron`, `GetCoreVersion`, `ExploitBan(playerId, origin)`, `AddItem(s)`, `UpdateItem`, `RemoveItem`, `AddJob(s)`, `UpdateJob`, `RemoveJob`, `AddGang(s)`, `UpdateGang`, `RemoveGang`, `AddPlayerJob`, `RemovePlayerJob`, `GetPlayerJobs`, `HasPlayerJob`, `CanTakePlayerJob`, `GetPlayerJobCount`, `GetJobDefinition`, `GetJobDefinitions`
+**Server:** `SetMethod`, `SetField`, `CreateCron`, `StopCron`, `GetCoreVersion`, `ExploitBan(playerId, origin)`, `AddItem(s)`, `UpdateItem`, `RemoveItem`, `AddJob(s)`, `UpdateJob`, `RemoveJob`, `AddGang(s)`, `UpdateGang`, `RemoveGang`, `AddPlayerJob`, `RemovePlayerJob`, `GetPlayerJobs`, `HasPlayerJob`, `CanTakePlayerJob`, `GetPlayerJobCount`, `GetJobDefinition`, `GetJobDefinitions`, `SaveJobDefinition`, `DeleteJobDefinition`
 
 **Client:** `Notify`, `ProgressBar`, `ProgressCircle`, `IsProgressActive`, `CancelProgress`, `DrawText`, `ChangeText`, `HideText`, `KeyPressed`, `IsTextShown`, `createPrompt`, `createPromptGroup`, `getPrompt`, `getPromptGroup`, `deletePrompt`, `deletePromptGroup`, `RequestModel`, `RequestAnimDict`, `RequestAnimSet`, `RequestNamedPtfxAsset`, `GenerateCSRFToken`
 

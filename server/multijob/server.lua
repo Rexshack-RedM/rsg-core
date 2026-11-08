@@ -440,6 +440,7 @@ local function AddJob(identifier, job, grade, bypassMax)
     if not IsValidJobName(job) then return false, 'invalid_job' end
 
     local jobInfo = JobRegistry.Get(job)
+    if not jobInfo or type(jobInfo.grades) ~= 'table' then return false, 'invalid_job' end
     local gradeInfo = jobInfo.grades[tostring(grade)]
     if not gradeInfo then return false, 'invalid_grade' end
 
@@ -500,6 +501,34 @@ local function GetJobs(identifier)
     return cid and BuildJobList(cid) or {}
 end
 
+--- Creates or updates a job definition at runtime (validated, written to
+--- multijob_jobs, pushed to RSGCore.Shared.Jobs and synced to clients).
+--- def: { name, label, type?, icon?, defaultDuty?, offDutyPay?, grades = { ['0'] = { name, payment, isboss? }, ... } }
+--- @return table|nil def, string|nil errKey 'not_loaded' | adm_err_* validation key
+local function SaveJobDefinition(def)
+    if not JobRegistry.IsLoaded() then return nil, 'not_loaded' end
+    if type(def) ~= 'table' or type(def.name) ~= 'string' then return nil, 'adm_err_invalid' end
+    local isNew = JobRegistry.Get(def.name:lower()) == nil
+    local saved, err = JobRegistry.Save(def, isNew)
+    if saved then
+        print(('[rsg-core:jobs] %s job "%s" via %s'):format(isNew and 'Created' or 'Updated', saved.name, GetInvokingResource() or 'rsg-core'))
+    end
+    return saved, err
+end
+
+--- Deletes a job definition at runtime: removes it from multijob_jobs,
+--- rsg-core and every player's job list (holders drop to unemployed).
+--- @return boolean ok, string|nil errKey, number holders
+local function DeleteJobDefinition(name)
+    if not JobRegistry.IsLoaded() then return false, 'not_loaded', 0 end
+    if type(name) ~= 'string' then return false, 'adm_err_missing', 0 end
+    local ok, err, holders = JobRegistry.Delete(name)
+    if ok then
+        print(('[rsg-core:jobs] Deleted job "%s" via %s'):format(name, GetInvokingResource() or 'rsg-core'))
+    end
+    return ok, err, holders
+end
+
 -- rsg-core already uses AddJob / RemoveJob for job *definitions*, so the
 -- player job list functions use Player* names here.
 local api = {
@@ -511,6 +540,8 @@ local api = {
     GetPlayerJobCount = ExportGetJobCount,
     GetJobDefinition = function(name) return JobRegistry.Get(name) end,
     GetJobDefinitions = function() return JobRegistry.All() end,
+    SaveJobDefinition = SaveJobDefinition,
+    DeleteJobDefinition = DeleteJobDefinition,
 }
 
 for name, fn in pairs(api) do
