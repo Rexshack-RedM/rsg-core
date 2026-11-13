@@ -160,7 +160,7 @@ Runtime shared-data exports (`AddJob(s)`, `UpdateJob`, `RemoveJob`, `AddItem(s)`
 
 ## Support
 
-Support: https://buymeacoffee.com/rexshack
+Support the Project : https://rexshack.tebex.store/
 
 ## Credits
 
