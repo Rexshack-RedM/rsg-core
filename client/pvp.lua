@@ -2,7 +2,8 @@
 -- PVP ON : players are hostile and friendly fire is on. Briefly switches to "respect"
 --          after pressing E (interact) / F so greeting/interacting doesn't start a fight,
 --          and while mounted/in a vehicle.
--- PVP OFF: players are friendly, friendly fire is off and players can't attack each other.
+-- PVP OFF: players are friendly, friendly fire is off, players can't be damaged by the PLAYER group
+--          (blocks fists/melee) and can't lock on to each other.
 -- Everything is re-applied every second because the game (respawn, model change) and
 -- other scripts can reset these natives.
 
@@ -29,6 +30,9 @@ local function apply(relationship, pvp, now)
     SetRelationshipBetweenGroups(relationship, `PLAYER`, `PLAYER`)
     Citizen.InvokeNative(0xF808475FA571D823, pvp)           -- NetworkSetFriendlyFireOption
     Citizen.InvokeNative(0xB3B1CB349FF9C75D, ped, pvp, false) -- SetCanAttackFriendly
+    -- friendly fire only covers weapons: this is what blocks fists/melee between players when PVP is off
+    Citizen.InvokeNative(0x0EF1AFB18649E015, ped, pvp, `PLAYER`) -- SET_ENTITY_CAN_BE_DAMAGED_BY_RELATIONSHIP_GROUP
+    Citizen.InvokeNative(0x4A056257802DD3E5, cache.playerId, pvp) -- SET_LOCKON_TO_FRIENDLY_PLAYERS
     applied, appliedPvp, appliedPed, lastApply = relationship, pvp, ped, now
 end
 

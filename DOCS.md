@@ -653,7 +653,7 @@ Use `RSGCore.Shared.Keybinds` (`shared/keybinds.lua`) for key hashes.
 | `RSGCore:Client:SetDuty` | `onDuty` |
 | `RSGCore:Client:PvpHasToggled` | `pvp` |
 
-> **PVP state:** read `GlobalState.pvp` (bool) for the live server value. `client/pvp.lua` enforces it every second (relationship 5/1, `NetworkSetFriendlyFireOption`, `SetCanAttackFriendly`), so other scripts should not set PLAYER↔PLAYER relationships or friendly fire themselves.
+> **PVP state:** read `GlobalState.pvp` (bool) for the live server value. `client/pvp.lua` enforces it every second (relationship 5/1, `NetworkSetFriendlyFireOption`, `SetCanAttackFriendly`, `SetEntityCanBeDamagedByRelationshipGroup` for the PLAYER group so fists/melee are blocked when PVP is off, and `SetLockonToFriendlyPlayers`), so other scripts should not set PLAYER↔PLAYER relationships or friendly fire themselves.
 | `RSGCore:Client:OnSharedUpdate` / `OnSharedUpdateMultiple` | `tableName, key, value` / `tableName, entries` |
 | `RSGCore:Client:UpdateObject` | — |
 | `RSGCore:Client:Notify` | notify table |
