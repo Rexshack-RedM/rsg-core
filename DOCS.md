@@ -1,6 +1,6 @@
 # rsg-core Developer Documentation
 
-> Version **3.1.2** · RedM · Lua 5.4 · Depends only on `oxmysql`
+> Version **3.1.8** · RedM · Lua 5.4 · Depends only on `oxmysql`
 > rsg-core no longer requires **ox_lib**: notifications, callbacks, progress bars, text UI, prompts, locales, `require` and asset loaders are all built in.
 
 ---
@@ -33,6 +33,9 @@
 24. [Exports Reference](#24-exports-reference)
 25. [ox_lib Migration Cheat Sheet](#25-ox_lib-migration-cheat-sheet)
 26. [Security Notes](#26-security-notes)
+27. [Complete Example Resource](#27-complete-example-resource)
+28. [Database Schema](#28-database-schema)
+29. [Return Values & Error Codes](#29-return-values--error-codes)
 
 ---
 
@@ -227,7 +230,7 @@ local heading = RSGCore.Functions.AwaitClientCallback('myres:client:getHeading',
 | Function | Notes |
 |---|---|
 | `Notify(source, text, type?, duration?)` | `text` may be a full table (see §15) |
-| `PrepForSQL(source, data, pattern)` | Validates a string against a Lua pattern; kicks on fail |
+| `PrepForSQL(source, data, pattern)` | Returns `true` if the **whole** string matches the Lua pattern. On failure it logs an `anticheat` entry and returns `false` (it does **not** kick; you decide what to do) |
 | `GetDatabaseInfo()` | `{ exists, database }` |
 | `RSGCore.Debug(tbl, indent?)` | Pretty-prints to server console |
 | `RSGCore.ShowError(resource, msg)` / `ShowSuccess(resource, msg)` | Coloured console output |
@@ -235,6 +238,45 @@ local heading = RSGCore.Functions.AwaitClientCallback('myres:client:getHeading',
 | `RSGCore.Functions.CreateCron(expression, job, options?)` | Scheduled task, replaces `lib.cron.new` – see *Cron scheduler* below |
 | `RSGCore.Functions.StopCron(taskOrId)` | Stops a cron task |
 | `RSGCore.Player.CreateCitizenId()` / `CreateFingerId()` / `CreateWalletId()` / `CreateSerialNumber()` | Unique id generators |
+
+### Server function examples
+
+```lua
+-- find a player and read their data
+local Player = RSGCore.Functions.GetPlayer(source)
+if not Player then return end
+local citizenid = Player.PlayerData.citizenid
+
+-- online lookups
+local target  = RSGCore.Functions.GetPlayerByCitizenId('ABC12345')       -- nil if offline
+local offline = RSGCore.Functions.GetOfflinePlayerByCitizenId('ABC12345') -- loads from DB
+local byName  = RSGCore.Functions.GetPlayerByCharInfo('firstname', 'Arthur')
+
+-- everyone on duty as a lawman
+local onDuty, count = RSGCore.Functions.GetPlayersOnDuty('vallaw')
+for _, src in ipairs(onDuty) do
+    RSGCore.Functions.Notify(src, 'Alarm at the bank!', 'warning')
+end
+
+-- nearest other player (returns -1, -1 if nobody else is connected)
+local closestId, distance = RSGCore.Functions.GetClosestPlayer(source)
+if closestId ~= -1 and distance < 3.0 then
+    -- close enough to interact
+end
+
+-- inventory helpers (proxy to rsg-inventory)
+if RSGCore.Functions.HasItem(source, 'bandage', 2) then end
+if RSGCore.Functions.HasItem(source, { 'water', 'bread' }) then end
+
+-- validate untrusted strings before they touch SQL
+if not RSGCore.Functions.PrepForSQL(source, data.name, '^[%w ]+$') then return end
+
+-- kick with the Discord link appended
+RSGCore.Functions.Kick(source, 'You have been removed from the server')
+
+-- close / open the server
+RSGCore.Functions.SetServerClosed(true, 'Restarting in 5 minutes')
+```
 
 ### Cron scheduler (replaces `lib.cron`)
 
@@ -315,9 +357,51 @@ local pd = Player.PlayerData
 | `Logout()` | |
 | `AddMethod(name, fn)` / `AddField(name, data)` | Per-player extension |
 
+### Player object examples
+
+```lua
+local Player = RSGCore.Functions.GetPlayer(source)
+if not Player then return end
+
+-- read
+local pd        = Player.PlayerData
+local fullName  = pd.charinfo.firstname .. ' ' .. pd.charinfo.lastname
+local isLawman  = pd.job.type == 'leo' and pd.job.onduty
+local isBoss    = pd.job.isboss
+
+-- metadata (server-side may set any key)
+Player.Functions.SetMetaData('callsign', 'ALPHA-1')
+local callsign = Player.Functions.GetMetaData('callsign')
+
+-- reputation stored in metadata.rep
+Player.Functions.AddRep('hunter', 5)
+local rep = Player.Functions.GetRep('hunter')
+
+-- job / gang
+Player.Functions.SetJob('vallaw', 1)      -- name, grade (string or number)
+Player.Functions.SetJobDuty(true)
+Player.Functions.SetGang('none', 0)
+
+-- items
+if Player.Functions.HasItem('lockpick', 1) then end
+
+-- force a save (also runs on drop and every RSGConfig.UpdateInterval minutes)
+Player.Functions.Save()
+```
+
+Extend every Player object with your own method:
+
+```lua
+RSGCore.Functions.AddPlayerMethod(-1, 'IsLawman', function(self)
+    return self.PlayerData.job.type == 'leo'
+end)
+-- later:
+if Player.Functions.IsLawman() then ... end
+```
+
 ### Player lifecycle (`RSGCore.Player`)
 
-`Login(source, citizenid?, newData?)`, `Logout(source)`, `Save(source)`, `SaveOffline(PlayerData)`, `GetOfflinePlayer(citizenid)`, `GetOfflinePlayerByLicense(license)`, `DeleteCharacter(source, citizenid)`, `ForceDeleteCharacter(citizenid)`, `SaveInventory(source)`, `GetTotalWeight(items)`, `GetSlotsByItem(items, name)`, `GetFirstSlotByItem(items, name)`.
+`Login(source, citizenid?, newData?)`, `Logout(source)`, `Save(source)`, `SaveOffline(PlayerData)`, `GetOfflinePlayer(citizenid)`, `GetOfflinePlayerByLicense(license)`, `DeleteCharacter(source, citizenid)`, `ForceDeleteCharacter(citizenid)`, `SaveInventory(source)`, `SaveOfflineInventory(PlayerData)`, `CheckPlayerData(source, PlayerData)` (fills defaults and validates data before a player object is created), `CreatePlayer(PlayerData, Offline?)` (builds the Player object with its `Functions`), `GetTotalWeight(items)`, `GetSlotsByItem(items, name)`, `GetFirstSlotByItem(items, name)`.
 
 Player data auto-saves every `RSGConfig.UpdateInterval` minutes and on drop.
 
@@ -337,6 +421,36 @@ end
 - **Money items:** with `EnableMoneyItems = true`, `cash` and `bloodmoney` are mirrored as inventory items and kept in sync automatically (`server/moneyitems.lua`). Gold items are controlled by `RSGConfig.Gold.EnableGoldItems` + `Money.GoldItem`.
 - Paychecks every `PayCheckTimeOut` minutes use the grade `payment`; `offDutyPay` on the job decides if off-duty players are paid. `PayCheckSociety` is **not supported** with rsg-banking v3.
 - Hook changes: `RSGCore:Server:OnMoneyChange (src, moneytype, amount, operation, reason)` — `operation` is `'add' | 'remove' | 'set'`.
+- Amounts must be finite numbers `>= 0`. With `DontAllowMinus`, `RemoveMoney` returns `false` and changes nothing when the player cannot afford it.
+
+```lua
+-- charge first, then hand over the goods
+local price = Config.Items[item].price                -- price comes from config, never from the client
+if not Player.Functions.RemoveMoney('cash', price, 'shop-' .. item) then
+    return RSGCore.Functions.Notify(src, 'Not enough cash', 'error')
+end
+exports['rsg-inventory']:AddItem(src, item, 1, nil, nil, 'shop-purchase')
+
+-- pay a player
+Player.Functions.AddMoney('cash', 50, 'delivery-reward')
+Player.Functions.AddMoney('bloodmoney', 20, 'robbery')
+
+-- read balances
+local cash = Player.Functions.GetMoney('cash')        -- number, or false for an unknown type
+local gold = Player.PlayerData.money.gold
+
+-- react to any change (server)
+AddEventHandler('RSGCore:Server:OnMoneyChange', function(src, moneytype, amount, operation, reason)
+    if moneytype == 'cash' and operation == 'remove' and amount >= 1000 then
+        print(('[big spend] %s spent $%s (%s)'):format(src, amount, reason))
+    end
+end)
+
+-- react to any change (client)
+RegisterNetEvent('RSGCore:Client:OnMoneyChange', function(moneytype, amount, operation, reason) end)
+```
+
+> With `EnableMoneyItems = true`, never add the `dollar` / `cent` / `blood_dollar` / `blood_cent` items yourself. Always go through `AddMoney` / `RemoveMoney` so the player data, the inventory items and the HUD stay in sync (`server/moneyitems.lua`).
 
 ---
 
@@ -395,9 +509,124 @@ Player.Functions.SetJobDuty(true)                      -- server
 
 `RSGShared.ForceJobDefaultDutyAtLogin = true` resets duty to the job's `defaultDuty` at login.
 
+### Multi-job examples
+
+```lua
+-- give a player a job (online server id or offline citizenid)
+local ok, reason = exports['rsg-core']:AddPlayerJob(source, 'medic', 0)
+if not ok then
+    print('could not add job:', reason)       -- 'max_jobs', 'invalid_job', ...
+end
+
+-- bypass the MaxJobs limit (staff action)
+exports['rsg-core']:AddPlayerJob('ABC12345', 'vallaw', 2, true)
+
+-- check before offering a job at your NPC
+local canTake, why = exports['rsg-core']:CanTakePlayerJob(source, 'taxi')
+if not canTake then return RSGCore.Functions.Notify(source, why, 'error') end
+
+-- list everything a player holds
+for _, j in ipairs(exports['rsg-core']:GetPlayerJobs(source)) do
+    print(j.job, j.jobLabel, j.gradeLabel, j.grade, j.salary)
+end
+
+-- gate a feature on a held job (not just the active one)
+local held, grade = exports['rsg-core']:HasPlayerJob(source, 'gunsmith')
+if held and grade >= 1 then end
+
+local count, max = exports['rsg-core']:GetPlayerJobCount(source)   -- 2, 3
+```
+
+Create or edit a job definition from another resource at runtime (validated, saved to `multijob_jobs`, synced to clients):
+
+```lua
+local def, err = exports['rsg-core']:SaveJobDefinition({
+    name = 'ranchhand', label = 'Ranch Hand', type = 'none', icon = 'fa-solid fa-horse',
+    defaultDuty = true, offDutyPay = false,
+    grades = {
+        ['0'] = { name = 'Hand',    payment = 8 },
+        ['1'] = { name = 'Foreman', payment = 18, isboss = true },
+    },
+})
+if not def then print('save failed:', err) end    -- 'not_loaded' or an adm_err_* key
+
+local ok, err, holders = exports['rsg-core']:DeleteJobDefinition('ranchhand')
+```
+
+> Call `SaveJobDefinition` only after `rsg-multijob:server:jobsLoaded` has fired, otherwise it returns `'not_loaded'`.
+
+### Multi-job events
+
+| Event | Side | Notes |
+|---|---|---|
+| `rsg-multijob:server:jobsLoaded` | server (local) | Job definitions have been loaded from the database. Wait for it before calling `SaveJobDefinition` / `GetJobDefinition(s)` at resource start |
+| `rsg-multijob:client:openmenu` | client | Opens the player's jobs menu (same as `/myjobs`) |
+| `rsg-multijob:client:refreshJobs` | client | `(jobs, currentJobName)` pushed after the player's job list changes |
+| `rsg-multijob:client:openAdmin` | client | Opens the `/jobadmin` panel (server checks permission first) |
+| `rsg-multijob:server:changeJob` | server (net) | `(job)` sent by the menu to switch the active job. Cooldown and ownership are validated server-side |
+| `rsg-multijob:server:deleteJob` | server (net) | `(job)` sent by the menu to drop a held job |
+| `rsg-bossmenu:server:FireEmployee` | server (net) | `(target)`. Used by boss menus to remove the boss's job from an employee |
+
+```lua
+-- run code once the job table is ready
+AddEventHandler('rsg-multijob:server:jobsLoaded', function()
+    local n = 0
+    for name in pairs(exports['rsg-core']:GetJobDefinitions()) do n += 1 end
+    print(('loaded %d jobs'):format(n))
+end)
+
+-- open the jobs menu from your own UI / radial menu
+TriggerEvent('rsg-multijob:client:openmenu')
+
+-- keep local state when the active job changes (client)
+RegisterNetEvent('RSGCore:Client:OnJobUpdate', function(job)
+    print(job.name, job.grade.level, job.onduty)
+end)
+```
+
+### Multi-job configuration
+
+`shared/multijob.lua` → `RSGConfig.MultiJob`:
+
+| Key | Default | |
+|---|---|---|
+| `MaxJobs` | `3` | Maximum jobs one player may hold |
+| `JobSwitchCooldown` | `3000` | Milliseconds between job switches |
+| `Admin.Command` | `'jobadmin'` | Chat command that opens the job editor |
+| `Admin.Permission` | `'admin'` | Permission level required for the editor |
+| `JobIcons` | table | Fallback Font Awesome icon per job name. An icon saved in `/jobadmin` wins |
+
+`server/multijob/sv_config.lua` → `MultiJobWebhookConfig` (server-only so URLs never reach clients):
+
+| Key | |
+|---|---|
+| `Enabled` | Master switch for all job webhook logging |
+| `DefaultURL` | Used by any event without its own `URL` |
+| `BotName`, `BotAvatar`, `FooterText`, `FooterIcon`, `DefaultColor` | Embed styling |
+| `Events.<Name>` | `{ Enabled, URL, Title, Color }` per event: `JobAdded`, `JobSwitched`, `JobDeleted`, `JobRemovedByAdmin`, `JobCreated`, `JobUpdated`, `JobDefinitionDeleted`, `EmployeeFired` |
+
+```lua
+-- send "Employee Fired" to its own channel and silence "Job Switched"
+MultiJobWebhookConfig.Events.EmployeeFired.URL = 'https://discord.com/api/webhooks/...'
+MultiJobWebhookConfig.Events.JobSwitched.Enabled = false
+```
+
+First run: if `multijob_jobs` is empty it is seeded from `shared/jobs.lua` and `server/multijob/default_jobs.lua`.
+
 ### Gangs
 
 Defined in `shared/gangs.lua`; set with `Player.Functions.SetGang(gang, grade)` or `/setgang`.
+
+```lua
+Player.Functions.SetGang('odriscoll', 1)
+
+exports['rsg-core']:AddGang('mygang', {
+    label = 'My Gang',
+    grades = { ['0'] = { name = 'Recruit' }, ['1'] = { name = 'Boss', isboss = true } },
+})
+
+RegisterNetEvent('RSGCore:Client:OnGangUpdate', function(gang) print(gang.name, gang.grade.level) end)
+```
 
 ---
 
@@ -458,6 +687,29 @@ add_principal identifier.license:xxxxxxxx rsgcore.god
 | `IsValidPermission(perm)` | |
 
 Server join while closed requires ACE `rsgadmin.join`.
+
+```lua
+-- guard an admin-only event
+RegisterNetEvent('myres:server:wipe', function()
+    local src = source
+    if not RSGCore.Functions.HasPermission(src, 'admin') then return end
+    -- ...
+end)
+
+-- several levels at once: true if ANY matches
+if RSGCore.Functions.HasPermission(src, { 'god', 'developer' }) then end
+
+-- grant / revoke at runtime (levels must exist in RSGConfig.Server.Permissions)
+RSGCore.Functions.AddPermission(src, 'mod')
+RSGCore.Functions.RemovePermission(src, 'mod')
+```
+
+```cfg
+# server.cfg
+add_ace group.admin rsgcore.admin allow
+add_principal identifier.license:xxxxxxxx group.admin
+add_ace rsgcore.admin rsgadmin.join allow
+```
 
 ---
 
@@ -526,6 +778,39 @@ Login check:
 
 ```lua
 if LocalPlayer.state.isLoggedIn then ... end
+```
+
+### Client function examples
+
+```lua
+-- load assets (all yield; call from a thread)
+local hash = RSGCore.Functions.RequestModel('A_C_HORSE_ARABIAN_WHITE', 5000)
+RSGCore.Functions.RequestAnimDict('amb_misc@world_human_stand_waiting@male_a@base', 5000)
+
+-- play an animation on the local ped
+RSGCore.Functions.PlayAnim('amb_misc@world_human_stand_waiting@male_a@base', 'base', false, 3000)
+
+-- is this a clear spot for a vehicle?
+if RSGCore.Functions.SpawnClear(GetEntityCoords(PlayerPedId()), 5.0) then end
+
+-- spawn a wagon and sit in it
+RSGCore.Functions.SpawnVehicle('wagon02x', function(veh)
+    print('spawned', veh)
+end, vector4(-324.2, 803.9, 117.9, 90.0), true, true)
+
+-- nearest player / ped
+local playerId, dist = RSGCore.Functions.GetClosestPlayer()
+local ped, pedDist = RSGCore.Functions.GetClosestPed()
+
+-- clock + compass
+local t = RSGCore.Functions.GetCurrentTime()          -- { hour, min, formattedHour, formattedMin, ampm }
+local dir = RSGCore.Functions.GetCardinalDirection()  -- 'North', ...
+
+-- check the local inventory
+if RSGCore.Functions.HasItem('lockpick', 1) then end
+
+-- raycast from the camera (replaces lib.raycast)
+local hit, entity, endCoords = RSGCore.Functions.RaycastCamera(511, 4, 10.0)
 ```
 
 ---
@@ -623,6 +908,21 @@ Use `RSGCore.Shared.Keybinds` (`shared/keybinds.lua`) for key hashes.
 | `GetPlayersInBucket(bucket)` / `GetEntitiesInBucket(bucket)` | |
 | `GetBucketObjects()` | `playerBuckets, entityBuckets` |
 
+```lua
+-- put a player and a prop in a private instance
+RSGCore.Functions.SetPlayerBucket(source, 50)
+RSGCore.Functions.SetEntityBucket(entity, 50)
+
+-- who is in the instance?
+local players = RSGCore.Functions.GetPlayersInBucket(50)     -- list of server ids
+local entities = RSGCore.Functions.GetEntitiesInBucket(50)   -- non-player entities only
+
+-- leave the instance (bucket 0 is the default world)
+RSGCore.Functions.SetPlayerBucket(source, 0)
+```
+
+Both setters return `false` if an argument is missing.
+
 ---
 
 ## 20. Events Reference
@@ -639,6 +939,10 @@ Use `RSGCore.Shared.Keybinds` (`shared/keybinds.lua`) for key hashes.
 | `RSGCore:Server:OnMoneyChange` | `source, moneytype, amount, operation, reason` |
 | `RSGCore:Server:SetDuty` | `source, onDuty` |
 | `RSGCore:Server:UpdateObject` | — |
+| `RSGCore:Server:OnPlayerLoaded` | Net event fired by the client once the character is ready; core uses it to sync money items. Prefer `PlayerLoaded` for your own code |
+| `RSGCore:Server:CloseServer` / `OpenServer` | Net events (admin permission checked server-side) |
+| `RSGCore:Server:KickCSRF` | Net event: drops the sender for a failed CSRF check |
+| `RSGCore:DebugSomething` | Server-only: `(tbl, indent, resource)` pretty-prints a table to the console |
 
 ### Client (listen with `RegisterNetEvent`)
 
@@ -652,11 +956,22 @@ Use `RSGCore.Shared.Keybinds` (`shared/keybinds.lua`) for key hashes.
 | `RSGCore:Client:OnMoneyChange` | `moneytype, amount, operation, reason` |
 | `RSGCore:Client:SetDuty` | `onDuty` |
 | `RSGCore:Client:PvpHasToggled` | `pvp` |
-
-> **PVP state:** read `GlobalState.pvp` (bool) for the live server value. `client/pvp.lua` enforces it every second (relationship 5/1, `NetworkSetFriendlyFireOption`, `SetCanAttackFriendly`, `SetEntityCanBeDamagedByRelationshipGroup` for the PLAYER group so fists/melee are blocked when PVP is off, and `SetLockonToFriendlyPlayers`), so other scripts should not set PLAYER↔PLAYER relationships or friendly fire themselves.
 | `RSGCore:Client:OnSharedUpdate` / `OnSharedUpdateMultiple` | `tableName, key, value` / `tableName, entries` |
 | `RSGCore:Client:UpdateObject` | — |
 | `RSGCore:Client:Notify` | notify table |
+| `RSGCore:Notify` | Legacy QBCore-style notify: `(text, type, duration)` |
+| `hud:client:OnMoneyChange` | `moneytype, amount, isMinus` (HUD feedback, sent after every money change) |
+
+> **PVP state:** read `GlobalState.pvp` (bool) for the live server value. `client/pvp.lua` enforces it every second (relationship 5/1, `NetworkSetFriendlyFireOption`, `SetCanAttackFriendly`, `SetEntityCanBeDamagedByRelationshipGroup` for the PLAYER group so fists/melee are blocked when PVP is off, and `SetLockonToFriendlyPlayers`), so other scripts should not set PLAYER↔PLAYER relationships or friendly fire themselves.
+
+```lua
+-- react to PVP being toggled
+RegisterNetEvent('RSGCore:Client:PvpHasToggled', function(pvp)
+    print('PVP is now', pvp and 'ON' or 'OFF')
+end)
+-- or just read it
+if GlobalState.pvp then end
+```
 
 Typical client pattern:
 
@@ -665,6 +980,34 @@ local PlayerData = {}
 RegisterNetEvent('RSGCore:Client:OnPlayerLoaded', function() PlayerData = RSGCore.Functions.GetPlayerData() end)
 RegisterNetEvent('RSGCore:Player:SetPlayerData', function(val) PlayerData = val end)
 RegisterNetEvent('RSGCore:Client:OnPlayerUnload', function() PlayerData = {} end)
+```
+
+### Internal callback events
+
+`RSGCore:Server:TriggerCallback`, `RSGCore:Server:TriggerCallbackId`, `RSGCore:Server:TriggerClientCallback`, `RSGCore:Client:TriggerCallback`, `RSGCore:Client:TriggerCallbackId` and `RSGCore:Client:TriggerClientCallback` carry the callback request/response traffic. Pending client callbacks are keyed per source (`RSGCore.Functions.ClientCallbackKey`) so one client can never answer another client's request. Do not trigger these directly; use `TriggerCallback` / `AwaitCallback` and the client-callback equivalents from §5.
+
+### Event handler examples
+
+```lua
+-- server: runs for every player after their character is fully loaded
+AddEventHandler('RSGCore:Server:PlayerLoaded', function(Player)
+    print(Player.PlayerData.citizenid .. ' joined')
+end)
+
+-- server: clean up when the player leaves
+AddEventHandler('RSGCore:Server:PlayerDropped', function(Player)
+    MyCache[Player.PlayerData.citizenid] = nil
+end)
+
+-- server: job or gang changed
+AddEventHandler('RSGCore:Server:OnJobUpdate', function(src, job)
+    print(src, 'is now', job.name, 'grade', job.grade.level)
+end)
+
+-- client: react to shared data added at runtime (new item, job, gang)
+RegisterNetEvent('RSGCore:Client:OnSharedUpdate', function(tableName, key, value)
+    if tableName == 'Items' then print('item added/changed:', key) end
+end)
 ```
 
 ### Client → server events you may call
@@ -701,6 +1044,17 @@ TriggerEvent('hud:client:UpdateThirst', math.max(0, math.min(100, (LocalPlayer.s
 | `Trim(str)` / `FirstToUpper(str)` | |
 | `Round(value, decimals)` | |
 | `exports['rsg-core']:GetWeapons()` | Weapons table |
+| `RSGCore.Shared.StarterItems` | Starter items table (see §23) |
+
+```lua
+local id   = RSGCore.Shared.RandomStr(8)                  -- 'aZ3kP9qL'
+local pin  = RSGCore.Shared.RandomInt(4)                  -- '4821'
+local bits = RSGCore.Shared.SplitStr('a,b,c', ',')        -- { 'a', 'b', 'c' }
+local name = RSGCore.Shared.FirstToUpper('arthur')        -- 'Arthur'
+local n    = RSGCore.Shared.Round(3.14159, 2)             -- 3.14
+local key  = RSGCore.Shared.Keybinds['J']                 -- hash for prompts
+local item = RSGCore.Shared.Items['bandage']              -- shared item definition
+```
 
 ---
 
@@ -712,7 +1066,8 @@ TriggerEvent('hud:client:UpdateThirst', math.max(0, math.min(100, (LocalPlayer.s
 |---|---|---|
 | `DefaultSpawn` | `vector4(-1035.71, -2731.87, 12.86, 0.0)` | |
 | `UpdateInterval` | `5` | Minutes between auto-saves |
-| `HidePlayerNames` | `true` | |
+| `MaxPlayers` | `GetConvarInt('sv_maxclients', 48)` | Read from `sv_maxclients` |
+| `HidePlayerNames` | `true` | Shows the `info.stranger` locale instead of real names above heads |
 | `Money.MoneyTypes` | `cash=50, gold=0, bank=0, bloodmoney=0` | |
 | `Money.DontAllowMinus` | `cash, gold, bloodmoney, bank` | |
 | `Money.MinusLimit` | `-5000` | |
@@ -721,14 +1076,22 @@ TriggerEvent('hud:client:UpdateThirst', math.max(0, math.min(100, (LocalPlayer.s
 | `Gold.EnableGoldItems` | `false` | |
 | `Player.PlayerDefaults` | — | Defaults for new characters |
 | `Player.RevealMap` | `true` | |
-| `Server.Closed / Whitelist / PVP / CheckDuplicateLicense` | | |
+| `Server.Closed / ClosedReason / Whitelist / WhitelistPermission / PVP / CheckDuplicateLicense` | `false / 'Server Closed' / false / 'admin' / true / true` | |
+| `Server.Discord` | `''` | Invite link appended to kick / ban messages |
+| `Commands.OOCColor` | `{ 255, 151, 133 }` | RGB for `/ooc` |
+| `Player.Bloodtypes` | `A+ … O-` | Random pick at character creation |
+| `Gold.EnableGoldItems` / `Money.GoldItem` | `false` / `'gold'` | Represent gold as an inventory item |
 | `Server.Permissions` | god…helper | |
 | `PromptDistance` | `1.5` | |
 | `Notify` | Position, Duration, MaxVisible, Sound | |
 | `Progress` | CancelKey `0x8CC9CD42` (X), CancelLabel | |
 | `ClientWritableMetadata` | hunger, thirst, cleanliness, stress, health, armor | |
 
-`shared/multijob.lua` (`RSGConfig.MultiJob`): `MaxJobs = 3`, `JobSwitchCooldown = 3000`, `Admin = { Command = 'jobadmin', Permission = 'admin' }`, `JobIcons`.
+`shared/multijob.lua` (`RSGConfig.MultiJob`): `MaxJobs = 3`, `JobSwitchCooldown = 3000`, `Admin = { Command = 'jobadmin', Permission = 'admin' }`, `JobIcons` (see §9).
+
+`shared/main.lua` (`RSGShared.StarterItems`): items given to new characters, `{ bread = { amount = 5, item = 'bread' }, water = { amount = 5, item = 'water' } }`.
+
+Config is read on both sides, so a change needs a resource restart (`ensure rsg-core`) or a server restart.
 `server/multijob/sv_config.lua`: Discord webhooks per job event (server-only).
 
 ### Database
@@ -776,6 +1139,279 @@ TriggerEvent('hud:client:UpdateThirst', math.max(0, math.min(100, (LocalPlayer.s
 - `RSGCore:CallCommand` checks command permissions server-side.
 - `PrepForSQL` validates strings before raw SQL; always prefer parameterised `MySQL` queries.
 - Multi-job admin callbacks are permission- and rate-limited.
+- The version checker (`server/versionchecker.lua`) only reads `version.txt` from GitHub on resource start and prints whether you are up to date; it changes nothing.
+
+### CSRF-protected NUI callback
+
+`GenerateCSRFToken()` returns a single-use token. The NUI must send it back to `validateCSRF`; a wrong token drops the player (`RSGCore:Server:KickCSRF`).
+
+```lua
+-- client
+RegisterNUICallback('buyItem', function(data, cb)
+    local token = exports['rsg-core']:GenerateCSRFToken()
+    SendNUIMessage({ action = 'csrf', token = token })   -- hand the token to the page
+    cb('ok')
+end)
+```
+
+```js
+// NUI (JavaScript): validate before trusting a sensitive action
+const res = await fetch('https://rsg-core/validateCSRF', {
+  method: 'POST',
+  body: JSON.stringify({ clientToken: token }),
+});
+const { valid } = await res.json();
+if (valid) { /* proceed with the action */ }
+```
+
+> The NUI callback is registered by rsg-core, so a page in another resource reaches it through the `https://rsg-core/` origin (the same pattern QBCore-style resources use). Validation only proves the NUI is the one that requested the token. The server must **still** re-check price, item, job and distance in the net event it receives.
+
+### Validating a client request (pattern)
+
+```lua
+RegisterNetEvent('myres:server:sell', function(item, amount)
+    local src = source
+    local Player = RSGCore.Functions.GetPlayer(src)
+    if not Player then return end
+    if type(item) ~= 'string' or type(amount) ~= 'number' or amount < 1 or amount > 100 then
+        return exports['rsg-core']:ExploitBan(src, 'myres:sell invalid args')
+    end
+    local entry = Config.Buyers[item]; if not entry then return end             -- config, not client, decides price
+    local coords = GetEntityCoords(GetPlayerPed(src))
+    if #(coords - Config.BuyerCoords) > 5.0 then return end                     -- distance check
+    if not RSGCore.Functions.HasItem(src, item, amount) then return end
+    exports['rsg-inventory']:RemoveItem(src, item, amount, nil, 'myres-sell')
+    Player.Functions.AddMoney('cash', entry.price * amount, 'myres-sell')
+end)
+```
+
+## 27. Complete Example Resource
+
+A minimal but complete resource that follows every convention in this document: locale files, a usable item, a server callback, a prompt, a command and a validated server event.
+
+```
+rsg-example/
+├── fxmanifest.lua
+├── shared/config.lua
+├── locales/en.json        (plus de, el, es, fr, ja, nl, pl, pt-br, ro with the same keys)
+├── client/client.lua
+└── server/server.lua
+```
+
+**fxmanifest.lua**
+
+```lua
+fx_version 'cerulean'
+rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aware my resources *will* become incompatible once RedM ships.'
+game 'rdr3'
+lua54 'yes'
+
+description 'rsg-example'
+version '1.0.0'
+
+shared_scripts {
+    '@rsg-core/shared/locale.lua',
+    'shared/config.lua',
+}
+client_scripts { 'client/client.lua' }
+server_scripts { '@oxmysql/lib/MySQL.lua', 'server/server.lua' }
+files { 'locales/*.json' }
+
+dependencies { 'rsg-core', 'rsg-inventory', 'oxmysql' }
+```
+
+**shared/config.lua**
+
+```lua
+Config = {}
+
+Config.Shop = {
+    coords = vector3(-324.2, 803.9, 117.9),
+    distance = 3.0,
+    items = {
+        bandage = { price = 5 },
+        water   = { price = 1 },
+    },
+}
+```
+
+**locales/en.json**
+
+```json
+{
+  "prompt": { "open": "Open Shop" },
+  "notify": {
+    "bought": "Bought %s for $%s",
+    "no_cash": "Not enough cash",
+    "too_far": "You are too far away",
+    "full": "Inventory full"
+  },
+  "progress": { "buying": "Buying..." }
+}
+```
+
+**server/server.lua**
+
+```lua
+local RSGCore = exports['rsg-core']:GetCoreObject()
+
+-- callback: client asks what it may buy
+RSGCore.Functions.CreateCallback('rsg-example:server:getItems', function(source, cb)
+    local Player = RSGCore.Functions.GetPlayer(source)
+    if not Player then return cb(nil) end
+    cb(Config.Shop.items)
+end)
+
+-- validated purchase
+RegisterNetEvent('rsg-example:server:buy', function(item)
+    local src = source
+    local Player = RSGCore.Functions.GetPlayer(src)
+    if not Player then return end
+
+    local entry = type(item) == 'string' and Config.Shop.items[item]
+    if not entry then return end
+
+    local coords = GetEntityCoords(GetPlayerPed(src))
+    if #(coords - Config.Shop.coords) > Config.Shop.distance + 2.0 then
+        return RSGCore.Functions.Notify(src, locale('notify.too_far'), 'error')
+    end
+
+    if not exports['rsg-inventory']:CanAddItem(src, item, 1) then
+        return RSGCore.Functions.Notify(src, locale('notify.full'), 'error')
+    end
+    if not Player.Functions.RemoveMoney('cash', entry.price, 'example-shop') then
+        return RSGCore.Functions.Notify(src, locale('notify.no_cash'), 'error')
+    end
+
+    exports['rsg-inventory']:AddItem(src, item, 1, nil, nil, 'example-shop')
+    RSGCore.Functions.Notify(src, locale('notify.bought', RSGCore.Shared.Items[item].label, entry.price), 'success')
+end)
+
+-- usable item
+RSGCore.Functions.CreateUseableItem('bandage', function(source, item)
+    local Player = RSGCore.Functions.GetPlayer(source)
+    if not Player then return end
+    if exports['rsg-inventory']:RemoveItem(source, 'bandage', 1, item.slot, 'used-bandage') then
+        TriggerClientEvent('rsg-example:client:heal', source)
+    end
+end)
+
+-- admin command
+RSGCore.Commands.Add('shopprice', 'Show a shop price', {
+    { name = 'item', help = 'Item name' },
+}, true, function(source, args)
+    local e = Config.Shop.items[args[1]]
+    RSGCore.Functions.Notify(source, e and ('$' .. e.price) or 'unknown item', e and 'inform' or 'error')
+end, 'admin')
+```
+
+**client/client.lua**
+
+```lua
+local RSGCore = exports['rsg-core']:GetCoreObject()
+local PlayerData = {}
+
+RegisterNetEvent('RSGCore:Client:OnPlayerLoaded', function() PlayerData = RSGCore.Functions.GetPlayerData() end)
+RegisterNetEvent('RSGCore:Player:SetPlayerData', function(val) PlayerData = val end)
+RegisterNetEvent('RSGCore:Client:OnPlayerUnload', function() PlayerData = {} end)
+
+-- prompt at the shop
+CreateThread(function()
+    exports['rsg-core']:createPrompt('rsg-example:shop', Config.Shop.coords,
+        RSGCore.Shared.Keybinds['J'], locale('prompt.open'), {
+            type = 'client', event = 'rsg-example:client:openshop',
+        })
+end)
+
+AddEventHandler('onResourceStop', function(resource)
+    if resource ~= GetCurrentResourceName() then return end
+    exports['rsg-core']:deletePrompt('rsg-example:shop')
+end)
+
+RegisterNetEvent('rsg-example:client:openshop', function()
+    local items = RSGCore.Functions.AwaitCallback('rsg-example:server:getItems', 5000)
+    if not items then return end
+    local done = RSGCore.Functions.ProgressBar({
+        duration = 2000, label = locale('progress.buying'), canCancel = true,
+        disable = { move = true, combat = true },
+    })
+    if done then TriggerServerEvent('rsg-example:server:buy', 'bandage') end
+end)
+
+RegisterNetEvent('rsg-example:client:heal', function()
+    local ped = PlayerPedId()
+    SetEntityHealth(ped, math.min(GetEntityMaxHealth(ped), GetEntityHealth(ped) + 50))
+end)
+```
+
+---
+
+## 28. Database Schema
+
+| Table | Created by | Notes |
+|---|---|---|
+| `players` | manual SQL import | One row per character, keyed by `citizenid` |
+| `bans` | manual SQL import | Used by join checks and `ExploitBan` |
+| `players.weight`, `players.slots` | automatic | Added at start if missing (defaults `35000` / `25`) |
+| `multijob_jobs` | automatic | Job definitions |
+| `player_jobs` | automatic | Jobs each character holds |
+
+```sql
+CREATE TABLE IF NOT EXISTS `multijob_jobs` (
+    `name` VARCHAR(50) NOT NULL,
+    `label` VARCHAR(100) NOT NULL,
+    `type` VARCHAR(50) NULL DEFAULT NULL,
+    `icon` VARCHAR(100) NULL DEFAULT NULL,
+    `default_duty` TINYINT(1) NOT NULL DEFAULT 1,
+    `off_duty_pay` TINYINT(1) NOT NULL DEFAULT 0,
+    `grades` LONGTEXT NOT NULL,            -- JSON: { "0": { "name": "...", "payment": 10 }, ... }
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`name`)
+);
+
+CREATE TABLE IF NOT EXISTS `player_jobs` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `citizenid` VARCHAR(50) NOT NULL,
+    `job` VARCHAR(50) NOT NULL,
+    `grade` INT NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`),
+    KEY `citizenid` (`citizenid`)
+);
+```
+
+Query by character from your own resource (always parameterised):
+
+```lua
+local rows = MySQL.query.await('SELECT job, grade FROM player_jobs WHERE citizenid = ?', { citizenid })
+```
+
+---
+
+## 29. Return Values & Error Codes
+
+| Call | Success | Failure |
+|---|---|---|
+| `Player.Functions.AddMoney / RemoveMoney / SetMoney` | `true` | `false` (bad type, bad amount, or insufficient funds on remove) |
+| `Player.Functions.GetMoney(type)` | number | `false` for unknown type |
+| `Player.Functions.SetJob(job, grade)` | `true` | `false` for unknown job or grade |
+| `AddPlayerJob` | `true` | `false, 'invalid_job' \| 'invalid_grade' \| 'player_not_found' \| 'max_jobs'` |
+| `RemovePlayerJob` | `true` | `false, 'invalid_job' \| 'player_not_found' \| 'job_not_held'` |
+| `CanTakePlayerJob` | `true` | `false, 'already_held' \| 'max_jobs' \| …` |
+| `SaveJobDefinition` | `def` | `nil, 'not_loaded' \| 'adm_err_*'` |
+| `AddItem / AddJob / AddGang` (and `Update*`, `Remove*`) | `true, msg` | `false, 'invalid_<x>_name' \| '<x>_exists' \| '<x>_not_exists'` |
+| `AddItems / AddJobs / AddGangs` | `true, msg` | `false, msg, failedData` (nothing applied) |
+| `SetPlayerBucket / SetEntityBucket` | `true` | `false` (missing argument) |
+| `GetClosestPlayer` (server) | `id, distance` | `-1, -1` when no other player |
+| `AwaitCallback / AwaitClientCallback` | value | `nil` on timeout |
+| `PrepForSQL` | `true` | `false` (and logs an anticheat entry) |
+| `GetPlayer / GetPlayerByCitizenId …` | Player | `nil` |
+
+```lua
+local ok, err = exports['rsg-core']:AddItem('rope', { name = 'rope', label = 'Rope', weight = 100, type = 'item' })
+if not ok then print('AddItem failed:', err) end   -- e.g. 'item_exists'
+```
+
+---
 
 ## ox_lib replacements: zones, raycast, nearby entities, table helpers
 
