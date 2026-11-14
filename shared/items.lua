@@ -353,9 +353,11 @@ RSGShared.Items = {
     tree_seeds    = { name = 'tree_seeds',     label = 'Tree Seeds',  weight = 100,  type = 'item',  image = 'tree_seeds.png',     unique = false,  useable = true,  shouldClose = true,  description = 'Tree Seeds — useful item to have around.',                                  category = 'lumber' },
 
     -- medical
-    bandage      = { name = 'bandage',       label = 'Bandage',        weight = 100,  type = 'item',  image = 'bandage.png',       unique = false,  useable = true,  shouldClose = true,  description = 'used to improve your health',            category = 'medical' },
-    fieldbandage = { name = 'fieldbandage',  label = 'Field Bandage',  weight = 100,  type = 'item',  image = 'fieldbandage.png',  unique = false,  useable = true,  shouldClose = true,  description = 'patching yourself up',                   category = 'medical' },
-    firstaid     = { name = 'firstaid',      label = 'First Aid',      weight = 100,  type = 'item',  image = 'firstaid.png',      unique = false,  useable = true,  shouldClose = true,  description = 'used by medics to improve your health',  category = 'medical' },
+    bandage         = { name = 'bandage',       label = 'Bandage',          weight = 100,  type = 'item',  image = 'bandage.png',       unique = false,  useable = true,  shouldClose = true,  description = 'used to improve your health',            category = 'medical' },
+    bone_bandage    = { name = 'bone_bandage',  label = 'Bone Bandage',     weight = 100,  type = 'item',  image = 'bone_bandage.png',  unique = false,  useable = true,  shouldClose = true,  description = 'used by medics to wrap bones',           category = 'medical' },
+    bone_splint     = { name = 'bone_splint',   label = 'Bone Splint',      weight = 100,  type = 'item',  image = 'bone_splint.png',   unique = false,  useable = true,  shouldClose = true,  description = 'used by medics to splint broken bones',  category = 'medical' },
+    fieldbandage    = { name = 'fieldbandage',  label = 'Field Bandage',    weight = 100,  type = 'item',  image = 'fieldbandage.png',  unique = false,  useable = true,  shouldClose = true,  description = 'patching yourself up',                   category = 'medical' },
+    firstaid        = { name = 'firstaid',      label = 'First Aid',        weight = 100,  type = 'item',  image = 'firstaid.png',      unique = false,  useable = true,  shouldClose = true,  description = 'used by medics to improve your health',  category = 'medical' },
 
     -- mining
     resource_amethyst       = { name = 'resource_amethyst',        label = 'Amethyst',        weight = 100,  type = 'item',  image = 'resource_amethyst.png',        unique = false,  useable = true,  shouldClose = true,  description = 'Resource Amethyst — useful item to have around.',        category = 'mining' },
