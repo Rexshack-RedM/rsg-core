@@ -19,6 +19,7 @@
     "error.server_already_closed": "Der Server ist schon geschlossen",
     "error.no_permission": "Du hast keine Rechte dafür..",
     "error.no_waypoint": "Kein Wegpunkt gesetzt.",
+    "error.tpm_no_ground": "Am Wegpunkt konnte kein sicherer Boden gefunden werden. Du wurdest zurückgesetzt.",
     "error.tp_error": "Error beim teleportieren.",
     "error.ban_table_not_found": "[RSGCORE] - Die Tabelle \"bans\" wurde in der Datenbank nicht gefunden. Bitte stelle sicher, dass die SQL-Datei korrekt importiert wurde.",
     "error.connecting_database_error": "[RSGCORE] - Beim Verbinden mit der Datenbank ist ein Fehler aufgetreten. Stelle sicher, dass der SQL-Server läuft und die Angaben in der server.cfg korrekt sind.",

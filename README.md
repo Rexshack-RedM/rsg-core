@@ -49,7 +49,7 @@ add_principal identifier.license:xxxxxxxx rsgcore.god
 | Command | Permission | Description |
 |---|---|---|
 | `/tp [id \| x y z \| location]` | admin | Teleport to a player, coords or a named location |
-| `/tpm` | admin | Teleport to waypoint |
+| `/tpm` | admin | Teleport to waypoint (streams collision and finds real ground first; returns you to your start if none is found) |
 | `/noclip` | admin | Toggle noclip (txAdmin) |
 | `/togglepvp` | admin | Toggle PVP for everyone (synced via `GlobalState.pvp`, applies to late joiners; notifies all players) |
 | `/addpermission [id] [level]` | god | Give a permission level |

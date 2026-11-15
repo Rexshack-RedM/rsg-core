@@ -19,6 +19,7 @@
     "error.server_already_closed": "サーバーは既にクローズしています",
     "error.no_permission": "権限がありません",
     "error.no_waypoint": "ウェイポイントが設定されていません",
+    "error.tpm_no_ground": "ウェイポイントに安全な地面が見つかりませんでした。元の位置に戻しました。",
     "error.tp_error": "テレポート中にエラーが発生しました",
     "error.ban_table_not_found": "[RSGCORE] - データベースに bans テーブルが見つかりません。SQL ファイルが正しくインポートされているか確認してください。",
     "error.connecting_database_error": "[RSGCORE] - サーバーへの接続中にデータベースエラーが発生しました(SQLサーバの稼働を確認してください)",

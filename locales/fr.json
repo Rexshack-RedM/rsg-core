@@ -19,6 +19,7 @@
     "error.server_already_closed": "Le serveur est déjà fermé",
     "error.no_permission": "Vous n'avez pas les permissions pour cela",
     "error.no_waypoint": "Pas de marqueur défini.",
+    "error.tpm_no_ground": "Aucun sol sûr trouvé au marqueur. Vous avez été ramené à votre position d'origine.",
     "error.tp_error": "Erreur lors de la téléportation.",
     "error.ban_table_not_found": "[RSGCORE] - Impossible de trouver la table des bannissements dans la base de données. Vérifiez que le fichier SQL a été correctement importé.",
     "error.connecting_database_error": "[RSGCORE] - Une erreur est survenue lors de la connexion à la base de données. Vérifiez que le serveur SQL est en marche et que les informations du server.cfg sont correctes.",

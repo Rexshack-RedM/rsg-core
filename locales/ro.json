@@ -19,6 +19,7 @@
     "error.server_already_closed": "Serverul este deja închis",
     "error.no_permission": "Nu ai permisiuni pentru asta..",
     "error.no_waypoint": "Nu a fost setat un punct de referință.",
+    "error.tpm_no_ground": "Nu s-a găsit teren sigur la punctul de referință. Ai fost readus la poziția inițială.",
     "error.tp_error": "Eroare în timpul teleportării.",
     "error.ban_table_not_found": "[RSGCORE] - Tabela de banuri nu a fost găsită în baza de date. Asigură-te că ai importat corect fișierul SQL.",
     "error.connecting_database_error": "A apărut o eroare de bază de date în timpul conectării la server. (Este serverul SQL pornit?)",

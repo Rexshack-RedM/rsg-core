@@ -19,6 +19,7 @@
     "error.server_already_closed": "O servidor já está fechado",
     "error.no_permission": "Você não tem permissões para isso..",
     "error.no_waypoint": "Nenhum local definido.",
+    "error.tpm_no_ground": "Não foi possível encontrar chão seguro no local. Você voltou à posição original.",
     "error.tp_error": "Erro ao teletransportar.",
     "error.ban_table_not_found": "[RSGCORE] - Não foi possível encontrar a tabela de banimentos no banco de dados. Verifique se o arquivo SQL foi importado corretamente.",
     "error.connecting_database_error": "Ocorreu um erro de banco de dados ao conectar-se ao servidor. (O servidor SQL está ativado?)",

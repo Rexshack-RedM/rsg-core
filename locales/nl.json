@@ -19,6 +19,7 @@
     "error.server_already_closed": "De server is al gesloten",
     "error.no_permission": "Je hebt geen permissie voor dit..",
     "error.no_waypoint": "Geen bestemming geselecteerd",
+    "error.tpm_no_ground": "Geen veilige grond gevonden bij de bestemming. Je bent teruggezet naar je oorspronkelijke positie.",
     "error.tp_error": "Er is een foutje begaan tijdens het teleporteren",
     "error.ban_table_not_found": "[RSGCORE] - De bans-tabel is niet gevonden in de database. Zorg ervoor dat je het SQL-bestand correct hebt geïmporteerd.",
     "error.connecting_database_error": "Er is een databasefout opgetreden tijdens het maken van een verbinding met de server. (Is de SQL-server ingeschakeld?)",

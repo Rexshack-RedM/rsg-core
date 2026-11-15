@@ -729,7 +729,7 @@ Signature: `Add(name, help, arguments, argsrequired, callback, permission?)`. Ch
 
 | Command | Perm | |
 |---|---|---|
-| `/tp [id \| x y z \| location]`, `/tpm` | admin | Teleport |
+| `/tp [id \| x y z \| location]`, `/tpm` | admin | Teleport. `/tpm` freezes the entity, streams collision, probes for real ground and only then places it; if no ground is found the player is returned to their start position |
 | `/noclip` | admin | |
 | `/togglepvp` | admin | Flips PVP for the whole server; sets `GlobalState.pvp` and shows every player an ON/OFF notification (`info.pvp_on*` / `info.pvp_off*` locales) |
 | `/addpermission`, `/removepermission` | god | |

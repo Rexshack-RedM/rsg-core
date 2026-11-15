@@ -19,6 +19,7 @@
     "error.server_already_closed": "Serwer jest już zamknięty",
     "error.no_permission": "Nie masz do tego uprawnień",
     "error.no_waypoint": "Nie ustawiono waypointu",
+    "error.tpm_no_ground": "Nie znaleziono bezpiecznego gruntu przy waypoincie. Przywrócono Cię na poprzednią pozycję.",
     "error.tp_error": "Błąd podczas teleportacji",
     "error.ban_table_not_found": "[RSGCORE] - Nie znaleziono tabeli banów w bazie danych. Upewnij się, że poprawnie zaimportowałeś plik SQL.",
     "error.connecting_database_error": "[RSGCORE] - Wystąpił błąd podczas łączenia z bazą danych. Upewnij się, że serwer SQL działa i że dane w server.cfg są poprawne.",

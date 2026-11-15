@@ -49,31 +49,96 @@ RegisterNetEvent('RSGCore:Command:TeleportToCoords', function(x, y, z, h)
     SetEntityCoords(cache.ped, x, y, z) 
 end)
 
+-- /tpm safeguards: the destination is usually unstreamed, so the heightmap Z can be below the real ground.
+-- We freeze the entity, stream the area in, probe for real ground from above, and only then place it.
+-- On failure the player is returned to where they started instead of falling under the map.
+local tpmBusy = false
+
+local function RequestGroundAt(entity, x, y)
+    local startZ = 1000.0
+    local deadline = GetGameTimer() + 8000
+    local z = startZ
+    while GetGameTimer() < deadline do
+        SetEntityCoordsNoOffset(entity, x, y, z, false, false, false)
+        RequestCollisionAtCoord(x, y, z)
+        SetFocusPosAndVel(x, y, z, 0.0, 0.0, 0.0)
+        Wait(0)
+        local found, groundZ = GetGroundZFor_3dCoord(x, y, z, false)
+        if found and groundZ and groundZ > -150.0 then
+            -- make sure collision is really there before trusting the value
+            local tries = 0
+            while not HasCollisionLoadedAroundEntity(entity) and tries < 50 do
+                RequestCollisionAtCoord(x, y, groundZ)
+                Wait(20)
+                tries = tries + 1
+            end
+            return groundZ
+        end
+        z = z - 25.0
+        if z < -100.0 then z = startZ end -- sweep again; the world may have streamed in meanwhile
+    end
+    return nil
+end
+
 RegisterNetEvent('RSGCore:Command:GoToMarker', function()
+    if tpmBusy then return end
     if not IsWaypointActive() then
         RSGCore.Functions.Notify({ title = locale('error.no_waypoint'), type = 'error', duration = 5000 })
         return
     end
+    tpmBusy = true
+
     local coords = GetWaypointCoords()
-    local groundZ = GetHeightmapBottomZForPosition(coords.x, coords.y)
-    local vehicle = GetVehiclePedIsIn(cache.ped, false)
+    local ped = cache.ped
+    local vehicle = GetVehiclePedIsIn(ped, false)
+    local mount = cache.mount
+    -- move the carrier (vehicle > mount > ped); riders go with it
+    local entity = (vehicle ~= 0 and vehicle) or (mount and mount ~= 0 and mount) or ped
+    local startCoords = GetEntityCoords(entity)
 
-    SetEntityCoords(cache.ped, coords.x, coords.y, groundZ + 3.0)
-    PlacePedOnGroundProperly(cache.ped, coords)
+    FreezeEntityPosition(entity, true)
+    SetEntityInvincible(ped, true)
+    if entity ~= ped then SetEntityInvincible(entity, true) end
 
-    if cache.mount then
-        SetEntityCoords(cache.mount, coords.x, coords.y, groundZ + 3.0)
-        PlacePedOnGroundProperly(cache.mount, coords)
-        Citizen.InvokeNative(0x028F76B6E78246EB, cache.ped, cache.mount, -1)
+    local groundZ = RequestGroundAt(entity, coords.x, coords.y)
+
+    if groundZ then
+        SetEntityCoordsNoOffset(entity, coords.x, coords.y, groundZ + 1.0, false, false, false)
+        if entity ~= ped then
+            PlacePedOnGroundProperly(ped, coords)
+        end
+        PlacePedOnGroundProperly(entity, coords)
+        if mount and mount ~= 0 and entity == mount then
+            Citizen.InvokeNative(0x028F76B6E78246EB, ped, mount, -1)
+        elseif vehicle ~= 0 then
+            Citizen.InvokeNative(0x028F76B6E78246EB, ped, vehicle, -1)
+        end
+    else
+        SetEntityCoordsNoOffset(entity, startCoords.x, startCoords.y, startCoords.z, false, false, false)
     end
 
-    if vehicle ~= 0 then -- GetVehiclePedIsIn returns 0 (truthy in Lua) when not in a vehicle
-        SetEntityCoords(vehicle, coords.x, coords.y, groundZ + 3.0)
-        PlacePedOnGroundProperly(vehicle, coords)
-        Citizen.InvokeNative(0x028F76B6E78246EB, cache.ped, vehicle, -1)
-    end
+    ClearFocus()
+    Wait(250)
+    FreezeEntityPosition(entity, false)
+    SetEntityInvincible(ped, false)
+    if entity ~= ped then SetEntityInvincible(entity, false) end
 
-    RSGCore.Functions.Notify({ title = locale('success.teleported_waypoint'), type = 'success', duration = 5000 })
+    if groundZ then
+        -- watchdog: if we still dropped below the ground, snap back up to the ground we found
+        CreateThread(function()
+            for _ = 1, 10 do
+                Wait(300)
+                local pos = GetEntityCoords(entity)
+                if pos.z < groundZ - 5.0 then
+                    SetEntityCoordsNoOffset(entity, coords.x, coords.y, groundZ + 1.5, false, false, false)
+                end
+            end
+        end)
+        RSGCore.Functions.Notify({ title = locale('success.teleported_waypoint'), type = 'success', duration = 5000 })
+    else
+        RSGCore.Functions.Notify({ title = locale('error.tpm_no_ground'), type = 'error', duration = 6000 })
+    end
+    tpmBusy = false
 end)
 
 -- Noclip Command

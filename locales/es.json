@@ -19,6 +19,7 @@
     "error.server_already_closed": "El servidor ya está cerrado",
     "error.no_permission": "No tienes permisos para esto..",
     "error.no_waypoint": "No hay waypoint establecido.",
+    "error.tpm_no_ground": "No se encontró suelo seguro en el waypoint. Has vuelto a tu posición original.",
     "error.tp_error": "Error mientras se teletransporta.",
     "error.ban_table_not_found": "[RSGCORE] - No se encontró la tabla de baneos en la base de datos. Asegúrate de haber importado correctamente el archivo SQL.",
     "error.connecting_database_error": "[RSGCORE] - Un error en la base de datos sucedió mientras te conectabas al servidor (¿Está la SQL del servidor encendida?)",
