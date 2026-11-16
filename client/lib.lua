@@ -1,27 +1,4 @@
--- rsg-core client helpers (replaces ox_lib cache / request* / playAnim)
-
--- cache: kept up to date every 100ms
-cache = {
-    resource = GetCurrentResourceName(),
-    playerId = PlayerId(),
-    serverId = GetPlayerServerId(PlayerId()),
-    ped = PlayerPedId(),
-    mount = false,
-    vehicle = false,
-}
-
-CreateThread(function()
-    while true do
-        local ped = PlayerPedId()
-        cache.ped = ped
-        cache.playerId = PlayerId()
-        local mount = GetMount(ped)
-        cache.mount = (mount and mount ~= 0) and mount or false
-        local veh = GetVehiclePedIsIn(ped, false)
-        cache.vehicle = (veh and veh ~= 0) and veh or false
-        Wait(100)
-    end
-end)
+-- rsg-core client helpers (asset loaders, animations, raycast, nearby entities)
 
 local function waitFor(check, name, timeout)
     timeout = timeout or 10000
@@ -71,7 +48,7 @@ function RSGCore.Functions.RequestNamedPtfxAsset(asset, timeout)
     return asset
 end
 
----Play an animation (same arguments as lib.playAnim). Loads the dict and releases it afterwards.
+---Play an animation . Loads the dict and releases it afterwards.
 function RSGCore.Functions.PlayAnimOnPed(ped, dict, name, blendIn, blendOut, duration, flag, rate, lockX, lockY, lockZ)
     RSGCore.Functions.RequestAnimDict(dict)
     TaskPlayAnim(ped, dict, name, blendIn or 8.0, blendOut or -8.0, duration or -1, flag or 0, rate or 0.0, lockX or false, lockY or false, lockZ or false)
@@ -85,7 +62,7 @@ function RSGCore.Functions.RequestStreamedTextureDict(dict, timeout)
     return dict
 end
 
----------------------------------------------------------------- raycast (replaces lib.raycast)
+---------------------------------------------------------------- raycast
 
 local function rotToDirection(rot)
     local x, z = math.rad(rot.x), math.rad(rot.z)
@@ -100,7 +77,7 @@ end
 ---@param ignore? number  4 = ignore glass/see-through, 7 = ignore all (default 4)
 ---@return boolean hit, number entityHit, vector3 endCoords, vector3 surfaceNormal
 function RSGCore.Functions.Raycast(from, to, flags, ignore)
-    local handle = StartShapeTestLosProbe(from.x, from.y, from.z, to.x, to.y, to.z, flags or 511, cache.ped, ignore or 4)
+    local handle = StartShapeTestLosProbe(from.x, from.y, from.z, to.x, to.y, to.z, flags or 511, PlayerPedId(), ignore or 4)
 
     while true do
         local status, hit, endCoords, normal, entity = GetShapeTestResult(handle)
@@ -112,7 +89,7 @@ function RSGCore.Functions.Raycast(from, to, flags, ignore)
     end
 end
 
----Raycast from the gameplay camera forward (same returns as lib.raycast.fromCamera).
+---Raycast from the gameplay camera forward.
 ---@param flags? number
 ---@param ignore? number
 ---@param distance? number default 10.0
@@ -122,7 +99,7 @@ function RSGCore.Functions.RaycastCamera(flags, ignore, distance)
     return RSGCore.Functions.Raycast(from, to, flags, ignore)
 end
 
----------------------------------------------------------------- nearby entities (replaces lib.getNearby*)
+---------------------------------------------------------------- nearby entities
 
 local function nearby(pool, key, coords, maxDistance, filter)
     local out, n = {}, 0
@@ -148,7 +125,11 @@ end
 
 ---Vehicles (wagons, carts, boats) within maxDistance. includePlayerVehicle defaults to false.
 function RSGCore.Functions.GetNearbyVehicles(coords, maxDistance, includePlayerVehicle)
-    local own = not includePlayerVehicle and cache.vehicle or nil
+    local own
+    if not includePlayerVehicle then
+        local veh = GetVehiclePedIsIn(PlayerPedId(), false)
+        if veh and veh ~= 0 then own = veh end
+    end
     return nearby('CVehicle', 'vehicle', coords, maxDistance or 2.0, own and function(e) return e ~= own end or nil)
 end
 

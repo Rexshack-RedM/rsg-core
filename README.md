@@ -11,7 +11,7 @@ Documentation: https://rsgcore.com/docs
 - [oxmysql](https://github.com/overextended/oxmysql)
 - Optional: `rsg-inventory`, `rsg-banking` (paychecks go to the home branch), `rsg-log`
 
-rsg-core no longer needs ox_lib. Notifications, callbacks, locales, text UI and the model/anim loaders are built in. Other resources may still need ox_lib for their own locales.
+rsg-core has no ox_lib dependency or compatibility code. Notifications, callbacks, locales, text UI, progress bars, zones, points and the model/anim loaders are all built in.
 
 ## Installation
 
@@ -29,7 +29,7 @@ rsg-core no longer needs ox_lib. Notifications, callbacks, locales, text UI and 
 Translations live in `locales/*.json`. Supported languages: `en`, `de`, `el`, `es`, `fr`, `ja`, `nl`, `pl`, `pt-br`, `ro`.
 
 ```cfg
-setr rsg:locale en   # falls back to ox:locale, then en
+setr rsg:locale en   # falls back to en
 ```
 
 Missing keys fall back to English. To add a language, copy `locales/en.json` to `locales/<code>.json` and translate the values, keeping `%s` placeholders in the same order.
@@ -94,7 +94,7 @@ RSGCore.Functions.Notify({ title = 'Title', description = 'Message', type = 'suc
 -- server
 TriggerClientEvent('RSGCore:Client:Notify', source, { title = 'Title', description = 'Message', type = 'error' })
 ```
-Types: `success`, `error`, `warning`, `inform`. Optional `position` and `id` (a notification with the same id replaces the old one). Defaults are in `RSGConfig.Notify`. The older `Notify(text, type, duration)` form and the `RSGCore:Notify` event still work, and `ox_lib:notify` is picked up once ox_lib is stopped.
+Types: `success`, `error`, `warning`, `inform`. Optional `position` and `id` (a notification with the same id replaces the old one). Defaults are in `RSGConfig.Notify`. The older `Notify(text, type, duration)` form and the `RSGCore:Notify` event still work.
 
 ### Multi-job
 Players can hold several jobs (`RSGConfig.MultiJob.MaxJobs`) and switch with `/myjobs`. Job definitions live in the `multijob_jobs` table and are managed with `/jobadmin`. Its **Employees** tab lists everyone holding the selected job (online and offline), and lets admins give the job to a player (server ID or citizen ID) at any grade, change grades and remove holders.
@@ -184,5 +184,5 @@ Thanks to Kakarot and the QB Team for the original work: https://discord.gg/qbco
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-## ox_lib replacements
+## Built-in helpers
 Zones (`@rsg-core/client/zones.lua`), points (`@rsg-core/client/points.lua`), camera raycast (`RSGCore.Functions.RaycastCamera`), nearby peds/vehicles/objects, texture dict loading and `table.type`/`clone`/`wipe`/`contains` (`@rsg-core/shared/table.lua`) are built in. See DOCS.md.

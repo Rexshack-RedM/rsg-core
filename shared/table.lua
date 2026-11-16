@@ -1,4 +1,4 @@
--- rsg-core table helpers (replaces ox_lib table.type / table.clone / table.contains / table.wipe)
+-- rsg-core table helpers (table.type / table.clone / table.contains / table.wipe)
 --
 -- Loaded by rsg-core itself. Other resources:
 --   shared_scripts { '@rsg-core/shared/table.lua', ... }

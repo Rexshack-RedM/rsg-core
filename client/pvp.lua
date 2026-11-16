@@ -25,14 +25,14 @@ local function pvpEnabled()
 end
 
 local function apply(relationship, pvp, now)
-    local ped = cache.ped
+    local ped = PlayerPedId()
     if relationship == applied and pvp == appliedPvp and ped == appliedPed and now - lastApply < REAPPLY_MS then return end
     SetRelationshipBetweenGroups(relationship, `PLAYER`, `PLAYER`)
     Citizen.InvokeNative(0xF808475FA571D823, pvp)           -- NetworkSetFriendlyFireOption
     Citizen.InvokeNative(0xB3B1CB349FF9C75D, ped, pvp, false) -- SetCanAttackFriendly
     -- friendly fire only covers weapons: this is what blocks fists/melee between players when PVP is off
     Citizen.InvokeNative(0x0EF1AFB18649E015, ped, pvp, `PLAYER`) -- SET_ENTITY_CAN_BE_DAMAGED_BY_RELATIONSHIP_GROUP
-    Citizen.InvokeNative(0x4A056257802DD3E5, cache.playerId, pvp) -- SET_LOCKON_TO_FRIENDLY_PLAYERS
+    Citizen.InvokeNative(0x4A056257802DD3E5, PlayerId(), pvp) -- SET_LOCKON_TO_FRIENDLY_PLAYERS
     applied, appliedPvp, appliedPed, lastApply = relationship, pvp, ped, now
 end
 
@@ -52,7 +52,7 @@ CreateThread(function()
             if IsControlJustPressed(0, keyE) or IsControlJustPressed(0, keyF) then
                 friendlyUntil = now + INTERACT_GRACE_MS
             end
-            local friendly = now < friendlyUntil or IsPedOnMount(cache.ped) or IsPedInAnyVehicle(cache.ped, false)
+            local friendly = now < friendlyUntil or IsPedOnMount(PlayerPedId()) or IsPedInAnyVehicle(PlayerPedId(), false)
             apply(friendly and RELATIONSHIP_RESPECT or RELATIONSHIP_HATE, true, now)
             Wait(0)
         end

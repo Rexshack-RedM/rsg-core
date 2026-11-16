@@ -1,4 +1,4 @@
--- rsg-core module loader (replaces ox_lib's require)
+-- rsg-core module loader
 --
 -- In any resource:
 --   shared_scripts { '@rsg-core/shared/require.lua', ... }

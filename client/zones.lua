@@ -1,4 +1,4 @@
--- rsg-core zones (replaces ox_lib lib.zones)
+-- rsg-core zones
 --
 -- Runs inside the resource that includes it, so callbacks and zone data stay local:
 --   client_scripts { '@rsg-core/client/zones.lua', ... }
@@ -11,7 +11,7 @@
 --
 -- Every zone gets: id, coords (centre), distance (player distance, updated while nearby),
 -- insideZone. Any extra fields you pass (options, name, ...) are kept on the zone.
--- Global `Zones` (id -> zone) and `lib.zones` are provided for ox_lib-style code.
+-- Global `Zones` (id -> zone) and `zones` are set in the including resource.
 
 local zones = {}
 local Zones = {}
@@ -263,9 +263,6 @@ CreateThread(function()
     end
 end)
 
--- globals for ox_lib-style code
+-- globals for the including resource
 _ENV.zones = zones
 _ENV.Zones = Zones
-if type(lib) == 'table' and rawget(lib, 'zones') == nil then
-    rawset(lib, 'zones', zones)
-end

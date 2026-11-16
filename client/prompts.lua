@@ -122,7 +122,7 @@ CreateThread(function()
     while true do
         local sleep = 1000
         if next(Prompts) or next(PromptGroups) then
-            local coords = GetEntityCoords(cache.ped)
+            local coords = GetEntityCoords(PlayerPedId())
             local maxDist = RSGConfig.PromptDistance
 
             for _, v in pairs(Prompts) do

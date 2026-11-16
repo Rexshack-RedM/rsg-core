@@ -16,9 +16,9 @@ RegisterNetEvent('RSGCore:Client:OnPlayerLoaded', function()
     if RSGConfig.Player.RevealMap then
         SetMinimapHideFow(true)
     end
-    Citizen.InvokeNative(0x39363DFD04E91496, cache.playerId, true) -- enable mercy kill
-    Citizen.InvokeNative(0x8899C244EBCF70DE, cache.playerId, 0.0) -- SetPlayerHealthRechargeMultiplier (takes a player, not a ped)
-    Citizen.InvokeNative(0xDE1B1907A83A1550, cache.ped, 0.0) -- SetHealthRechargeMultiplier
+    Citizen.InvokeNative(0x39363DFD04E91496, PlayerId(), true) -- enable mercy kill
+    Citizen.InvokeNative(0x8899C244EBCF70DE, PlayerId(), 0.0) -- SetPlayerHealthRechargeMultiplier (takes a player, not a ped)
+    Citizen.InvokeNative(0xDE1B1907A83A1550, PlayerPedId(), 0.0) -- SetHealthRechargeMultiplier
 end)
 
 RegisterNetEvent('RSGCore:Client:OnPlayerUnload', function()
@@ -42,11 +42,11 @@ end)
 -- Teleport Commands
 
 RegisterNetEvent('RSGCore:Command:TeleportToPlayer', function(coords)
-    SetEntityCoords(cache.ped, coords.x, coords.y, coords.z) 
+    SetEntityCoords(PlayerPedId(), coords.x, coords.y, coords.z) 
 end)
 
 RegisterNetEvent('RSGCore:Command:TeleportToCoords', function(x, y, z, h)
-    SetEntityCoords(cache.ped, x, y, z) 
+    SetEntityCoords(PlayerPedId(), x, y, z) 
 end)
 
 -- /tpm safeguards: the destination is usually unstreamed, so the heightmap Z can be below the real ground.
@@ -89,9 +89,9 @@ RegisterNetEvent('RSGCore:Command:GoToMarker', function()
     tpmBusy = true
 
     local coords = GetWaypointCoords()
-    local ped = cache.ped
+    local ped = PlayerPedId()
     local vehicle = GetVehiclePedIsIn(ped, false)
-    local mount = cache.mount
+    local mount = GetMount(ped)
     -- move the carrier (vehicle > mount > ped); riders go with it
     local entity = (vehicle ~= 0 and vehicle) or (mount and mount ~= 0 and mount) or ped
     local startCoords = GetEntityCoords(entity)
@@ -149,7 +149,7 @@ end)
 -- Vehicle Commands
 
 RegisterNetEvent('RSGCore:Command:SpawnVehicle', function(vehName)
-    local ped = cache.ped
+    local ped = PlayerPedId()
     local hash = joaat(vehName)
     if not IsModelInCdimage(hash) then
         return RSGCore.Functions.Notify({ title = locale('error.invalid_model'), type = 'error', duration = 5000 })
@@ -168,7 +168,7 @@ RegisterNetEvent('RSGCore:Command:SpawnVehicle', function(vehName)
 end)
 
 RegisterNetEvent('RSGCore:Command:DeleteVehicle', function()
-    local ped = cache.ped
+    local ped = PlayerPedId()
     local veh = GetVehiclePedIsUsing(ped)
     if veh ~= 0 then
         SetEntityAsMissionEntity(veh, true, true)
@@ -194,15 +194,6 @@ end)
 RegisterNetEvent('RSGCore:Notify', function(...)
     RSGCore.Functions.Notify(...)
 end)
-
--- ox_lib compatibility: once ox_lib is no longer running, scripts that still send
--- 'ox_lib:notify' are shown through rsg-core instead (skipped while ox_lib is started,
--- otherwise every notification would show twice)
-if GetResourceState('ox_lib') ~= 'started' and GetResourceState('ox_lib') ~= 'starting' then
-    RegisterNetEvent('ox_lib:notify', function(data)
-        RSGCore.Functions.Notify(data)
-    end)
-end
 
 -- Other stuff
 
@@ -252,7 +243,7 @@ RegisterNetEvent('RSGCore:Command:ShowMe3D', function(senderId, msg)
             local targetPed = GetPlayerPed(sender)
             if not DoesEntityExist(targetPed) then return end
             local tCoords = GetEntityCoords(targetPed)
-            if #(GetEntityCoords(cache.ped) - tCoords) < ME_MAX_DISTANCE then
+            if #(GetEntityCoords(PlayerPedId()) - tCoords) < ME_MAX_DISTANCE then
                 RSGCore.Functions.DrawText3D(tCoords.x, tCoords.y, tCoords.z + 1.0, msg)
             end
             Wait(0)

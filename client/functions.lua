@@ -21,7 +21,7 @@ function RSGCore.Functions.TriggerCallback(name, cb, ...)
     TriggerServerEvent('RSGCore:Server:TriggerCallbackId', name, callbackRequestId, ...)
 end
 
----Await a server callback (synchronous, replaces lib.callback.await)
+---Await a server callback (synchronous)
 ---Must be called from inside a thread. Returns nil if the server doesn't answer in time.
 ---@param name string
 ---@param timeout? number milliseconds, defaults to 10000 (false/0 to wait forever)
@@ -88,7 +88,7 @@ function RSGCore.Functions.LookAtEntity(entity, timeout, speed)
     if speed ~= nil and type(speed) ~= 'number' then return end
     speed = math.min(speed or 1.0, 5.0) -- speed was required before; nil caused an arithmetic error
     if not timeout or timeout > 5000 then timeout = 5000 end
-    local ped = cache.ped
+    local ped = PlayerPedId()
     local playerPos = GetEntityCoords(ped)
     local targetPos = GetEntityCoords(entity)
     local targetHeading = GetHeadingFromVector_2d(targetPos.x - playerPos.x, targetPos.y - playerPos.y)
@@ -114,7 +114,7 @@ end
 function RSGCore.Functions.PlayAnim(animDict, animName, upperbodyOnly, duration)
     local flags = upperbodyOnly and 16 or 0
     local runTime = duration or -1
-    RSGCore.Functions.PlayAnimOnPed(cache.ped, animDict, animName, 8.0, 3.0, runTime, flags, 0.0, false, false, true)
+    RSGCore.Functions.PlayAnimOnPed(PlayerPedId(), animDict, animName, 8.0, 3.0, runTime, flags, 0.0, false, false, true)
 end
 
 -- World Getters
@@ -133,7 +133,7 @@ end
 
 function RSGCore.Functions.GetPlayersFromCoords(coords, distance)
     local players = GetActivePlayers()
-    local ped = cache.ped
+    local ped = PlayerPedId()
     if coords then
         coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
     else
@@ -152,7 +152,7 @@ function RSGCore.Functions.GetPlayersFromCoords(coords, distance)
 end
 
 function RSGCore.Functions.GetClosestPlayer(coords)
-    local ped = cache.ped
+    local ped = PlayerPedId()
     if coords then
         coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
     else
@@ -192,7 +192,7 @@ function RSGCore.Functions.GetPeds(ignoreList)
 end
 
 function RSGCore.Functions.GetClosestPed(coords, ignoreList)
-    local ped = cache.ped
+    local ped = PlayerPedId()
     if coords then
         coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
     else
@@ -215,7 +215,7 @@ function RSGCore.Functions.GetClosestPed(coords, ignoreList)
 end
 
 function RSGCore.Functions.GetClosestVehicle(coords)
-    local ped = cache.ped
+    local ped = PlayerPedId()
     local vehicles = GetGamePool('CVehicle')
     local closestDistance = -1
     local closestVehicle = -1
@@ -237,7 +237,7 @@ function RSGCore.Functions.GetClosestVehicle(coords)
 end
 
 function RSGCore.Functions.GetClosestObject(coords)
-    local ped = cache.ped
+    local ped = PlayerPedId()
     local objects = GetGamePool('CObject')
     local closestDistance = -1
     local closestObject = -1
@@ -268,8 +268,8 @@ RSGCore.Functions.LoadModel = function(...) return RSGCore.Functions.RequestMode
 ---@param isnetworked? boolean defaults to true
 ---@param teleportInto boolean teleport player to driver seat if true
 function RSGCore.Functions.SpawnVehicle(model, cb, coords, isnetworked, teleportInto)
-    local playerCoords = GetEntityCoords(cache.ped)
-    local combinedCoords = vec4(playerCoords.x, playerCoords.y, playerCoords.z, GetEntityHeading(cache.ped))
+    local playerCoords = GetEntityCoords(PlayerPedId())
+    local combinedCoords = vec4(playerCoords.x, playerCoords.y, playerCoords.z, GetEntityHeading(PlayerPedId()))
     coords = type(coords) == 'table' and vec4(coords.x, coords.y, coords.z, coords.w or combinedCoords.w) or coords or combinedCoords
     model = type(model) == 'string' and joaat(model) or model
     if not IsModelInCdimage(model) then return end
@@ -281,7 +281,7 @@ function RSGCore.Functions.SpawnVehicle(model, cb, coords, isnetworked, teleport
     SetVehicleHasBeenOwnedByPlayer(veh, true)
     SetNetworkIdCanMigrate(netid, true)
     SetModelAsNoLongerNeeded(model)
-    if teleportInto then TaskWarpPedIntoVehicle(cache.ped, veh, -1) end
+    if teleportInto then TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1) end
     if cb then cb(veh) end
 end
 
@@ -313,7 +313,7 @@ end
 
 
 function RSGCore.Functions.GetClosestBone(entity, list)
-    local playerCoords, bone, coords, distance = GetEntityCoords(cache.ped)
+    local playerCoords, bone, coords, distance = GetEntityCoords(PlayerPedId())
     for _, element in pairs(list) do
         local boneCoords = GetWorldPositionOfEntityBone(entity, element.id or element)
         local boneDistance = #(playerCoords - boneCoords)
@@ -339,7 +339,7 @@ function RSGCore.Functions.GetBoneDistance(entity, boneType, boneIndex)
         bone = GetEntityBoneIndexByName(entity, boneIndex)
     end
     local boneCoords = GetWorldPositionOfEntityBone(entity, bone)
-    local playerCoords = GetEntityCoords(cache.ped)
+    local playerCoords = GetEntityCoords(PlayerPedId())
     return #(boneCoords - playerCoords)
 end
 
@@ -357,7 +357,7 @@ function RSGCore.Functions.SpawnClear(coords, radius)
     if coords then
         coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
     else
-        coords = GetEntityCoords(cache.ped)
+        coords = GetEntityCoords(PlayerPedId())
     end
     radius = radius or 5.0
     for _, vehicle in ipairs(GetGamePool('CVehicle')) do
@@ -372,7 +372,7 @@ RSGCore.Functions.LoadParticleDictionary = function(...) return RSGCore.Function
 
 ---@deprecated use ParticleFx natives directly
 function RSGCore.Functions.StartParticleAtCoord(dict, ptName, looped, coords, rot, scale, alpha, color, duration)
-    coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords or GetEntityCoords(cache.ped)
+    coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords or GetEntityCoords(PlayerPedId())
 
     RSGCore.Functions.RequestNamedPtfxAsset(dict)
     UseParticleFxAssetNextCall(dict)
@@ -441,7 +441,7 @@ function RSGCore.Functions.StartParticleOnEntity(dict, ptName, looped, entity, b
 end
 
 function RSGCore.Functions.GetCardinalDirection(entity)
-    entity = entity and DoesEntityExist(entity) and entity or cache.ped
+    entity = entity and DoesEntityExist(entity) and entity or PlayerPedId()
     if DoesEntityExist(entity) then
         local heading = GetEntityHeading(entity) % 360 -- a heading of exactly 360 previously returned nil
         if ((heading >= 0 and heading < 45) or (heading >= 315 and heading < 360)) then
@@ -505,7 +505,7 @@ local notifySounds = {
 }
 
 ---Show an rsg-core notification. Accepts:
----  Notify({ title, description, type, duration, icon, position, id, sound })   (ox_lib-style table)
+---  Notify({ title, description, type, duration, icon, position, id, sound })
 ---  Notify(title, text, type, duration, icon)
 ---  Notify(text, type, duration)                                              (legacy QB-style)
 ---@param title? string|table

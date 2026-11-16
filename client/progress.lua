@@ -1,5 +1,5 @@
--- rsg-core progress bar / circle (replaces lib.progressBar, lib.progressCircle, lib.progressActive, lib.cancelProgress)
--- Same option table as ox_lib so migrating is a rename:
+-- rsg-core progress bar / circle
+-- Option table:
 --   local done = RSGCore.Functions.ProgressBar({ duration, label, position?, useWhileDead?, allowRagdoll?, allowSwimming?,
 --       allowCuffed?, allowFalling?, allowMounted?, canCancel?, anim = { dict, clip, flag?, blendIn?, blendOut?, playbackRate?,
 --       lockX?, lockY?, lockZ?, scenario?, playEnter? }, prop = { model, bone?, pos?, rot? } | { {...}, {...} },

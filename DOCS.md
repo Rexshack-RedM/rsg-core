@@ -1,7 +1,7 @@
 # rsg-core Developer Documentation
 
 > Version **3.1.8** · RedM · Lua 5.4 · Depends only on `oxmysql`
-> rsg-core no longer requires **ox_lib**: notifications, callbacks, progress bars, text UI, prompts, locales, `require` and asset loaders are all built in.
+> rsg-core has no **ox_lib** dependency and no ox_lib compatibility code: notifications, callbacks, progress bars, text UI, prompts, locales, `require` and asset loaders are all built in.
 
 ---
 
@@ -110,7 +110,7 @@ ensure rsg-core
 Include `@rsg-core/shared/locale.lua` and ship `locales/<lang>.json` in your resource.
 
 ```cfg
-setr rsg:locale "en"   # falls back to ox:locale, then en
+setr rsg:locale "en"   # falls back to en
 ```
 
 ```lua
@@ -122,7 +122,7 @@ GetLocaleLanguage()                        -- 'en'
 - Nested JSON is flattened to dot keys: `{ "notify": { "bought": "..." } }` → `locale('notify.bought')`.
 - `"${other.key}"` inside a string is substituted.
 - Missing keys fall back to `en.json`, then to the key itself.
-- Compatible with ox_lib locale files.
+- Locale files support nested keys and `${key}` references.
 - Server standard languages: `en, de, el, es, fr, ja, nl, pl, pt-br, ro`.
 
 ---
@@ -834,13 +834,13 @@ RSGCore.Functions.Notify(source, { title = 'Bank', description = 'Paid $5', type
 TriggerClientEvent('RSGCore:Client:Notify', source, { title = '...', type = 'inform' })
 ```
 
-Types: `primary | inform | info | success | error | warning | warn`. Extra table keys: `id`, `position`, `sound` (bool). Positions: `top-right, top-left, top, bottom-right, bottom-left, bottom, center-right, center-left`. `ox_lib:notify` events are also caught for compatibility.
+Types: `primary | inform | info | success | error | warning | warn`. Extra table keys: `id`, `position`, `sound` (bool). Positions: `top-right, top-left, top, bottom-right, bottom-left, bottom, center-right, center-left`.
 
 ---
 
 ## 16. Progress Bar / Circle
 
-Same option table as ox_lib — migrating is a rename. Must be called from a thread (it yields).
+Must be called from a thread (it yields).
 
 ```lua
 local done = RSGCore.Functions.ProgressBar({
@@ -1413,7 +1413,7 @@ if not ok then print('AddItem failed:', err) end   -- e.g. 'item_exists'
 
 ---
 
-## ox_lib replacements: zones, raycast, nearby entities, table helpers
+## Zones, raycast, nearby entities, table helpers
 
 ### Zones – `@rsg-core/client/zones.lua` (replaces `lib.zones`)
 Include it in the resource that owns the zones (callbacks stay local to that resource):
@@ -1428,7 +1428,7 @@ zones.poly({ points = { vec3(...), vec3(...), vec3(...) }, thickness = 4.0 })
 z:contains(coords)   z:remove()
 zones.getAllZones()  zones.getCurrentZones()  zones.getNearbyZones()
 ```
-Each zone has `id`, `coords`, `distance` (to the player, updated every 300 ms) and `insideZone`. Extra fields you pass are kept. The global `Zones` (id → zone) and `lib.zones` are set for ox_lib-style code. `inside` and debug drawing run per frame only while needed.
+Each zone has `id`, `coords`, `distance` (to the player, updated every 300 ms) and `insideZone`. Extra fields you pass are kept. The globals `Zones` (id → zone) and `zones` are set in the including resource. `inside` and debug drawing run per frame only while needed.
 
 ### Points – `@rsg-core/client/points.lua` (replaces `lib.points`)
 Include it in the resource that owns the points:
@@ -1438,11 +1438,11 @@ client_scripts { '@rsg-core/client/points.lua', 'client/*.lua' }
 ```lua
 local p = points.new({ coords = vec3(0, 0, 0), distance = 50.0,
     onEnter = function(self) end, onExit = function(self) end, nearby = function(self) end })
-points.new(coords, distance, { onEnter = ... })   -- ox_lib positional form
+points.new(coords, distance, { onEnter = ... })   -- positional form
 p:remove()
 points.getAllPoints()  points.getNearbyPoints()  points.getClosestPoint()
 ```
-Each point has `id`, `coords`, `distance`, `currentDistance` (while nearby, updated every 300 ms) and `isClosest`. Extra fields you pass are kept. `nearby` runs every frame only while the player is in range. Points are removed (with `onExit`) when the owning resource stops. Global `points` and `lib.points` are set for ox_lib-style code. Migrating is usually just a matter of swapping `lib.points.new` for `points.new`.
+Each point has `id`, `coords`, `distance`, `currentDistance` (while nearby, updated every 300 ms) and `isClosest`. Extra fields you pass are kept. `nearby` runs every frame only while the player is in range. Points are removed (with `onExit`) when the owning resource stops. The global `points` is set in the including resource.
 
 ### Raycast (replaces `lib.raycast`)
 ```lua

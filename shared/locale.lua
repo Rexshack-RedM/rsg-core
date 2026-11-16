@@ -1,17 +1,17 @@
--- rsg-core locale system (replaces ox_lib 'locale')
+-- rsg-core locale system
 --
 -- Used by rsg-core itself AND shared with every other resource. In any resource:
 --
 --   shared_scripts { '@rsg-core/shared/locale.lua', ... }
 --   files { 'locales/*.json' }
 --
--- then call locale('key', ...) in client and server files. No lib.locale() call is needed.
+-- then call locale('key', ...) in client and server files.
 -- The file runs inside the including resource, so it reads THAT resource's locales/*.json.
 --
--- Language: convar 'rsg:locale' (falls back to 'ox:locale', then 'en').
+-- Language: convar 'rsg:locale' (falls back to 'en').
 -- Use setr in server.cfg so clients see the same language:  setr rsg:locale "en"
 --
--- Compatible with ox_lib locale files:
+-- Locale file features:
 --   * nested tables are flattened to dot keys  { "a": { "b": "x" } }  ->  locale('a.b')
 --   * "${other.key}" inside a string is replaced with that key's text
 -- Missing keys fall back to en.json, then to the key itself.
@@ -56,7 +56,7 @@ end
 
 local function getLanguage()
     local lang = GetConvar('rsg:locale', '')
-    if lang == '' then lang = GetConvar('ox:locale', 'en') end
+    if lang == '' then lang = 'en' end
     return lang
 end
 
@@ -89,7 +89,3 @@ function GetLocaleLanguage()
     return getLanguage()
 end
 
--- Resources still calling lib.locale() keep working without ox_lib loaded.
-if lib == nil then
-    lib = { locale = function() end }
-end

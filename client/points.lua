@@ -1,4 +1,4 @@
--- rsg-core points (replaces ox_lib lib.points)
+-- rsg-core points
 --
 -- Runs inside the resource that includes it, so callbacks and point data stay local:
 --   client_scripts { '@rsg-core/client/points.lua', ... }
@@ -10,12 +10,12 @@
 --       nearby  = function(self) end,   -- every frame while within `distance`
 --       -- any extra fields (model, seller, ...) are kept on the point
 --   })
---   points.new(coords, distance, { onEnter = ... })   -- ox_lib positional form also works
+--   points.new(coords, distance, { onEnter = ... })   -- positional form also works
 --   point:remove()
 --
 -- Every point gets: id, coords, distance, currentDistance (while nearby), isClosest.
 -- points.getAllPoints()  points.getNearbyPoints()  points.getClosestPoint()
--- Global `points` is set, and `lib.points` too when an ox_lib-style `lib` table exists.
+-- Global `points` is set in the including resource.
 
 local points = {}
 local Points = {}      -- id -> point
@@ -131,8 +131,5 @@ AddEventHandler('onResourceStop', function(resource)
     for _, p in pairs(Points) do p:remove() end
 end)
 
--- globals for ox_lib-style code
+-- global for the including resource
 _ENV.points = points
-if type(lib) == 'table' and rawget(lib, 'points') == nil then
-    rawset(lib, 'points', points)
-end

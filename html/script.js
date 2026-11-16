@@ -105,7 +105,7 @@ window.addEventListener('message', (e) => {
     if (!msg.data.show) { textui.classList.add('hidden'); return; }
     const pos = TEXT_POSITIONS.includes(msg.data.position) ? msg.data.position : 'right-center';
     textui.className = `textui ${pos}`;
-    // ox_lib-style [E] key hints are kept as plain text
+    // [E] key hints are kept as plain text
     textui.textContent = String(msg.data.text);
 });
 })();

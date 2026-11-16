@@ -1,4 +1,4 @@
--- RSGCore cron scheduler (replaces lib.cron from ox_lib)
+-- RSGCore cron scheduler
 -- RSGCore.Functions.CreateCron(expression, job, options) / exports['rsg-core']:CreateCron(...)
 -- expression: 5-field cron 'min hour day month weekday' (server local time)
 --   supports *, n, a-b, a,b,c, */n, a-b/n, month names (jan-dec), day names (sun-sat, 0 or 7 = sunday)

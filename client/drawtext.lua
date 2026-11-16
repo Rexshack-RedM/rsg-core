@@ -1,4 +1,4 @@
--- rsg-core text UI (replaces lib.showTextUI / lib.hideTextUI)
+-- rsg-core text UI
 local positions = {
     left = 'left-center',
     right = 'right-center',
