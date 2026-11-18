@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS `players` (
   `inventory` longtext DEFAULT NULL,
   `weight` int(11) DEFAULT 35000,
   `slots` int(11) DEFAULT 25,
+  `outlawstatus` int(11) NOT NULL DEFAULT 0,
   `last_updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`citizenid`),
   KEY `id` (`id`),

@@ -15,7 +15,7 @@ rsg-core has no ox_lib dependency or compatibility code. Notifications, callback
 
 ## Installation
 
-1. Tables are created automatically on first start (`players`, `bans`, `multijob_jobs`, `player_jobs`, plus the `weight` / `slots` columns). To install manually instead, set `RSGConfig.AutoDatabase = false` and import `install.sql`.
+1. Tables are created automatically on first start (`players`, `bans`, `multijob_jobs`, `player_jobs`, plus the `weight` / `slots` / `outlawstatus` columns). To install manually instead, set `RSGConfig.AutoDatabase = false` and import `install.sql`.
 2. Remove `rsg-multijob` if you had it: it is built in now, and its tables are reused as they are.
 3. Ensure the resources in this order in `server.cfg`:
    ```cfg

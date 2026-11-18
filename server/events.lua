@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS `players` (
   `inventory` longtext DEFAULT NULL,
   `weight` int(11) DEFAULT 35000,
   `slots` int(11) DEFAULT 25,
+  `outlawstatus` int(11) NOT NULL DEFAULT 0,
   `last_updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`citizenid`),
   KEY `id` (`id`),
@@ -93,7 +94,7 @@ if MySQL.ready ~= nil then
         local result = MySQL.query.await('SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME = "bans";', { DatabaseInfo.database })
         bansTableExists = result and result[1] ~= nil
 
-        local resultColumns = MySQL.query.await('SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = "players" AND COLUMN_NAME IN ("weight", "slots");', { DatabaseInfo.database })
+        local resultColumns = MySQL.query.await('SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = "players" AND COLUMN_NAME IN ("weight", "slots", "outlawstatus");', { DatabaseInfo.database })
         local columnsExist = {}
         for _, column in ipairs(resultColumns or {}) do
             columnsExist[column.COLUMN_NAME] = true
@@ -107,6 +108,10 @@ if MySQL.ready ~= nil then
         if not columnsExist.slots then
             MySQL.query.await(('ALTER TABLE players ADD COLUMN slots INT DEFAULT %d;'):format(RSGCore.Config.Player.PlayerDefaults.slots))
             RSGCore.ShowSuccess(GetCurrentResourceName(), 'Added slots column to players table')
+        end
+        if not columnsExist.outlawstatus then
+            MySQL.query.await('ALTER TABLE players ADD COLUMN outlawstatus INT NOT NULL DEFAULT 0;')
+            RSGCore.ShowSuccess(GetCurrentResourceName(), 'Added outlawstatus column to players table')
         end
     end)
 end

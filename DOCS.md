@@ -1097,7 +1097,7 @@ Config is read on both sides, so a change needs a resource restart (`ensure rsg-
 
 ### Database
 
-- Created automatically when `RSGConfig.AutoDatabase = true` (default): `players`, `bans`, `multijob_jobs`, `player_jobs`, and the `weight`/`slots` columns.
+- Created automatically when `RSGConfig.AutoDatabase = true` (default): `players`, `bans`, `multijob_jobs`, `player_jobs`, and the `weight`/`slots`/`outlawstatus` columns.
 - Manual install: set `RSGConfig.AutoDatabase = false` and import `install.sql` (same schema, kept in sync).
 
 | Option | Default | Description |
@@ -1545,6 +1545,7 @@ end)
 | `players` | automatic (`AutoDatabase`) or `install.sql` | One row per character, keyed by `citizenid` |
 | `bans` | automatic (`AutoDatabase`) or `install.sql` | Used by join checks and `ExploitBan` |
 | `players.weight`, `players.slots` | automatic | Added at start if missing (defaults `35000` / `25`) |
+| `players.outlawstatus` | automatic | Added at start if missing (default `0`); used by rsg-hud, rsg-lawman, rsg-looting, rsg-prison, rsg-playerinfo |
 | `multijob_jobs` | automatic | Job definitions |
 | `player_jobs` | automatic | Jobs each character holds; unique key `uniq_player_job (citizenid, job)` (duplicates are removed on first start) |
 

@@ -2,6 +2,11 @@
 
 All notable changes to rsg-core. Newest first.
 
+## 3.3.1
+
+### Fixed
+- `players.outlawstatus` column is now part of the schema and added automatically to existing databases when missing (fixes `Unknown column 'outlawstatus'` errors from rsg-hud and others).
+
 ## 3.3.0
 
 ### API
