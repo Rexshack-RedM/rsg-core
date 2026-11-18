@@ -15,7 +15,7 @@ rsg-core has no ox_lib dependency or compatibility code. Notifications, callback
 
 ## Installation
 
-1. Import the SQL for `players` and `bans`. The `weight` / `slots` columns and the multi-job tables (`multijob_jobs`, `player_jobs`) are created automatically.
+1. Tables are created automatically on first start (`players`, `bans`, `multijob_jobs`, `player_jobs`, plus the `weight` / `slots` columns). To install manually instead, set `RSGConfig.AutoDatabase = false` and import `install.sql`.
 2. Remove `rsg-multijob` if you had it: it is built in now, and its tables are reused as they are.
 3. Ensure the resources in this order in `server.cfg`:
    ```cfg
@@ -32,7 +32,7 @@ Translations live in `locales/*.json`. Supported languages: `en`, `de`, `el`, `e
 setr rsg:locale en   # falls back to en
 ```
 
-Missing keys fall back to English. To add a language, copy `locales/en.json` to `locales/<code>.json` and translate the values, keeping `%s` placeholders in the same order.
+Notification labels (Success / Error / Warning / Notice) are translated through the `notify_label_*` keys. Missing keys fall back to English. To add a language, copy `locales/en.json` to `locales/<code>.json` and translate the values, keeping `%s` placeholders in the same order.
 
 ## Permissions
 
@@ -71,6 +71,10 @@ add_principal identifier.license:xxxxxxxx rsgcore.god
 ```lua
 local RSGCore = exports['rsg-core']:GetCoreObject()
 ```
+
+### Exports for other resources
+
+Most server functions are also available as exports, e.g. `exports['rsg-core']:GetPlayer(src)`, `AddMoney`, `RemoveMoney`, `HasPermission`, `AdminLog`. The full list with signatures and examples is in DOCS.md section 24.
 
 ### Callbacks
 ```lua
@@ -156,7 +160,19 @@ Runtime shared-data exports (`AddJob(s)`, `UpdateJob`, `RemoveJob`, `AddItem(s)`
 - Client-requested saves, duty toggles, `/me` and job menu actions are rate limited. Character login/deletion is checked against the player's license.
 - The server vehicle spawn callback only allows models in `RSGShared.Vehicles`, only near the player, and at most once every 5 seconds.
 - `SetJob` / `SetGang` refuse grades that don't exist.
+- Ban checks look at every ban row for a license, `/ooc` is rate limited, and `RSGCore:CallCommand` only passes string/number arguments.
+- Admin commands (`/dvall`, `/dvp`, `/dvo`, `/setjob`, `/setgang`, `/givemoney`, `/addpermission`, `/removepermission`, `/openserver`, `/closeserver`, `/togglepvp`) write an audit entry to the console and to the rsg-log channel `RSGConfig.AdminLogChannel`.
+- Bans match by license, and optionally Discord and IP (`RSGConfig.Ban`).
+- Rate limits and distances are configurable in `RSGConfig.Limits`. Players are saved by the server every `UpdateInterval` minutes (`RSGConfig.ServerSideSave`).
+- A full inventory no longer silently swallows money: failed money item grants are logged and the player is notified.
+- `/tp` and `/tpm` freeze the entity, wait for collision, keep the heading and carry mounts/vehicles. `/tp x y` probes the ground.
+- Prompts left behind by a resource that stops are cleaned up automatically. Font Awesome ships locally in `html/vendor/fontawesome` (no CDN needed).
+- The `/myjobs` and `/jobadmin` menus keep push-to-talk working (`RSGConfig.AllowPushToTalkWhileOpen`).
 - Notification and text UI content is always rendered as plain text.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
 
 ## Support
 

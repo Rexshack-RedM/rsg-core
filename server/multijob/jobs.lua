@@ -350,6 +350,17 @@ CREATE TABLE IF NOT EXISTS `player_jobs` (
     KEY `citizenid` (`citizenid`)
 )]])
 
+    -- one row per player+job: remove duplicates (keep the oldest), then add the unique key if it is missing
+    local okIdx, errIdx = pcall(function()
+        local idx = MySQL.scalar.await([[SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'player_jobs' AND INDEX_NAME = 'uniq_player_job']])
+        if (tonumber(idx) or 0) == 0 then
+            MySQL.query.await('DELETE a FROM player_jobs a JOIN player_jobs b ON a.citizenid = b.citizenid AND a.job = b.job AND a.id > b.id')
+            MySQL.query.await('ALTER TABLE player_jobs ADD UNIQUE KEY uniq_player_job (citizenid, job)')
+        end
+    end)
+    if not okIdx then print(('[rsg-core:jobs] WARNING: could not add unique key to player_jobs: %s'):format(tostring(errIdx))) end
+
     local rows = MySQL.query.await('SELECT * FROM multijob_jobs') or {}
 
     if #rows == 0 then
@@ -366,17 +377,23 @@ CREATE TABLE IF NOT EXISTS `player_jobs` (
         print(('[rsg-core:jobs] First start: imported %d job(s) into multijob_jobs'):format(#rows))
     end
 
-    local coreJobs = CoreJobs()
+    local batch = {}
     local count = 0
     for _, row in ipairs(rows) do
         local def, err = FromRow(row)
         if def then
             jobs[def.name] = def
-            PushToCore(def, coreJobs)
+            batch[def.name] = CoreShape(def)
             count = count + 1
         else
             print(('[rsg-core:jobs] WARNING: job "%s" in multijob_jobs is invalid (%s) and was not loaded'):format(tostring(row.name), err))
         end
+    end
+
+    -- one shared-data update + one client broadcast for every job instead of one per job
+    local okBatch, resBatch, errBatch = pcall(RSGCore.Functions.SetJobs, batch)
+    if not okBatch or resBatch == false then
+        print(('[rsg-core:jobs] WARNING: rsg-core rejected the job batch: %s'):format(tostring(okBatch and errBatch or resBatch)))
     end
 
     if not jobs['unemployed'] then

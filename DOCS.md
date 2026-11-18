@@ -1,6 +1,6 @@
 # rsg-core Developer Documentation
 
-> Version **3.1.8** · RedM · Lua 5.4 · Depends only on `oxmysql`
+> Version **3.3.0** · RedM · Lua 5.4 · Depends only on `oxmysql`
 > rsg-core has no **ox_lib** dependency and no ox_lib compatibility code: notifications, callbacks, progress bars, text UI, prompts, locales, `require` and asset loaders are all built in.
 
 ---
@@ -1083,6 +1083,7 @@ local item = RSGCore.Shared.Items['bandage']              -- shared item definit
 | `Gold.EnableGoldItems` / `Money.GoldItem` | `false` / `'gold'` | Represent gold as an inventory item |
 | `Server.Permissions` | god…helper | |
 | `PromptDistance` | `1.5` | |
+| `AllowPushToTalkWhileOpen` / `PushToTalkControls` | `true` / `{ 0x4BC9DABB }` | While `/myjobs` or `/jobadmin` is open, game controls are blocked but push-to-talk keeps working |
 | `Notify` | Position, Duration, MaxVisible, Sound | |
 | `Progress` | CancelKey `0x8CC9CD42` (X), CancelLabel | |
 | `ClientWritableMetadata` | hunger, thirst, cleanliness, stress, health, armor | |
@@ -1096,18 +1097,201 @@ Config is read on both sides, so a change needs a resource restart (`ensure rsg-
 
 ### Database
 
-- Manual import: `players`, `bans`.
-- Created automatically: `weight`/`slots` columns, `multijob_jobs`, `player_jobs`.
+- Created automatically when `RSGConfig.AutoDatabase = true` (default): `players`, `bans`, `multijob_jobs`, `player_jobs`, and the `weight`/`slots` columns.
+- Manual install: set `RSGConfig.AutoDatabase = false` and import `install.sql` (same schema, kept in sync).
+
+| Option | Default | Description |
+|---|---|---|
+| `RSGConfig.AutoDatabase` | `true` | Create the tables on start |
+| `RSGConfig.Limits` | see config | `SaveCooldown`, `DutyCooldownMs`, `SpawnCooldownMs`, `SpawnMaxDistance`, `MeCooldownMs`, `OocCooldownMs`, `OocRange` |
+| `RSGConfig.ServerSideSave` | `true` | Server saves every player each `UpdateInterval` minutes; the client no longer triggers periodic saves |
+| `RSGConfig.LogSaves` | `false` | Print a console line on every save |
+| `RSGConfig.Ban` | `CheckDiscord = true`, `CheckIP = false` | Extra identifiers matched against the `bans` table (license is always checked) |
+| `RSGConfig.AdminLogChannel` | `'admin'` | rsg-log channel for admin command audit entries |
 
 ---
 
 ## 24. Exports Reference
 
-**Shared:** `GetCoreObject`, `GetWeapons`
+Everything below is called as `exports['rsg-core']:Name(...)`. The same functions are also on the core object (`RSGCore.Functions.Name`), which is faster for resources that call them often. Exports are the simplest way to use rsg-core without holding the whole core object.
 
-**Server:** `SetMethod`, `SetField`, `CreateCron`, `StopCron`, `GetCoreVersion`, `ExploitBan(playerId, origin)`, `AddItem(s)`, `UpdateItem`, `RemoveItem`, `AddJob(s)`, `UpdateJob`, `RemoveJob`, `AddGang(s)`, `UpdateGang`, `RemoveGang`, `AddPlayerJob`, `RemovePlayerJob`, `GetPlayerJobs`, `HasPlayerJob`, `CanTakePlayerJob`, `GetPlayerJobCount`, `GetJobDefinition`, `GetJobDefinitions`, `SaveJobDefinition`, `DeleteJobDefinition`
+### 24.1 Shared
 
-**Client:** `Notify`, `ProgressBar`, `ProgressCircle`, `IsProgressActive`, `CancelProgress`, `DrawText`, `ChangeText`, `HideText`, `KeyPressed`, `IsTextShown`, `createPrompt`, `createPromptGroup`, `getPrompt`, `getPromptGroup`, `deletePrompt`, `deletePromptGroup`, `RequestModel`, `RequestAnimDict`, `RequestAnimSet`, `RequestNamedPtfxAsset`, `GenerateCSRFToken`
+| Export | Returns | Notes |
+|---|---|---|
+| `GetCoreObject()` | table | The core object (client and server) |
+| `GetWeapons()` | table | Weapon definitions from `RSGShared.Weapons` |
+
+### 24.2 Server: players
+
+| Export | Returns | Notes |
+|---|---|---|
+| `GetPlayer(src)` | Player or nil | Online player by server id |
+| `GetPlayerByCitizenId(cid)` | Player or nil | Online only |
+| `GetOfflinePlayerByCitizenId(cid)` | Player or nil | Loads from the database when offline |
+| `GetPlayerByLicense(license)` | Player or nil | |
+| `GetPlayerByAccount(account)` | Player or nil | Bank account number |
+| `GetPlayerByCharInfo(prop, value)` | Player or nil | First player whose `charinfo[prop] == value` |
+| `GetPlayers()` | `number[]` | Server ids of loaded players |
+| `GetRSGPlayers()` | `table<src, Player>` | All loaded Player objects |
+| `GetPlayersOnDuty(job)` | `number[], number` | Server ids on duty and their count |
+| `GetDutyCount(job)` | number | |
+| `GetIdentifier(src, type)` | string or nil | `license`, `discord`, `ip`... |
+| `GetSource(identifier)` | number | `0` when not online |
+| `AddMoney(src, type, amount, reason?)` | boolean | `false` when offline or refused |
+| `RemoveMoney(src, type, amount, reason?)` | boolean | `false` when offline or not enough |
+| `GetMoney(src, type)` | number | `0` when offline |
+| `GetMetaData(src, key)` | any | |
+| `SetMetaData(src, key, value)` | boolean | Server side only, no whitelist applies here |
+| `GetJob(src)` / `GetGang(src)` | table or nil | The player's current job / gang table |
+
+Money types are `cash`, `gold`, `bank` and `bloodmoney`. `cash`, `bloodmoney` and `gold` are inventory items when money items are enabled, always use these functions instead of adding the items.
+
+```lua
+-- server: pay a player for a delivery
+RegisterNetEvent('myres:server:deliver', function()
+    local src = source
+    if not exports['rsg-core']:GetPlayer(src) then return end
+    if exports['rsg-core']:AddMoney(src, 'cash', 25, 'myres-delivery') then
+        exports['rsg-core']:Notify(src, { title = 'Delivery', description = 'You earned $25', type = 'success' })
+    end
+end)
+```
+
+### 24.3 Server: permissions, access and moderation
+
+| Export | Returns | Notes |
+|---|---|---|
+| `HasPermission(src, permission)` | boolean | `god`, `developer`, `headadmin`, `admin`, `mod`, `helper` |
+| `AddPermission(src, permission)` / `RemovePermission(src, permission)` | boolean | Updates ACE principals |
+| `GetPermission(src)` | table | |
+| `IsValidPermission(permission)` | boolean | |
+| `IsWhitelisted(src)` | boolean | |
+| `IsPlayerBanned(src)` | `boolean, string?` | Checks license, and Discord/IP per `RSGConfig.Ban`; the second value is the ban message |
+| `CanJoinClosed(src)` | boolean | ACE `rsgadmin.join` or the whitelist permission |
+| `SetServerClosed(closed, reason?)` | | Closing kicks everyone who fails `CanJoinClosed` |
+| `Kick(src, reason, setKickReason?, deferrals?)` | | |
+| `ExploitBan(src, reason)` | | Permanent ban and anti-cheat log entry |
+| `AdminLog(src, action, details?)` | | Audit entry on the console and the rsg-log channel `RSGConfig.AdminLogChannel` |
+
+```lua
+-- server: an admin tool that writes to the same audit trail as the core commands
+RegisterCommand('wipezone', function(src)
+    if not exports['rsg-core']:HasPermission(src, 'admin') then return end
+    -- ...do the work...
+    exports['rsg-core']:AdminLog(src, 'wipezone', 'cleared 12 props')
+end)
+```
+
+### 24.4 Server: items, notifications, buckets, cron
+
+| Export | Returns | Notes |
+|---|---|---|
+| `CreateUseableItem(name, fn)` | | `fn(source, item)` |
+| `CanUseItem(name)` / `UseItem(src, name)` | | |
+| `Notify(src, data\|text, type?, duration?)` | | Data table form: `{ title, description, type, duration, icon, position, id }` |
+| `SetPlayerBucket(src, bucket)` / `SetEntityBucket(entity, bucket)` | boolean | |
+| `GetPlayersInBucket(bucket)` / `GetEntitiesInBucket(bucket)` | table | |
+| `CreateCron(expression, job, options?)` | task | `task:stop()`, `task:isActive()`; see section 6 |
+| `StopCron(id)` | | |
+| `SetMethod(name, fn)` / `SetField(name, value)` | | Extend the core object at runtime |
+| `AddPlayerMethod(ids, name, fn)` / `AddPlayerField(ids, name, value)` | | Extend Player objects (`ids` = a source/citizenid, a list, or `-1` for all) |
+| `GetCoreVersion()` | string | |
+
+### 24.5 Server: shared data (items, jobs, gangs)
+
+Changes sync to all clients (and to players who join later) with `RSGCore:Client:OnSharedUpdate(Multiple)`.
+
+| Items | Jobs | Gangs | Behaviour |
+|---|---|---|---|
+| `AddItem(name, data)` | `AddJob` | `AddGang` | Fails if the name exists |
+| `AddItems(map)` | `AddJobs` | `AddGangs` | All-or-nothing, fails if any name exists |
+| `SetItems(map)` | `SetJobs` | `SetGangs` | Adds or overwrites many entries with one broadcast |
+| `UpdateItem(name, data)` | `UpdateJob` | `UpdateGang` | Fails if the name does not exist |
+| `RemoveItem(name)` | `RemoveJob` | `RemoveGang` | Fails if the name does not exist |
+
+All return `ok, reason` (`reason` is `item_exists`, `job_not_exists`, `invalid_gang_name`...). `AddJob` and friends are job *definitions*; players hold jobs through the multi-job functions below.
+
+```lua
+local ok, reason = exports['rsg-core']:AddItem('moonshine_jar', {
+    name = 'moonshine_jar', label = 'Moonshine', weight = 500, type = 'item',
+    image = 'moonshine_jar.png', unique = false, useable = true, shouldClose = true,
+    description = 'Strong stuff',
+})
+if not ok then print('could not add item: ' .. tostring(reason)) end
+```
+
+### 24.6 Server: multi-job (`id` = server id or citizenid)
+
+| Export | Returns |
+|---|---|
+| `AddPlayerJob(id, job, grade, bypassMax?)` | `ok, reason` (`invalid_job`, `invalid_grade`, `player_not_found`, `max_jobs`) |
+| `RemovePlayerJob(id, job)` | `ok, reason` (`invalid_job`, `player_not_found`, `job_not_held`) |
+| `GetPlayerJobs(id)` | `{ job, salary, jobLabel, gradeLabel, grade, icon }[]` |
+| `HasPlayerJob(id, job)` | `held, grade` |
+| `CanTakePlayerJob(id, job, bypassMax?)` | `ok, reason` |
+| `GetPlayerJobCount(id)` | `count, max` |
+| `GetJobDefinition(name)` / `GetJobDefinitions()` | definition(s) in core shape plus `icon` |
+| `SaveJobDefinition(def)` / `DeleteJobDefinition(name)` | `def, err` / `ok, err, holders` |
+
+The legacy `exports['rsg-multijob']:...` names keep working (rsg-core `provide`s rsg-multijob).
+
+```lua
+-- server: hire a player as a deputy at grade 1, then make it their active job
+local src = source
+local ok, reason = exports['rsg-core']:AddPlayerJob(src, 'lawman', 1)
+if not ok then
+    print('hire failed: ' .. tostring(reason))
+    return
+end
+exports['rsg-core']:GetPlayer(src).Functions.SetJob('lawman', 1)
+```
+
+### 24.7 Client
+
+| Export | Notes |
+|---|---|
+| `GetPlayerData()` / `GetPlayerData(cb)` | The local player data table |
+| `HasItem(items, amount?)` | Asks rsg-inventory (`false` when it is not started) |
+| `GetCoords(entity)` | `vector4` (x, y, z, heading) |
+| `GetClosestPlayer(coords?)`, `GetClosestPed(coords?, ignoreList?)`, `GetClosestVehicle(coords?)`, `GetClosestObject(coords?)` | `entity (or player id), distance` |
+| `GetPlayersFromCoords(coords?, distance?)` | Player ids near the coords |
+| `GetNearbyPeds/Vehicles/Objects(coords, maxDistance)` | Entity lists |
+| `Raycast(from, to, flags?, ignore?)`, `RaycastCamera(flags?, ignore?, distance?)` | Hit info |
+| `PlayAnim(dict, name, upperOnly?, duration?)`, `LookAtEntity(...)` | |
+| `SpawnVehicle`, `DeleteVehicle`, `GetGroundZCoord`, `GetCardinalDirection`, `GetCurrentTime` | |
+| `Notify(...)` | Same accepted shapes as section 15 |
+| `ProgressBar(data)`, `ProgressCircle(data)`, `IsProgressActive()`, `CancelProgress()` | Section 16 |
+| `DrawText(text, pos?)`, `ChangeText(text, pos?)`, `HideText()`, `KeyPressed()`, `IsTextShown()` | Section 17 |
+| `createPrompt`, `createPromptGroup`, `deletePrompt`, `deletePromptGroup`, `getPrompt`, `getPromptGroup` | Section 18. Prompts are removed automatically when the creating resource stops |
+| `RequestModel`, `RequestAnimDict`, `RequestAnimSet`, `RequestNamedPtfxAsset`, `RequestStreamedTextureDict` | `fn(name, timeout?)` loads with a timeout in ms and returns the hash (model) or the name (dict/set/asset) |
+| `TriggerCallback`, `AwaitCallback`, `CreateClientCallback` | Section 5 |
+| `GenerateCSRFToken()` | Returns a token; validate it from your NUI through the `validateCSRF` NUI callback |
+
+```lua
+-- client: show a progress bar, then notify
+local done = exports['rsg-core']:ProgressBar({ duration = 5000, label = 'Skinning...', canCancel = true })
+if done then
+    exports['rsg-core']:Notify({ title = 'Skinning', description = 'Done', type = 'success' })
+end
+```
+
+### 24.8 Hooking in with events
+
+Other resources can react to core activity without being called by it. Listen with `AddEventHandler` (server) or `RegisterNetEvent` (client); the full list with payloads is in section 20. The most useful:
+
+```lua
+-- server: run code once a character is fully loaded
+AddEventHandler('RSGCore:Server:PlayerLoaded', function(Player)
+    print(('%s loaded as %s'):format(Player.PlayerData.citizenid, Player.PlayerData.job.name))
+end)
+
+-- server: job definitions are ready (safe to call GetJobDefinition / AddPlayerJob)
+AddEventHandler('rsg-multijob:server:jobsLoaded', function() end)
+
+-- client: react to a job change
+RegisterNetEvent('RSGCore:Client:OnJobUpdate', function(job) print(job.name, job.grade.level) end)
+```
 
 ---
 
@@ -1135,8 +1319,16 @@ Config is read on both sides, so a change needs a resource restart (`ensure rsg-
 - **Never trust the client.** Do money, items and job checks on the server inside the event/callback, using `source`.
 - Clients can only set metadata keys whitelisted in `RSGConfig.ClientWritableMetadata`.
 - Use `exports['rsg-core']:ExploitBan(source, 'reason')` for confirmed exploit attempts.
-- Protect NUI callbacks with `GenerateCSRFToken()`; mismatches trigger `RSGCore:Server:KickCSRF`.
-- `RSGCore:CallCommand` checks command permissions server-side.
+- Protect NUI callbacks with `GenerateCSRFToken()`; a wrong token while one is pending triggers `RSGCore:Server:KickCSRF` after two strikes. A callback with no pending token is rejected without a kick.
+- Closed server: `RSGCore.Functions.CanJoinClosed(src)` (ACE `rsgadmin.join` or the whitelist permission) is used both when joining and when closing the server, so the two checks agree.
+- Admin commands are audit logged (console + rsg-log). `/tp x y` probes ground; `SafeTeleport` moves mounts/vehicles with the player.
+- New server exports `SetJobs`, `SetItems`, `SetGangs` add or overwrite many shared entries with one client broadcast.
+- Prompts created through the exports are tracked per resource and removed when that resource stops.
+- Failed money item grants (`AddItem` returned false, e.g. full inventory) are logged and the player gets `error.money_item_failed`.
+- `RSGCore:CallCommand` checks command permissions server-side (`RSGCore.Commands.CanUse(src, cmd)`) and only passes string/number arguments (max 20) to command callbacks.
+- `RSGCore.Functions.IsPlayerBanned` checks every ban row for a license (the longest active ban wins; expired rows are cleaned up).
+- Players cannot connect until the job definitions have loaded from `multijob_jobs` (otherwise their saved job would be reset to unemployed).
+- `/ooc` is limited to 255 characters and a 2 second cooldown per player.
 - `PrepForSQL` validates strings before raw SQL; always prefer parameterised `MySQL` queries.
 - Multi-job admin callbacks are permission- and rate-limited.
 - The version checker (`server/versionchecker.lua`) only reads `version.txt` from GitHub on resource start and prints whether you are up to date; it changes nothing.
@@ -1350,11 +1542,11 @@ end)
 
 | Table | Created by | Notes |
 |---|---|---|
-| `players` | manual SQL import | One row per character, keyed by `citizenid` |
-| `bans` | manual SQL import | Used by join checks and `ExploitBan` |
+| `players` | automatic (`AutoDatabase`) or `install.sql` | One row per character, keyed by `citizenid` |
+| `bans` | automatic (`AutoDatabase`) or `install.sql` | Used by join checks and `ExploitBan` |
 | `players.weight`, `players.slots` | automatic | Added at start if missing (defaults `35000` / `25`) |
 | `multijob_jobs` | automatic | Job definitions |
-| `player_jobs` | automatic | Jobs each character holds |
+| `player_jobs` | automatic | Jobs each character holds; unique key `uniq_player_job (citizenid, job)` (duplicates are removed on first start) |
 
 ```sql
 CREATE TABLE IF NOT EXISTS `multijob_jobs` (
@@ -1428,7 +1620,7 @@ zones.poly({ points = { vec3(...), vec3(...), vec3(...) }, thickness = 4.0 })
 z:contains(coords)   z:remove()
 zones.getAllZones()  zones.getCurrentZones()  zones.getNearbyZones()
 ```
-Each zone has `id`, `coords`, `distance` (to the player, updated every 300 ms) and `insideZone`. Extra fields you pass are kept. The globals `Zones` (id → zone) and `zones` are set in the including resource. `inside` and debug drawing run per frame only while needed.
+Each zone has `id`, `coords`, `distance` (to the player, updated every 300 ms), `near` (distance at which the zone starts being checked: 75 m, or larger for big spheres/boxes/polygons so towns and districts always trigger) and `insideZone`. Extra fields you pass are kept. The globals `Zones` (id → zone) and `zones` are set in the including resource. `inside` and debug drawing run per frame only while needed.
 
 ### Points – `@rsg-core/client/points.lua` (replaces `lib.points`)
 Include it in the resource that owns the points:

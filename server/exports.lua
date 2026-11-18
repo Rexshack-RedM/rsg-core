@@ -78,6 +78,21 @@ local function makeSharedApi(tableName, prefix)
         return true, 'success', nil
     end
 
+    -- adds or overwrites every entry with a single client broadcast (used for bulk loads such as job registration at start)
+    function api.setMany(entries)
+        if type(entries) ~= 'table' then return false, invalidName end
+        for name in pairs(entries) do
+            if type(name) ~= 'string' then return false, invalidName end
+        end
+        for name, data in pairs(entries) do
+            RSGCore.Shared[tableName][name] = data
+            recordChange(tableName, name, data)
+        end
+        TriggerClientEvent('RSGCore:Client:OnSharedUpdateMultiple', -1, tableName, entries)
+        TriggerEvent('RSGCore:Server:UpdateObject')
+        return true, 'success'
+    end
+
     function api.update(name, data)
         if type(name) ~= 'string' then return false, invalidName end
         if not RSGCore.Shared[tableName][name] then return false, notExists end
@@ -104,16 +119,19 @@ local jobs, items, gangs = makeSharedApi('Jobs', 'job'), makeSharedApi('Items', 
 
 register('AddJob', jobs.add)
 register('AddJobs', jobs.addMany)
+register('SetJobs', jobs.setMany)
 register('UpdateJob', jobs.update)
 register('RemoveJob', jobs.remove)
 
 register('AddItem', items.add)
 register('AddItems', items.addMany)
+register('SetItems', items.setMany)
 register('UpdateItem', items.update)
 register('RemoveItem', items.remove)
 
 register('AddGang', gangs.add)
 register('AddGangs', gangs.addMany)
+register('SetGangs', gangs.setMany)
 register('UpdateGang', gangs.update)
 register('RemoveGang', gangs.remove)
 

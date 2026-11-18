@@ -5,7 +5,7 @@ game 'rdr3'
 lua54 'yes'
 
 description 'rsg-core'
-version '3.2.0'
+version '3.3.0'
 
 shared_scripts {
     'shared/table.lua',
@@ -34,6 +34,8 @@ files {
     'html/index.html',
     'html/style.css',
     'html/script.js',
+    'html/vendor/fontawesome/css/*.css',
+    'html/vendor/fontawesome/webfonts/*',
     'html/multijob/style.css',
     'html/multijob/admin.css',
     'html/multijob/script.js',
@@ -50,7 +52,8 @@ client_scripts {
     'client/progress.lua',
     'client/prompts.lua',
     'client/pvp.lua',
-    'client/multijob.lua'
+    'client/multijob.lua',
+    'client/api.lua'
 }
 
 server_scripts {
@@ -69,6 +72,7 @@ server_scripts {
     'server/multijob/jobs.lua',
     'server/multijob/server.lua',
     'server/multijob/admin.lua',
+    'server/api.lua',
     'server/debug.lua',
     'server/versionchecker.lua'
 }

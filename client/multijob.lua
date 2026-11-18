@@ -2,6 +2,7 @@
 local Config = RSGConfig.MultiJob
 
 local isUIOpen = false
+local uiFocus = false
 local uiLocales -- built once, locales don't change at runtime
 
 local function withIcons(jobs)
@@ -33,9 +34,41 @@ local function getUILocales()
     return uiLocales
 end
 
+-- single place that gives/takes NUI focus, so push-to-talk keeps working while a menu is open
+local function applyNuiFocus(enable)
+    uiFocus = enable
+    if enable then
+        SetNuiFocus(true, true)
+        if RSGConfig.AllowPushToTalkWhileOpen then SetNuiFocusKeepInput(true) end
+    else
+        SetNuiFocusKeepInput(false)
+        SetNuiFocus(false, false)
+    end
+end
+
+-- KeepInput passes every key to the game, so block all controls except push-to-talk while focused
+CreateThread(function()
+    while true do
+        if uiFocus and RSGConfig.AllowPushToTalkWhileOpen then
+            Wait(0)
+            DisableAllControlActions(0)
+            DisableAllControlActions(1)
+            DisableAllControlActions(2)
+            local list = RSGConfig.PushToTalkControls or {}
+            for i = 1, #list do
+                EnableControlAction(0, list[i], true)
+                EnableControlAction(1, list[i], true)
+                EnableControlAction(2, list[i], true)
+            end
+        else
+            Wait(250)
+        end
+    end
+end)
+
 local function closeUI()
     isUIOpen = false
-    SetNuiFocus(false, false)
+    applyNuiFocus(false)
 end
 
 local function openUI()
@@ -48,7 +81,7 @@ local function openUI()
     local jobs = withIcons(RSGCore.Functions.AwaitCallback('rsg-multijob:server:myJobs'))
     if not isUIOpen then return end -- closed while waiting
 
-    SetNuiFocus(true, true)
+    applyNuiFocus(true)
     SendNUIMessage({
         action = 'multijob:open',
         jobs = jobs,
@@ -133,7 +166,7 @@ end
 
 local function closeAdmin()
     isAdminOpen = false
-    SetNuiFocus(false, false)
+    applyNuiFocus(false)
     SendNUIMessage({ action = 'admin:close' })
 end
 
@@ -147,7 +180,7 @@ RegisterNetEvent('rsg-multijob:client:openAdmin', function()
         return
     end
 
-    SetNuiFocus(true, true)
+    applyNuiFocus(true)
     SendNUIMessage({ action = 'admin:open', jobs = jobs, locales = getAdminLocales() })
 end)
 

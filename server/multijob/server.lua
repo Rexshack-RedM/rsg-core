@@ -345,7 +345,7 @@ AddEventHandler('RSGCore:Server:OnJobUpdate', function(src)
         return
     end
 
-    MySQL.insert.await('INSERT INTO player_jobs (citizenid, job, grade) VALUES (?, ?, ?)', { cid, job.name, level })
+    MySQL.insert.await('INSERT INTO player_jobs (citizenid, job, grade) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE grade = VALUES(grade)', { cid, job.name, level })
 
     MultiJobWebhook.Send('JobAdded', {
         description = locale('wh_granted', GetCharName(Player), JobLabel(job.name)),
@@ -458,7 +458,7 @@ local function AddJob(identifier, job, grade, bypassMax)
         end
     else
         if not bypassMax and GetJobCount(cid) >= Config.MaxJobs then return false, 'max_jobs' end
-        MySQL.insert.await('INSERT INTO player_jobs (citizenid, job, grade) VALUES (?, ?, ?)', { cid, job, grade })
+        MySQL.insert.await('INSERT INTO player_jobs (citizenid, job, grade) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE grade = VALUES(grade)', { cid, job, grade })
     end
 
     MultiJobWebhook.Send('JobAdded', {

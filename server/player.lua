@@ -554,7 +554,7 @@ function RSGCore.Player.Save(source)
     end
     savePlayerRow(PlayerData, pcoords)
     if GetResourceState('rsg-inventory') ~= 'missing' then exports['rsg-inventory']:SaveInventory(source) end
-    RSGCore.ShowSuccess(resourceName, tostring(PlayerData.name) .. ' PLAYER SAVED!')
+    if RSGCore.Config.LogSaves then RSGCore.ShowSuccess(resourceName, tostring(PlayerData.name) .. ' PLAYER SAVED!') end
 end
 
 function RSGCore.Player.SaveOffline(PlayerData)
@@ -687,3 +687,20 @@ function RSGCore.Player.CreateSerialNumber()
 end
 
 PaycheckInterval() -- This starts the paycheck system
+
+-- Server driven periodic save (RSGConfig.ServerSideSave): players are saved one by one, staggered to avoid database spikes
+if RSGCore.Config.ServerSideSave then
+    CreateThread(function()
+        local interval = 60000 * RSGCore.Config.UpdateInterval
+        while true do
+            Wait(interval)
+            for src, Player in pairs(RSGCore.Players) do
+                if Player then
+                    local ok, err = pcall(Player.Functions.Save)
+                    if not ok then print(('^1[rsg-core] periodic save failed for %s: %s^7'):format(tostring(src), tostring(err))) end
+                    Wait(250)
+                end
+            end
+        end
+    end)
+end

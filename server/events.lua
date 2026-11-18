@@ -8,11 +8,13 @@ end)
 
 local lastSave = {} -- per-source timestamp of the last client-requested save
 local lastDuty = {} -- per-source timestamp of the last duty toggle
+local lastSpawn = {} -- per-source timestamp of the last vehicle spawn
 
 AddEventHandler('playerDropped', function(reason)
     local src = source
     lastSave[src] = nil
     lastDuty[src] = nil
+    lastSpawn[src] = nil
     local Player = RSGCore.Players[src]
     if not Player then return end
     TriggerEvent('rsg-log:server:CreateLog', 'joinleave', 'Dropped', 'red', ('**%s** (%s) left..\n **Reason:** %s'):format(GetPlayerName(src) or 'unknown', Player.PlayerData.license, reason))
@@ -24,10 +26,66 @@ end)
 
 -- Database checks
 
+-- Schema creation (identical to install.sql); runs when RSGConfig.AutoDatabase is true
+local function ensureDatabase()
+    local statements = {
+        [[
+CREATE TABLE IF NOT EXISTS `players` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `citizenid` varchar(50) NOT NULL,
+  `cid` int(11) DEFAULT NULL,
+  `license` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `money` text NOT NULL,
+  `charinfo` text DEFAULT NULL,
+  `job` text NOT NULL,
+  `gang` text DEFAULT NULL,
+  `position` text NOT NULL,
+  `metadata` text NOT NULL,
+  `inventory` longtext DEFAULT NULL,
+  `weight` int(11) DEFAULT 35000,
+  `slots` int(11) DEFAULT 25,
+  `last_updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`citizenid`),
+  KEY `id` (`id`),
+  KEY `last_updated` (`last_updated`),
+  KEY `license` (`license`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+]],
+        [[
+CREATE TABLE IF NOT EXISTS `bans` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) DEFAULT NULL,
+  `license` varchar(50) DEFAULT NULL,
+  `discord` varchar(50) DEFAULT NULL,
+  `ip` varchar(50) DEFAULT NULL,
+  `reason` text DEFAULT NULL,
+  `expire` int(11) DEFAULT NULL,
+  `bannedby` varchar(255) NOT NULL DEFAULT 'Unknown',
+  PRIMARY KEY (`id`),
+  KEY `license` (`license`),
+  KEY `discord` (`discord`),
+  KEY `ip` (`ip`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+]],
+    }
+    local ok, err = pcall(function()
+        for i = 1, #statements do MySQL.query.await(statements[i]) end
+    end)
+    if not ok then
+        print(('^1[%s] database setup failed: %s^7'):format(GetCurrentResourceName(), tostring(err)))
+        return false
+    end
+    RSGCore.ShowSuccess(GetCurrentResourceName(), 'database tables ready')
+    return true
+end
+
 local databaseConnected, bansTableExists = MySQL.ready == nil, MySQL.ready == nil
 if MySQL.ready ~= nil then
     MySQL.ready(function()
         databaseConnected = true
+
+        if RSGCore.Config.AutoDatabase then ensureDatabase() end
 
         local DatabaseInfo = RSGCore.Functions.GetDatabaseInfo()
         if not DatabaseInfo or not DatabaseInfo.exists then return end
@@ -59,12 +117,17 @@ local function onPlayerConnecting(name, _, deferrals)
     local src = source
     deferrals.defer()
 
-    if RSGCore.Config.Server.Closed and not IsPlayerAceAllowed(src, 'rsgadmin.join') then
+    if RSGCore.Config.Server.Closed and not RSGCore.Functions.CanJoinClosed(src) then
         return deferrals.done(RSGCore.Config.Server.ClosedReason)
     end
 
     if not databaseConnected then
         return deferrals.done(locale('error.connecting_database_error'))
+    end
+
+    -- job definitions are loaded from the database a moment after start; joining earlier would reset players to unemployed
+    if JobRegistry and not JobRegistry.IsLoaded() then
+        return deferrals.done(locale('adm_err_not_loaded'))
     end
 
     if RSGCore.Config.Server.Whitelist then
@@ -111,6 +174,7 @@ RegisterNetEvent('RSGCore:Server:CloseServer', function(reason)
         return RSGCore.Functions.Kick(src, locale('error.no_permission'))
     end
     RSGCore.Functions.SetServerClosed(true, reason)
+    RSGCore.Functions.AdminLog(src, 'CloseServer (event)', tostring(reason))
 end)
 
 RegisterNetEvent('RSGCore:Server:OpenServer', function()
@@ -119,6 +183,7 @@ RegisterNetEvent('RSGCore:Server:OpenServer', function()
         return RSGCore.Functions.Kick(src, locale('error.no_permission'))
     end
     RSGCore.Functions.SetServerClosed(false)
+    RSGCore.Functions.AdminLog(src, 'OpenServer (event)')
 end)
 
 -- Callback Events --
@@ -153,7 +218,7 @@ end)
 
 -- Player
 
-local SAVE_COOLDOWN = 30 -- seconds; prevents clients spamming database writes
+local SAVE_COOLDOWN = RSGCore.Config.Limits.SaveCooldown -- seconds; prevents clients spamming database writes
 
 RegisterNetEvent('RSGCore:UpdatePlayer', function()
     local src = source
@@ -174,7 +239,7 @@ RegisterNetEvent('RSGCore:Server:SetMetaData', function(meta, data)
     Player.Functions.SetMetaData(meta, data)
 end)
 
-local DUTY_COOLDOWN_MS = 2000
+local DUTY_COOLDOWN_MS = RSGCore.Config.Limits.DutyCooldownMs
 
 RegisterNetEvent('RSGCore:ToggleDuty', function()
     local src = source
@@ -198,10 +263,19 @@ RegisterNetEvent('RSGCore:CallCommand', function(command, args)
     local cmd = RSGCore.Commands.List[command]
     if not cmd then return end
     if not RSGCore.Functions.GetPlayer(src) then return end
-    args = type(args) == 'table' and args or {}
+    -- clients can send anything: keep only a short list of strings/numbers so command callbacks never see tables or functions
+    local clean = {}
+    if type(args) == 'table' then
+        for i = 1, math.min(#args, 20) do
+            local t = type(args[i])
+            if t ~= 'string' and t ~= 'number' then return end
+            clean[i] = tostring(args[i])
+        end
+    end
+    args = clean
 
-    -- 'user' commands have no ace (everyone may use them), so they were always refused here
-    if cmd.permission ~= 'user' and not RSGCore.Functions.HasPermission(src, 'command.' .. cmd.name) then
+    -- 'user' commands have no ace (everyone may use them); also covers commands registered with extra permission levels
+    if not RSGCore.Commands.CanUse(src, cmd) then
         return TriggerClientEvent('RSGCore:Client:Notify', src, { title = locale('error.no_access'), type = 'error', duration = 5000 })
     end
     if cmd.argsrequired and #cmd.arguments ~= 0 and not args[#cmd.arguments] then
@@ -213,10 +287,8 @@ end)
 -- Vehicle server-side spawning callback (returns netId)
 -- use NetworkGetEntityFromNetworkId / NetToVeh on the client
 -- Restricted to models registered in RSGShared.Vehicles so clients cannot spawn arbitrary entities
-local SPAWN_COOLDOWN_MS = 5000
-local SPAWN_MAX_DISTANCE = 50.0
-local lastSpawn = {}
-AddEventHandler('playerDropped', function() lastSpawn[source] = nil end)
+local SPAWN_COOLDOWN_MS = RSGCore.Config.Limits.SpawnCooldownMs
+local SPAWN_MAX_DISTANCE = RSGCore.Config.Limits.SpawnMaxDistance
 
 RSGCore.Functions.CreateCallback('RSGCore:Server:SpawnVehicle', function(source, cb, model, coords, warp)
     if not RSGCore.Functions.GetPlayer(source) then return cb(nil) end

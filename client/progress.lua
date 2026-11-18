@@ -105,16 +105,27 @@ local function run(kind, data)
 
     local finishAt = GetGameTimer() + data.duration
     local success = true
-    while GetGameTimer() < finishAt do
-        for i = 1, #controls do DisableControlAction(0, controls[i], true) end
-        if active.cancelled
-            or (data.canCancel and IsControlJustPressed(0, CANCEL_KEY))
-            or interrupted(ped, data)
-            or (invoker and GetResourceState(invoker) ~= 'started') then
-            success = false
-            break
+    -- pcall so an error can never leave `active` set (that would block every later progress bar until restart)
+    local ok, err = pcall(function()
+        local nextCheck = 0
+        while GetGameTimer() < finishAt do
+            for i = 1, #controls do DisableControlAction(0, controls[i], true) end
+            local now = GetGameTimer()
+            local stop = active.cancelled or (data.canCancel and IsControlJustPressed(0, CANCEL_KEY))
+            if not stop and now >= nextCheck then -- state checks every 100ms instead of every frame
+                nextCheck = now + 100
+                stop = interrupted(ped, data) or (invoker and GetResourceState(invoker) ~= 'started')
+            end
+            if stop then
+                success = false
+                break
+            end
+            Wait(0)
         end
-        Wait(0)
+    end)
+    if not ok then
+        success = false
+        print(('^1[rsg-core] progress error: %s^7'):format(tostring(err)))
     end
 
     stopAnim(ped, data.anim)

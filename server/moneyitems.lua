@@ -74,6 +74,19 @@ local function calculateTotal(dollars, cents)
     return tonumber(string.format("%.2f", dollars + (cents / 100)))
 end
 
+-- AddItem returns ok, err; a full inventory used to silently lose the money, so report failures
+local function giveMoneyItem(player, itemName, amount)
+    local ok, err = player.Functions.AddItem(itemName, amount)
+    if ok == false then
+        local src = player.PlayerData.source
+        print(('^1[rsg-core] could not give %sx %s to %s (%s): %s^7'):format(amount, itemName, tostring(player.PlayerData.citizenid), tostring(src), tostring(err)))
+        TriggerEvent('rsg-log:server:CreateLog', 'moneyitems', 'Money item failed', 'red', ('**%s** (%s) could not receive %sx %s: %s'):format(GetPlayerName(src) or 'unknown', player.PlayerData.citizenid, amount, itemName, tostring(err)))
+        TriggerClientEvent('RSGCore:Client:Notify', src, { title = locale('notify_label_error'), description = locale('error.money_item_failed'), type = 'error', duration = 7000 })
+        return false
+    end
+    return true
+end
+
 ----------------------------
 -- Money operations handlers
 ----------------------------
@@ -84,7 +97,7 @@ local function handleAddMoney(src, moneytype, amount)
 
     if moneytype == 'gold' then
         if amount > 0 then
-            player.Functions.AddItem(moneyItems.gold.unit, amount)
+            giveMoneyItem(player, moneyItems.gold.unit, amount)
         end
         refreshInventory(src)
         return
@@ -93,10 +106,10 @@ local function handleAddMoney(src, moneytype, amount)
     local dollars, cents = getParts(amount)
 
     if dollars > 0 then
-        player.Functions.AddItem(moneyItems[moneytype].dollar, dollars)
+        giveMoneyItem(player, moneyItems[moneytype].dollar, dollars)
     end
     if cents > 0 then
-        player.Functions.AddItem(moneyItems[moneytype].cent, cents)
+        giveMoneyItem(player, moneyItems[moneytype].cent, cents)
     end
 
     refreshInventory(src)
@@ -121,7 +134,7 @@ local function handleRemoveMoney(src, moneytype, amount)
     local availableDollars = inventoryMoney[moneyMap[dollarName]] or 0
     local availableCents = inventoryMoney[moneyMap[centName]] or 0
     local totalAvailableCents = (availableDollars * 100) + availableCents
-    local requiredCents = math.round(amount * 100)
+    local requiredCents = math.floor(amount * 100 + 0.5)
 
     if totalAvailableCents < requiredCents then
         return false
@@ -141,7 +154,7 @@ local function handleRemoveMoney(src, moneytype, amount)
     end
     
     if changeInCents > 0 then 
-        player.Functions.AddItem(centName, changeInCents) 
+        giveMoneyItem(player, centName, changeInCents) 
     end
 
     refreshInventory(src)
@@ -161,7 +174,7 @@ local function handleSetMoney(src, moneytype, amount)
 
     if moneytype == 'gold' then
         removeAllItems(moneyItems.gold.unit)
-        if amount > 0 then player.Functions.AddItem(moneyItems.gold.unit, amount) end
+        if amount > 0 then giveMoneyItem(player, moneyItems.gold.unit, amount) end
         refreshInventory(src)
         return
     end
@@ -171,8 +184,8 @@ local function handleSetMoney(src, moneytype, amount)
 
     local dollars, cents = getParts(amount)
 
-    if dollars > 0 then player.Functions.AddItem(moneyItems[moneytype].dollar, dollars) end
-    if cents > 0 then player.Functions.AddItem(moneyItems[moneytype].cent, cents) end
+    if dollars > 0 then giveMoneyItem(player, moneyItems[moneytype].dollar, dollars) end
+    if cents > 0 then giveMoneyItem(player, moneyItems[moneytype].cent, cents) end
 
     refreshInventory(src)
 end

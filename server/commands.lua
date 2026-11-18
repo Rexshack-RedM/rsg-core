@@ -80,6 +80,8 @@ local function canUseCommand(src, info)
     return IsPlayerAceAllowed(tostring(src), 'command.' .. info.name)
 end
 
+RSGCore.Commands.CanUse = canUseCommand
+
 ---Sends the chat suggestions (command helpers) a player is allowed to see, and removes the rest
 ---@param source number
 function RSGCore.Commands.Refresh(source)
@@ -115,6 +117,16 @@ CreateThread(function()
 end)
 
 -- Teleport
+-- Audit trail for admin commands: console line + rsg-log entry on RSGConfig.AdminLogChannel
+local function adminLog(src, action, details)
+    local name = (src and src > 0) and (GetPlayerName(src) or 'unknown') or 'console'
+    local msg = ('**%s** (id %s) used **%s**%s'):format(name, tostring(src), action, details and (' - ' .. details) or '')
+    print(('[rsg-core:admin] %s (%s) %s %s'):format(name, tostring(src), action, details or ''))
+    TriggerEvent('rsg-log:server:CreateLog', RSGCore.Config.AdminLogChannel or 'admin', 'Admin command', 'orange', msg)
+end
+
+RSGCore.Functions.AdminLog = adminLog
+
 RSGCore.Commands.Add('tp', locale('command.tp.help'), { { name = locale('command.tp.params.x.name'), help = locale('command.tp.params.x.help') }, { name = locale('command.tp.params.y.name'), help = locale('command.tp.params.y.help') }, { name = locale('command.tp.params.z.name'), help = locale('command.tp.params.z.help') } }, false, function(source, args)
     if args[1] and not args[2] and not args[3] then
         local targetId = tonumber(args[1])
@@ -133,13 +145,14 @@ RSGCore.Commands.Add('tp', locale('command.tp.help'), { { name = locale('command
                 notify(source, locale('error.location_not_exist'), 'error')
             end
         end
-    elseif args[1] and args[2] and args[3] then
+    elseif args[1] and args[2] then
         -- tonumber can fail on bad input; previously this errored with "attempt to perform arithmetic on nil"
         local x = tonumber((args[1]:gsub(',', '')))
         local y = tonumber((args[2]:gsub(',', '')))
-        local z = tonumber((args[3]:gsub(',', '')))
-        if x and y and z then
-            TriggerClientEvent('RSGCore:Command:TeleportToCoords', source, x + 0.0, y + 0.0, z + 0.0)
+        local z = args[3] and tonumber((args[3]:gsub(',', ''))) or nil
+        if x and y and (z or not args[3]) then
+            -- no z given: the client probes the ground at x,y
+            TriggerClientEvent('RSGCore:Command:TeleportToCoords', source, x + 0.0, y + 0.0, z and (z + 0.0) or nil)
         else
             notify(source, locale('error.wrong_format'), 'error')
         end
@@ -158,6 +171,7 @@ GlobalState.pvp = RSGCore.Config.Server.PVP
 RSGCore.Commands.Add('togglepvp', locale('command.togglepvp.help'), {}, false, function(source)
     RSGCore.Config.Server.PVP = not RSGCore.Config.Server.PVP
     GlobalState.pvp = RSGCore.Config.Server.PVP
+    adminLog(source, 'togglepvp', 'PVP is now ' .. tostring(RSGCore.Config.Server.PVP))
     TriggerClientEvent('RSGCore:Client:PvpHasToggled', -1, RSGCore.Config.Server.PVP)
 end, 'admin')
 
@@ -174,6 +188,7 @@ RSGCore.Commands.Add('addpermission', locale('command.addpermission.help'), { { 
     if not RSGCore.Functions.AddPermission(Player.PlayerData.source, tostring(args[2]):lower()) then
         return notify(source, locale('error.invalid_permission'), 'error')
     end
+    adminLog(source, 'addpermission', ('target %s, permission %s'):format(Player.PlayerData.source, tostring(args[2]):lower()))
     notify(source, locale('success.permission_updated'), 'success')
 end, 'god')
 
@@ -183,6 +198,7 @@ RSGCore.Commands.Add('removepermission', locale('command.removepermission.help')
     if not RSGCore.Functions.RemovePermission(Player.PlayerData.source, tostring(args[2]):lower()) then
         return notify(source, locale('error.invalid_permission'), 'error')
     end
+    adminLog(source, 'removepermission', ('target %s, permission %s'):format(Player.PlayerData.source, tostring(args[2]):lower()))
     notify(source, locale('success.permission_updated'), 'success')
 end, 'god')
 
@@ -193,6 +209,7 @@ RSGCore.Commands.Add('openserver', locale('command.openserver.help'), {}, false,
         return notify(source, locale('error.server_already_open'), 'error')
     end
     RSGCore.Functions.SetServerClosed(false)
+    adminLog(source, 'openserver')
     notify(source, locale('success.server_opened'), 'success')
 end, 'admin')
 
@@ -201,6 +218,7 @@ RSGCore.Commands.Add('closeserver', locale('command.closeserver.help'), { { name
         return notify(source, locale('error.server_already_closed'), 'error')
     end
     RSGCore.Functions.SetServerClosed(true, table.concat(args, ' '))
+    adminLog(source, 'closeserver', table.concat(args, ' '))
     notify(source, locale('success.server_closed'), 'success')
 end, 'admin')
 
@@ -214,29 +232,38 @@ RSGCore.Commands.Add('dv', locale('command.dv.help'), {}, false, function(source
     TriggerClientEvent('RSGCore:Command:DeleteVehicle', source)
 end, 'admin')
 
-RSGCore.Commands.Add('dvall', locale('command.dvall.help'), {}, false, function()
+RSGCore.Commands.Add('dvall', locale('command.dvall.help'), {}, false, function(source)
+    local n = 0
     for _, vehicle in ipairs(GetAllVehicles()) do
         DeleteEntity(vehicle)
+        n += 1
     end
+    adminLog(source, 'dvall', n .. ' vehicle(s) deleted')
 end, 'admin')
 
 -- Peds
 
-RSGCore.Commands.Add('dvp', locale('command.dvp.help'), {}, false, function()
+RSGCore.Commands.Add('dvp', locale('command.dvp.help'), {}, false, function(source)
+    local n = 0
     for _, ped in ipairs(GetAllPeds()) do
         -- never delete player peds (previously /dvp deleted every player's character ped)
         if not IsPedAPlayer(ped) then
             DeleteEntity(ped)
+            n += 1
         end
     end
+    adminLog(source, 'dvp', n .. ' ped(s) deleted')
 end, 'admin')
 
 -- Objects
 
-RSGCore.Commands.Add('dvo', locale('command.dvo.help'), {}, false, function()
+RSGCore.Commands.Add('dvo', locale('command.dvo.help'), {}, false, function(source)
+    local n = 0
     for _, object in ipairs(GetAllObjects()) do
         DeleteEntity(object)
+        n += 1
     end
+    adminLog(source, 'dvo', n .. ' object(s) deleted')
 end, 'admin')
 
 -- Money
@@ -245,6 +272,7 @@ RSGCore.Commands.Add('givemoney', locale('command.givemoney.help'), { { name = l
     local Player = RSGCore.Functions.GetPlayer(tonumber(args[1]))
     if Player then
         if Player.Functions.AddMoney(tostring(args[2]), tonumber(args[3]), 'Admin give money') then
+            adminLog(source, 'givemoney', ('target %s, %s %s'):format(tostring(args[1]), tostring(args[2]), tostring(args[3])))
             notify(source, locale('success.money_given'), 'success')
         else
             notify(source, locale('error.invalid_money'), 'error')
@@ -296,6 +324,7 @@ RSGCore.Commands.Add('setjob', locale('command.setjob.help'), { { name = locale(
         return notify(source, ('%s (%s)'):format(locale('title_error'), tostring(reason)), 'error')
     end
     Player.Functions.SetJob(job, grade)
+    adminLog(source, 'setjob', ('target %s -> %s grade %s'):format(Player.PlayerData.source, job, grade))
     notify(source, locale('success.job_set'), 'success')
 end, 'admin')
 
@@ -317,17 +346,24 @@ RSGCore.Commands.Add('setgang', locale('command.setgang.help'), { { name = local
     if not gangInfo then return notify(source, locale('error.gang_not_exist'), 'error') end
     if not gangInfo.grades[tostring(grade)] then return notify(source, locale('error.grade_not_exist'), 'error') end
     Player.Functions.SetGang(gang, grade)
+    adminLog(source, 'setgang', ('target %s -> %s grade %s'):format(Player.PlayerData.source, gang, grade))
     notify(source, locale('success.gang_set'), 'success')
 end, 'admin')
 
 -- Out of Character Chat
-local OOC_RANGE = 20.0
+local OOC_RANGE = RSGCore.Config.Limits.OocRange
+local OOC_COOLDOWN_MS = RSGCore.Config.Limits.OocCooldownMs
+local lastOoc = {}
+AddEventHandler('playerDropped', function() lastOoc[source] = nil end)
 
 RSGCore.Commands.Add('ooc', locale('command.ooc.help'), { { name = locale('command.ooc.params.message.name'), help = locale('command.ooc.params.message.help') } }, false, function(source, args)
     local Player = RSGCore.Functions.GetPlayer(source)
     if not Player then return end
-    local message = table.concat(args, ' '):gsub('[~<].-[>~]', '')
+    local now = GetGameTimer()
+    if lastOoc[source] and now - lastOoc[source] < OOC_COOLDOWN_MS then return end -- spam protection
+    local message = table.concat(args, ' '):gsub('[~<].-[>~]', ''):sub(1, 255)
     if message == '' then return notify(source, locale('error.missing_args2'), 'error') end
+    lastOoc[source] = now
 
     local name = GetPlayerName(source) or ('ID ' .. source)
     local playerCoords = GetEntityCoords(GetPlayerPed(source))
@@ -358,7 +394,7 @@ end, 'user')
 
 -- Me command
 
-local ME_COOLDOWN_MS = 2000
+local ME_COOLDOWN_MS = RSGCore.Config.Limits.MeCooldownMs
 local lastMe = {}
 AddEventHandler('playerDropped', function() lastMe[source] = nil end)
 

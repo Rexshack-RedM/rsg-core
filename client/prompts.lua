@@ -18,6 +18,7 @@ local function createPrompt(name, coords, key, text, options)
         Prompts[name].text = text
         Prompts[name].options = options
         Prompts[name].prompt = nil
+        Prompts[name].owner = GetInvokingResource() -- resource that created it (nil when created by rsg-core itself)
     else
         print('[rsg-core]  Prompt with name ' .. name .. ' already exists!')
     end
@@ -31,6 +32,7 @@ local function createPromptGroup(group, label, coords, prompts)
         PromptGroups[group].group = group
         PromptGroups[group].created = false
         PromptGroups[group].prompts = prompts
+        PromptGroups[group].owner = GetInvokingResource()
     else
         print('[rsg-core]  Prompt group ' .. tostring(group) .. ' already exists!')
     end
@@ -105,7 +107,19 @@ local function resetPrompt(prompt)
 end
 
 AddEventHandler('onResourceStop', function(resourceName)
-    if GetCurrentResourceName() ~= resourceName then return end
+    if GetCurrentResourceName() ~= resourceName then
+        -- another resource stopped: free the prompts it forgot to delete
+        for name, v in pairs(Prompts) do
+            if v.owner == resourceName then safeDelete(v.prompt); Prompts[name] = nil end
+        end
+        for name, pGroup in pairs(PromptGroups) do
+            if pGroup.owner == resourceName then
+                for _, v in pairs(pGroup.prompts) do safeDelete(v.prompt) end
+                PromptGroups[name] = nil
+            end
+        end
+        return
+    end
     for _, v in pairs(Prompts) do
         safeDelete(v.prompt)
     end

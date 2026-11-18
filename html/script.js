@@ -61,7 +61,7 @@ function notify(data) {
     const body = document.createElement('div');
     body.className = 'body';
     if (data.title) {
-        body.appendChild(text('div', 'label', LABELS[type]));
+        body.appendChild(text('div', 'label', data.label || LABELS[type]));
         body.appendChild(text('div', 'title', data.title));
     }
     if (data.description) body.appendChild(text('div', 'desc', data.description));

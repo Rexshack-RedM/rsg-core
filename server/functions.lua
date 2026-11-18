@@ -530,6 +530,13 @@ function RSGCore.Functions.Kick(source, reason, setKickReason, deferrals)
     end)
 end
 
+---Can this player join (or stay on) a closed server? ACE rsgadmin.join or the whitelist permission.
+---@param src number
+---@return boolean
+function RSGCore.Functions.CanJoinClosed(src)
+    return IsPlayerAceAllowed(src, 'rsgadmin.join') or RSGCore.Functions.HasPermission(src, RSGCore.Config.Server.WhitelistPermission)
+end
+
 ---Open or close the server. Closing kicks everyone without the whitelist permission.
 ---@param closed boolean
 ---@param reason string?
@@ -539,7 +546,7 @@ function RSGCore.Functions.SetServerClosed(closed, reason)
     reason = type(reason) == 'string' and reason ~= '' and reason or locale('info.no_reason')
     RSGCore.Config.Server.ClosedReason = reason
     for src in pairs(RSGCore.Players) do
-        if not RSGCore.Functions.HasPermission(src, RSGCore.Config.Server.WhitelistPermission) then
+        if not RSGCore.Functions.CanJoinClosed(src) then
             RSGCore.Functions.Kick(src, reason)
         end
     end
@@ -661,13 +668,31 @@ end
 function RSGCore.Functions.IsPlayerBanned(source)
     local plicense = RSGCore.Functions.GetIdentifier(source, 'license')
     if not plicense then return false end
-    local result = MySQL.single.await('SELECT id, reason, expire FROM bans WHERE license = ?', { plicense })
-    if not result then return false end
-    local expire = tonumber(result.expire) or 0
-    if os.time() < expire then
-        return true, locale('info.ban_message', result.reason or '', os.date('%d/%m/%Y %H:%M', expire))
-    else
-        MySQL.query('DELETE FROM bans WHERE id = ?', { result.id })
+    local conds, params = { 'license = ?' }, { plicense }
+    local banCfg = RSGCore.Config.Ban or {}
+    if banCfg.CheckDiscord then
+        local discord = RSGCore.Functions.GetIdentifier(source, 'discord')
+        if discord then conds[#conds + 1] = 'discord = ?'; params[#params + 1] = discord end
+    end
+    if banCfg.CheckIP then
+        local ip = RSGCore.Functions.GetIdentifier(source, 'ip')
+        if ip then conds[#conds + 1] = 'ip = ?'; params[#params + 1] = ip end
+    end
+    -- a player can match several rows (old expired ban plus a newer one, or an alt account): check them all, longest ban first
+    local rows = MySQL.query.await('SELECT id, reason, expire FROM bans WHERE ' .. table.concat(conds, ' OR ') .. ' ORDER BY expire DESC', params)
+    if not rows or #rows == 0 then return false end
+    local now = os.time()
+    local active
+    for i = 1, #rows do
+        local expire = tonumber(rows[i].expire) or 0
+        if now < expire then
+            active = active or rows[i]
+        else
+            MySQL.query('DELETE FROM bans WHERE id = ?', { rows[i].id }) -- expired
+        end
+    end
+    if active then
+        return true, locale('info.ban_message', active.reason or '', os.date('%d/%m/%Y %H:%M', tonumber(active.expire) or 0))
     end
     return false
 end

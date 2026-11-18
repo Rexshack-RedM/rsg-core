@@ -116,6 +116,12 @@ RSGConfig.Commands.OOCColor = { 255, 151, 133 }          -- RGB color code for t
 
 RSGConfig.PromptDistance = 1.5
 
+-- While an rsg-core NUI menu (/myjobs, /jobadmin) is open, block game controls but keep push-to-talk working.
+RSGConfig.AllowPushToTalkWhileOpen = true
+RSGConfig.PushToTalkControls = {
+    0x4BC9DABB, -- INPUT_PUSH_TO_TALK
+}
+
 RSGConfig.Notify = {
     Position = 'top-right',   -- top-right | top-left | top | bottom-right | bottom-left | bottom | center-right | center-left
     Duration = 5000,          -- default ms
@@ -141,3 +147,30 @@ RSGConfig.ClientWritableMetadata = {
     health = true,
     armor = true,
 }
+
+-- Database: create the players/bans tables automatically on start. Set false to import install.sql manually.
+RSGConfig.AutoDatabase = true
+
+-- Rate limits and distances used by server events and chat commands
+RSGConfig.Limits = {
+    SaveCooldown = 30,        -- seconds between client requested saves
+    DutyCooldownMs = 2000,    -- duty toggle cooldown
+    SpawnCooldownMs = 5000,   -- vehicle spawn callback cooldown
+    SpawnMaxDistance = 50.0,  -- max distance between player and requested spawn point
+    MeCooldownMs = 2000,      -- /me cooldown
+    OocCooldownMs = 2000,     -- /ooc cooldown
+    OocRange = 20.0,          -- /ooc chat range
+}
+
+-- Saving: the server saves every player each UpdateInterval minutes instead of relying on the client
+RSGConfig.ServerSideSave = true
+RSGConfig.LogSaves = false -- print a console line on every player save
+
+-- Ban checks on join (license is always checked)
+RSGConfig.Ban = {
+    CheckDiscord = true,
+    CheckIP = false,
+}
+
+-- rsg-log channel used for admin command audit logs
+RSGConfig.AdminLogChannel = 'admin'

@@ -41,14 +41,6 @@ end)
 
 -- Teleport Commands
 
-RegisterNetEvent('RSGCore:Command:TeleportToPlayer', function(coords)
-    SetEntityCoords(PlayerPedId(), coords.x, coords.y, coords.z) 
-end)
-
-RegisterNetEvent('RSGCore:Command:TeleportToCoords', function(x, y, z, h)
-    SetEntityCoords(PlayerPedId(), x, y, z) 
-end)
-
 -- /tpm safeguards: the destination is usually unstreamed, so the heightmap Z can be below the real ground.
 -- We freeze the entity, stream the area in, probe for real ground from above, and only then place it.
 -- On failure the player is returned to where they started instead of falling under the map.
@@ -80,19 +72,16 @@ local function RequestGroundAt(entity, x, y)
     return nil
 end
 
-RegisterNetEvent('RSGCore:Command:GoToMarker', function()
+-- Shared safe teleport used by /tp and /tpm. Moves the carrier (vehicle > mount > ped) so riders go with it.
+-- z == nil: probe for real ground at x,y first. z given: freeze and wait for collision before placing.
+-- On failure the player is returned to where they started.
+local function SafeTeleport(x, y, z, h, successTitle)
     if tpmBusy then return end
-    if not IsWaypointActive() then
-        RSGCore.Functions.Notify({ title = locale('error.no_waypoint'), type = 'error', duration = 5000 })
-        return
-    end
     tpmBusy = true
 
-    local coords = GetWaypointCoords()
     local ped = PlayerPedId()
     local vehicle = GetVehiclePedIsIn(ped, false)
     local mount = GetMount(ped)
-    -- move the carrier (vehicle > mount > ped); riders go with it
     local entity = (vehicle ~= 0 and vehicle) or (mount and mount ~= 0 and mount) or ped
     local startCoords = GetEntityCoords(entity)
 
@@ -100,14 +89,29 @@ RegisterNetEvent('RSGCore:Command:GoToMarker', function()
     SetEntityInvincible(ped, true)
     if entity ~= ped then SetEntityInvincible(entity, true) end
 
-    local groundZ = RequestGroundAt(entity, coords.x, coords.y)
+    local groundZ
+    if z then
+        groundZ = z
+        SetEntityCoordsNoOffset(entity, x, y, z, false, false, false)
+        RequestCollisionAtCoord(x, y, z)
+        SetFocusPosAndVel(x, y, z, 0.0, 0.0, 0.0)
+        local deadline = GetGameTimer() + 5000
+        while not HasCollisionLoadedAroundEntity(entity) and GetGameTimer() < deadline do
+            RequestCollisionAtCoord(x, y, z)
+            Wait(20)
+        end
+    else
+        groundZ = RequestGroundAt(entity, x, y)
+    end
 
     if groundZ then
-        SetEntityCoordsNoOffset(entity, coords.x, coords.y, groundZ + 1.0, false, false, false)
-        if entity ~= ped then
-            PlacePedOnGroundProperly(ped, coords)
+        local placeZ = z and groundZ or (groundZ + 1.0)
+        SetEntityCoordsNoOffset(entity, x, y, placeZ, false, false, false)
+        if h then SetEntityHeading(entity, h + 0.0) end
+        if not z then
+            if entity ~= ped then PlacePedOnGroundProperly(ped, vector3(x, y, placeZ)) end
+            PlacePedOnGroundProperly(entity, vector3(x, y, placeZ))
         end
-        PlacePedOnGroundProperly(entity, coords)
         if mount and mount ~= 0 and entity == mount then
             Citizen.InvokeNative(0x028F76B6E78246EB, ped, mount, -1)
         elseif vehicle ~= 0 then
@@ -123,22 +127,45 @@ RegisterNetEvent('RSGCore:Command:GoToMarker', function()
     SetEntityInvincible(ped, false)
     if entity ~= ped then SetEntityInvincible(entity, false) end
 
-    if groundZ then
+    if groundZ and not z then
         -- watchdog: if we still dropped below the ground, snap back up to the ground we found
         CreateThread(function()
             for _ = 1, 10 do
                 Wait(300)
                 local pos = GetEntityCoords(entity)
                 if pos.z < groundZ - 5.0 then
-                    SetEntityCoordsNoOffset(entity, coords.x, coords.y, groundZ + 1.5, false, false, false)
+                    SetEntityCoordsNoOffset(entity, x, y, groundZ + 1.5, false, false, false)
                 end
             end
         end)
-        RSGCore.Functions.Notify({ title = locale('success.teleported_waypoint'), type = 'success', duration = 5000 })
+    end
+
+    if groundZ then
+        if successTitle then RSGCore.Functions.Notify({ title = successTitle, type = 'success', duration = 5000 }) end
     else
         RSGCore.Functions.Notify({ title = locale('error.tpm_no_ground'), type = 'error', duration = 6000 })
     end
     tpmBusy = false
+end
+
+RegisterNetEvent('RSGCore:Command:GoToMarker', function()
+    if tpmBusy then return end
+    if not IsWaypointActive() then
+        RSGCore.Functions.Notify({ title = locale('error.no_waypoint'), type = 'error', duration = 5000 })
+        return
+    end
+    local coords = GetWaypointCoords()
+    SafeTeleport(coords.x, coords.y, nil, nil, locale('success.teleported_waypoint'))
+end)
+
+RegisterNetEvent('RSGCore:Command:TeleportToPlayer', function(coords)
+    if type(coords) ~= 'vector3' and type(coords) ~= 'table' then return end
+    SafeTeleport(coords.x, coords.y, coords.z, nil)
+end)
+
+RegisterNetEvent('RSGCore:Command:TeleportToCoords', function(x, y, z, h)
+    if type(x) ~= 'number' or type(y) ~= 'number' then return end
+    SafeTeleport(x, y, type(z) == 'number' and z or nil, type(h) == 'number' and h or nil)
 end)
 
 -- Noclip Command
@@ -296,12 +323,21 @@ local function GenerateCSRFToken()
 end
 exports('GenerateCSRFToken', GenerateCSRFToken)
 
+local csrfStrikes = 0
 RegisterNUICallback('validateCSRF', function(data, cb)
     if csrfToken and csrfToken == data.clientToken then
         csrfToken = nil
+        csrfStrikes = 0
         cb({ valid = true })
+    elseif not csrfToken then
+        -- no token pending: a duplicate or late callback, not an attack. Reject it without kicking.
+        cb({ valid = false })
     else
-        TriggerServerEvent('RSGCore:Server:KickCSRF')
+        -- a token is pending and the supplied one is wrong; only kick on repeated mismatches
+        csrfStrikes = csrfStrikes + 1
+        if csrfStrikes >= 2 then
+            TriggerServerEvent('RSGCore:Server:KickCSRF')
+        end
         cb({ valid = false })
     end
 end)

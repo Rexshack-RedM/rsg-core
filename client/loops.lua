@@ -4,7 +4,7 @@ CreateThread(function()
 
     while true do
         Wait(interval)
-        if LocalPlayer.state.isLoggedIn then
+        if LocalPlayer.state.isLoggedIn and not RSGCore.Config.ServerSideSave then
             TriggerServerEvent('RSGCore:UpdatePlayer')
         end
     end

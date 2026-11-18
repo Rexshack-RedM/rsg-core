@@ -538,6 +538,7 @@ function RSGCore.Functions.Notify(title, text, notifyType, duration, icon)
             type = nType,
             duration = tonumber(data.duration) or cfg.Duration or 5000,
             icon = type(data.icon) == 'string' and data.icon or nil,
+            label = locale('notify_label_' .. nType),
             position = data.position or cfg.Position or 'top-right',
             max = cfg.MaxVisible or 5,
         }

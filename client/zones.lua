@@ -143,6 +143,7 @@ local function register(data, shape)
     data.id = nextId
     data.__type = shape
     data.distance = math.huge
+    data.near = data.near or NEAR_DISTANCE
     data.insideZone = false
     data.debugColour = data.debugColour or { 255, 42, 24, 180 }
     setmetatable(data, Zone)
@@ -158,6 +159,7 @@ end
 function zones.sphere(data)
     data.coords = toVec3(data.coords)
     data.radius = (data.radius or 2.0) + 0.0
+    data.near = math.max(NEAR_DISTANCE, data.radius + 10.0)
     data.contains = sphereContains
     data.draw = drawSphere
     return register(data, 'sphere')
@@ -168,6 +170,7 @@ function zones.box(data)
     data.coords = toVec3(data.coords)
     data.size = data.size and toVec3(data.size) or vec3(2.0, 2.0, 2.0)
     data.half = data.size / 2
+    data.near = math.max(NEAR_DISTANCE, #data.half + 10.0)
     data.heading = headingOf(data.rotation) + 0.0
     data.contains = boxContains
     data.draw = drawBox
@@ -188,6 +191,10 @@ function zones.poly(data)
     data.points = pts
     data.thickness = thickness
     data.coords = vec3(sx / n, sy / n, sz / n)
+    -- large zones (towns, districts) must be checked even when the centre is further than NEAR_DISTANCE away
+    local reach = 0.0
+    for i = 1, n do reach = math.max(reach, #(pts[i] - data.coords)) end
+    data.near = math.max(NEAR_DISTANCE, reach + 10.0)
     data.minZ = data.coords.z - thickness / 2
     data.maxZ = data.coords.z + thickness / 2
     data.contains = polyContains
@@ -206,7 +213,7 @@ end
 function zones.getNearbyZones()
     local out = {}
     for _, z in pairs(Zones) do
-        if z.distance <= NEAR_DISTANCE then out[#out + 1] = z end
+        if z.distance <= z.near then out[#out + 1] = z end
     end
     return out
 end
@@ -225,7 +232,7 @@ CreateThread(function()
 
             for id, z in pairs(Zones) do
                 z.distance = #(coords - z.coords)
-                local inside = z.distance <= NEAR_DISTANCE and z:contains(coords)
+                local inside = z.distance <= z.near and z:contains(coords)
 
                 if inside and not z.insideZone then
                     z.insideZone = true
@@ -249,7 +256,7 @@ CreateThread(function()
         local busy = false
 
         for id, z in pairs(Zones) do
-            if z.debug and z.distance <= NEAR_DISTANCE then
+            if z.debug and z.distance <= z.near then
                 busy = true
                 z:draw()
             end
