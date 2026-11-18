@@ -1652,3 +1652,199 @@ local hit, entity, endCoords, normal = RSGCore.Functions.Raycast(fromVec3, toVec
 - `@rsg-core/shared/table.lua` adds `table.type`, `table.wipe`, `table.clone` and `table.contains` when the runtime lacks them. It is also loaded by rsg-core itself (`server/player.lua` already uses `table.type`).
 - Progress detection: `RSGCore.Functions.IsProgressActive()` replaces `lib.progressActive`.
 - rsg-core has no context menu, so there is no `lib.getOpenContextMenu` equivalent.
+
+<!-- BEGIN AUTO-REFERENCE (generated from the code; re-run the generator instead of editing by hand) -->
+
+## Technical reference
+
+Generated from the source of **rsg-core 3.3.1**. Names, arguments and defaults below are read straight from the code.
+
+### Dependencies
+
+`oxmysql`
+
+### Database
+
+Tables: `players`, `bans`, `multijob_jobs`, `player_jobs`.
+
+Tables are created automatically on start while `Config.AutoDatabase = true` (default). Nothing is ever dropped or overwritten.
+For a manual install set `Config.AutoDatabase = false` and import `install.sql` once.
+
+```lua
+-- shared/config.lua
+Config.AutoDatabase = true -- false = import the SQL file yourself
+```
+
+### Exports
+
+**Server**
+
+| Export | Arguments | File |
+|---|---|---|
+| `AddMoney` | `src, moneytype, amount, reason` | `server/api.lua` |
+| `RemoveMoney` | `src, moneytype, amount, reason` | `server/api.lua` |
+| `GetMoney` | `src, moneytype` | `server/api.lua` |
+| `GetMetaData` | `src, key` | `server/api.lua` |
+| `SetMetaData` | `src, key, value` | `server/api.lua` |
+| `GetJob` | `src` | `server/api.lua` |
+| `GetGang` | `src` | `server/api.lua` |
+| `CreateCron` | `` | `server/cron.lua` |
+| `StopCron` | `` | `server/cron.lua` |
+| `SetMethod` | `` | `server/exports.lua` |
+| `SetField` | `` | `server/exports.lua` |
+| `GetCoreVersion` | `` | `server/exports.lua` |
+| `ExploitBan` | `` | `server/exports.lua` |
+| `GetCoreObject` | `` | `server/main.lua` |
+| `GetWeapons` | `` | `shared/main.lua` |
+
+**Client**
+
+| Export | Arguments | File |
+|---|---|---|
+| `DrawText` | `` | `client/drawtext.lua` |
+| `ChangeText` | `` | `client/drawtext.lua` |
+| `HideText` | `` | `client/drawtext.lua` |
+| `KeyPressed` | `` | `client/drawtext.lua` |
+| `IsTextShown` | `` | `client/drawtext.lua` |
+| `GenerateCSRFToken` | `` | `client/events.lua` |
+| `Notify` | `...` | `client/functions.lua` |
+| `RequestModel` | `` | `client/lib.lua` |
+| `RequestAnimDict` | `` | `client/lib.lua` |
+| `RequestAnimSet` | `` | `client/lib.lua` |
+| `RequestNamedPtfxAsset` | `` | `client/lib.lua` |
+| `RequestStreamedTextureDict` | `` | `client/lib.lua` |
+| `Raycast` | `` | `client/lib.lua` |
+| `RaycastCamera` | `` | `client/lib.lua` |
+| `GetNearbyPeds` | `` | `client/lib.lua` |
+| `GetNearbyVehicles` | `` | `client/lib.lua` |
+| `GetNearbyObjects` | `` | `client/lib.lua` |
+| `GetCoreObject` | `` | `client/main.lua` |
+| `ProgressBar` | `` | `client/progress.lua` |
+| `ProgressCircle` | `` | `client/progress.lua` |
+| `IsProgressActive` | `` | `client/progress.lua` |
+| `CancelProgress` | `` | `client/progress.lua` |
+| `createPrompt` | `` | `client/prompts.lua` |
+| `createPromptGroup` | `` | `client/prompts.lua` |
+| `getPrompt` | `` | `client/prompts.lua` |
+| `getPromptGroup` | `` | `client/prompts.lua` |
+| `deletePrompt` | `` | `client/prompts.lua` |
+| `deletePromptGroup` | `` | `client/prompts.lua` |
+
+```lua
+-- example
+local result = exports['rsg-core']:AddMoney(src, moneytype, amount, reason)
+```
+
+### Callbacks
+
+| Callback | Side | Arguments | File |
+|---|---|---|---|
+| `RSGCore:Server:SpawnVehicle` | server | `source, cb, model, coords, warp` | `server/events.lua` |
+| `rsg-multijob:server:admin:getJobs` | server | `source` | `server/multijob/admin.lua` |
+| `rsg-multijob:server:admin:saveJob` | server | `source, job, isNew` | `server/multijob/admin.lua` |
+| `rsg-multijob:server:admin:deleteJob` | server | `source, name` | `server/multijob/admin.lua` |
+| `rsg-multijob:server:admin:importCore` | server | `source` | `server/multijob/admin.lua` |
+| `rsg-multijob:server:admin:getHolders` | server | `source, job` | `server/multijob/admin.lua` |
+| `rsg-multijob:server:admin:assignJob` | server | `source, data` | `server/multijob/admin.lua` |
+| `rsg-multijob:server:admin:setGrade` | server | `source, data` | `server/multijob/admin.lua` |
+| `rsg-multijob:server:admin:removeHolder` | server | `source, data` | `server/multijob/admin.lua` |
+| `rsg-multijob:server:myJobs` | server | `source` | `server/multijob/server.lua` |
+
+```lua
+-- client side
+RSGCore.Functions.TriggerCallback('RSGCore:Server:SpawnVehicle', function(result)
+    -- use result
+end, model, coords, warp)
+```
+
+### Events
+
+Server events can be fired by any client, so every handler re-validates the player, the arguments and any permission, distance or cooldown on the server. Never add a reward to a handler without those checks.
+
+| Event | Side | Arguments | File |
+|---|---|---|---|
+| `rsg-core:client:DrawText` | client | `` | `client/drawtext.lua` |
+| `rsg-core:client:ChangeText` | client | `` | `client/drawtext.lua` |
+| `rsg-core:client:HideText` | client | `` | `client/drawtext.lua` |
+| `rsg-core:client:KeyPressed` | client | `` | `client/drawtext.lua` |
+| `RSGCore:Client:OnPlayerLoaded` | client | `` | `client/events.lua` |
+| `RSGCore:Client:OnPlayerUnload` | client | `` | `client/events.lua` |
+| `RSGCore:Client:PvpHasToggled` | client | `pvp_state` | `client/events.lua` |
+| `RSGCore:Command:GoToMarker` | client | `` | `client/events.lua` |
+| `RSGCore:Command:TeleportToPlayer` | client | `coords` | `client/events.lua` |
+| `RSGCore:Command:TeleportToCoords` | client | `x, y, z, h` | `client/events.lua` |
+| `RSGCore:Command:ToggleNoClip` | client | `` | `client/events.lua` |
+| `RSGCore:Command:SpawnVehicle` | client | `vehName` | `client/events.lua` |
+| `RSGCore:Command:DeleteVehicle` | client | `` | `client/events.lua` |
+| `RSGCore:Client:Notify` | client | `...` | `client/events.lua` |
+| `RSGCore:Notify` | client | `...` | `client/events.lua` |
+| `RSGCore:Player:SetPlayerData` | client | `val` | `client/events.lua` |
+| `RSGCore:Player:UpdatePlayerData` | client | `` | `client/events.lua` |
+| `RSGCore:Client:TriggerClientCallback` | client | `name, ...` | `client/events.lua` |
+| `RSGCore:Client:TriggerCallback` | client | `name, ...` | `client/events.lua` |
+| `RSGCore:Client:TriggerCallbackId` | client | `requestId, ...` | `client/events.lua` |
+| `RSGCore:Command:ShowMe3D` | client | `senderId, msg` | `client/events.lua` |
+| `RSGCore:Client:OnSharedUpdate` | client | `tableName, key, value` | `client/events.lua` |
+| `RSGCore:Client:OnSharedUpdateMultiple` | client | `tableName, values` | `client/events.lua` |
+| `rsg-multijob:client:openmenu` | client | `` | `client/multijob.lua` |
+| `rsg-multijob:client:refreshJobs` | client | `jobs, currentJobName` | `client/multijob.lua` |
+| `RSGCore:Client:OnJobUpdate` | client | `job` | `client/multijob.lua` |
+| `rsg-multijob:client:openAdmin` | client | `` | `client/multijob.lua` |
+| `rsg-core:client:CancelProgress` | client | `` | `client/progress.lua` |
+| `RSGCore:Server:CloseServer` | server | `reason` | `server/events.lua` |
+| `RSGCore:Server:OpenServer` | server | `` | `server/events.lua` |
+| `RSGCore:Server:TriggerClientCallback` | server | `name, ...` | `server/events.lua` |
+| `RSGCore:Server:TriggerCallback` | server | `name, ...` | `server/events.lua` |
+| `RSGCore:Server:TriggerCallbackId` | server | `name, requestId, ...` | `server/events.lua` |
+| `RSGCore:UpdatePlayer` | server | `` | `server/events.lua` |
+| `RSGCore:Server:SetMetaData` | server | `meta, data` | `server/events.lua` |
+| `RSGCore:ToggleDuty` | server | `` | `server/events.lua` |
+| `RSGCore:CallCommand` | server | `command, args` | `server/events.lua` |
+| `RSGCore:Server:KickCSRF` | server | `` | `server/events.lua` |
+| `RSGCore:Server:OnPlayerLoaded` | server | `` | `server/moneyitems.lua` |
+| `rsg-multijob:server:changeJob` | server | `job` | `server/multijob/server.lua` |
+| `rsg-multijob:server:deleteJob` | server | `job` | `server/multijob/server.lua` |
+| `rsg-bossmenu:server:FireEmployee` | server | `target` | `server/multijob/server.lua` |
+
+```lua
+-- from a client script
+TriggerServerEvent('RSGCore:Server:CloseServer', reason)
+-- from a server script
+TriggerClientEvent('rsg-core:client:DrawText', source)
+```
+
+### Commands
+
+| Command | Notes | File |
+|---|---|---|
+| `/tp` | locale('command.tp.help') | `server/commands.lua` |
+| `/tpm` | locale('command.tpm.help') | `server/commands.lua` |
+| `/togglepvp` | locale('command.togglepvp.help') | `server/commands.lua` |
+| `/noclip` | locale('command.noclip.help') | `server/commands.lua` |
+| `/addpermission` | locale('command.addpermission.help') | `server/commands.lua` |
+| `/removepermission` | locale('command.removepermission.help') | `server/commands.lua` |
+| `/openserver` | locale('command.openserver.help') | `server/commands.lua` |
+| `/closeserver` | locale('command.closeserver.help') | `server/commands.lua` |
+| `/vehicle` | locale('command.car.help') | `server/commands.lua` |
+| `/dv` | locale('command.dv.help') | `server/commands.lua` |
+| `/dvall` | locale('command.dvall.help') | `server/commands.lua` |
+| `/dvp` | locale('command.dvp.help') | `server/commands.lua` |
+| `/dvo` | locale('command.dvo.help') | `server/commands.lua` |
+| `/givemoney` | locale('command.givemoney.help') | `server/commands.lua` |
+| `/setmoney` | locale('command.setmoney.help') | `server/commands.lua` |
+| `/job` | locale('command.job.help') | `server/commands.lua` |
+| `/setjob` | locale('command.setjob.help') | `server/commands.lua` |
+| `/gang` | locale('command.gang.help') | `server/commands.lua` |
+| `/setgang` | locale('command.setgang.help') | `server/commands.lua` |
+| `/ooc` | locale('command.ooc.help') | `server/commands.lua` |
+| `/me` | locale('command.me.help') | `server/commands.lua` |
+| `/id` | locale('command.id.help') | `server/commands.lua` |
+| `/cid` | locale('command.cid.help') | `server/commands.lua` |
+| `/myjobs` | locale('cmd_myjobs_desc') | `server/multijob/server.lua` |
+| `/removejob` | locale('cmd_removejob_desc') | `server/multijob/server.lua` |
+
+### Locales
+
+Language files in `locales/`: `de`, `el`, `en`, `es`, `fr`, `ja`, `nl`, `pl`, `pt-br`, `ro`. Set the language with `setr rsg:locale "en"`.
+
+<!-- END AUTO-REFERENCE -->
