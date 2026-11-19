@@ -26,7 +26,7 @@ rsg-core has no ox_lib dependency or compatibility code. Notifications, callback
 
 ## Language / Locales
 
-Translations live in `locales/*.json`. Supported languages: `en`, `de`, `el`, `es`, `fr`, `ja`, `nl`, `pl`, `pt-br`, `ro`.
+Translations live in `locales/*.json`. Supported languages: `en`, `de`, `el`, `es`, `fr`, `ja`, `nl`, `pl`, `pt-br`, `ro`, `ru`.
 
 ```cfg
 setr rsg:locale en   # falls back to en

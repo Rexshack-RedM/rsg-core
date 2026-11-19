@@ -123,7 +123,7 @@ GetLocaleLanguage()                        -- 'en'
 - `"${other.key}"` inside a string is substituted.
 - Missing keys fall back to `en.json`, then to the key itself.
 - Locale files support nested keys and `${key}` references.
-- Server standard languages: `en, de, el, es, fr, ja, nl, pl, pt-br, ro`.
+- Server standard languages: `en, de, el, es, fr, ja, nl, pl, pt-br, ro, ru`.
 
 ---
 
@@ -1385,7 +1385,7 @@ A minimal but complete resource that follows every convention in this document: 
 rsg-example/
 ├── fxmanifest.lua
 ├── shared/config.lua
-├── locales/en.json        (plus de, el, es, fr, ja, nl, pl, pt-br, ro with the same keys)
+├── locales/en.json        (plus de, el, es, fr, ja, nl, pl, pt-br, ro, ru with the same keys)
 ├── client/client.lua
 └── server/server.lua
 ```
@@ -1845,6 +1845,6 @@ TriggerClientEvent('rsg-core:client:DrawText', source)
 
 ### Locales
 
-Language files in `locales/`: `de`, `el`, `en`, `es`, `fr`, `ja`, `nl`, `pl`, `pt-br`, `ro`. Set the language with `setr rsg:locale "en"`.
+Language files in `locales/`: `de`, `el`, `en`, `es`, `fr`, `ja`, `nl`, `pl`, `pt-br`, `ro`, `ru`. Set the language with `setr rsg:locale "en"`.
 
 <!-- END AUTO-REFERENCE -->
