@@ -5,7 +5,7 @@ game 'rdr3'
 lua54 'yes'
 
 description 'rsg-core'
-version '3.3.1'
+version '3.4.0'
 
 shared_scripts {
     'shared/table.lua',
@@ -52,6 +52,7 @@ client_scripts {
     'client/progress.lua',
     'client/prompts.lua',
     'client/pvp.lua',
+    'client/death.lua',
     'client/multijob.lua',
     'client/api.lua'
 }
@@ -64,6 +65,7 @@ server_scripts {
     'server/moneyitems.lua',
     'server/player.lua',
     'server/events.lua',
+    'server/death.lua',
     'server/commands.lua',
     'server/exports.lua',
     'server/multijob/sv_config.lua',

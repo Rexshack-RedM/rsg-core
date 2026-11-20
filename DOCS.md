@@ -1,6 +1,6 @@
 # rsg-core Developer Documentation
 
-> Version **3.3.0** · RedM · Lua 5.4 · Depends only on `oxmysql`
+> Version **3.4.0** · RedM · Lua 5.4 · Depends only on `oxmysql`
 > rsg-core has no **ox_lib** dependency and no ox_lib compatibility code: notifications, callbacks, progress bars, text UI, prompts, locales, `require` and asset loaders are all built in.
 
 ---
@@ -938,6 +938,8 @@ Both setters return `false` if an argument is missing.
 | `RSGCore:Server:OnGangUpdate` | `source, gang` |
 | `RSGCore:Server:OnMoneyChange` | `source, moneytype, amount, operation, reason` |
 | `RSGCore:Server:SetDuty` | `source, onDuty` |
+| `RSGCore:Server:OnPlayerDeath` | `victim, killer|nil, data`. Every reported death. `data = { weapon, coords, confirmed }`. Server-only, clients cannot fire it |
+| `RSGCore:Server:OnPlayerKilled` | `victim, killer, data`. Only player-vs-player kills that passed validation and the killer's confirmation |
 | `RSGCore:Server:UpdateObject` | — |
 | `RSGCore:Server:OnPlayerLoaded` | Net event fired by the client once the character is ready; core uses it to sync money items. Prefer `PlayerLoaded` for your own code |
 | `RSGCore:Server:CloseServer` / `OpenServer` | Net events (admin permission checked server-side) |
@@ -1010,6 +1012,19 @@ RegisterNetEvent('RSGCore:Client:OnSharedUpdate', function(tableName, key, value
 end)
 ```
 
+### Death and kill events
+
+`client/death.lua` watches the local ped. On death it reports the killer's server id and the cause-of-death weapon hash to `RSGCore:Server:ReportDeath` (the only client-callable part). `server/death.lua` then credits a killer only if the killer is online, not the victim, in the same routing bucket, within `RSGConfig.Death.MaxKillDistance` (server positions), PVP is on, and the killer's client confirms (`RSGCore:Client:ConfirmKill`: it sees the victim dead with itself as the source of death). Otherwise `killer` is `nil`. Repeat reports inside `MinSecondsBetween` are ignored.
+
+```lua
+AddEventHandler('RSGCore:Server:OnPlayerKilled', function(victim, killer, data)
+    -- data.weapon (hash), data.coords (vector3), data.confirmed (true)
+end)
+local last = exports['rsg-core']:GetLastDeath(src) -- { killer, weapon, coords, time, confirmed } or nil
+```
+
+Limits: kills made from a horse or wagon, and deaths with no player source, report `killer = nil`. A victim client can still lie about being dead, but cannot frame a player who did not confirm.
+
 ### Client → server events you may call
 
 | Event | Notes |
@@ -1017,6 +1032,7 @@ end)
 | `RSGCore:Server:SetMetaData (key, value)` | **Only** keys in `RSGConfig.ClientWritableMetadata` (hunger, thirst, cleanliness, stress, health, armor) |
 | `RSGCore:ToggleDuty` | |
 | `RSGCore:UpdatePlayer` | Saves current stats |
+| `RSGCore:Server:ReportDeath (killerServerId, weapon)` | Used by `client/death.lua`; validated and rate limited server-side |
 
 ---
 

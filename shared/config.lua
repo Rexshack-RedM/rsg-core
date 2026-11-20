@@ -116,6 +116,17 @@ RSGConfig.Commands.OOCColor = { 255, 151, 133 }          -- RGB color code for t
 
 RSGConfig.PromptDistance = 1.5
 
+-- Death and kill events (RSGCore:Server:OnPlayerDeath / OnPlayerKilled, export GetLastDeath).
+-- A kill is only credited to a player when they are in range, in the same routing bucket, PVP is on,
+-- and the killer's own client confirms it.
+RSGConfig.Death = {
+    Enabled = true,
+    MaxKillDistance = 500.0,    -- metres between victim and claimed killer (server positions)
+    RequireKillerConfirm = true,
+    ConfirmTimeout = 3000,      -- ms to wait for the killer's client
+    MinSecondsBetween = 8,      -- ignore repeat reports from the same victim inside this window
+}
+
 -- While an rsg-core NUI menu (/myjobs, /jobadmin) is open, block game controls but keep push-to-talk working.
 RSGConfig.AllowPushToTalkWhileOpen = true
 RSGConfig.PushToTalkControls = {

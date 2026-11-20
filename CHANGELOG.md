@@ -2,6 +2,11 @@
 
 All notable changes to rsg-core. Newest first.
 
+## 3.4.0
+
+### Added
+- Death and kill events. The victim's client reports a death; the server checks that the killer is online, in range, in the same routing bucket and that PVP is on, then asks the killer's client to confirm. New server-only events `RSGCore:Server:OnPlayerDeath (victim, killer|nil, data)` and `RSGCore:Server:OnPlayerKilled (victim, killer, data)`, local client event `RSGCore:Client:OnPlayerDied (killerServerId|nil, weaponHash)`, export `GetLastDeath(src)` and `RSGConfig.Death`.
+
 ## 3.3.1
 
 ### Fixed
