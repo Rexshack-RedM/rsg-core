@@ -2,6 +2,11 @@
 
 All notable changes to rsg-core. Newest first.
 
+## 3.5.0
+
+### Added
+- **Rebindable keys:** new client function and export `RegisterKey(name, description, defaultKey, onPress, onRelease, opts)` and `UnregisterKey(name)` (new file `client/keys.lua`). Wraps `RegisterKeyMapping` with a `+`/`-` command pair, login and NUI-focus gating, an optional `canTrigger` check and automatic cleanup when the owning resource stops.
+
 ## 3.4.0
 
 ### Added

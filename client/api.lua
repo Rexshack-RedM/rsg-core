@@ -4,6 +4,7 @@ local exported = {
     'GetClosestObject', 'GetPlayersFromCoords', 'PlayAnim', 'LookAtEntity', 'SpawnVehicle', 'DeleteVehicle',
     'GetGroundZCoord', 'GetCardinalDirection', 'GetCurrentTime',
     'TriggerCallback', 'AwaitCallback', 'CreateClientCallback',
+    'RegisterKey', 'UnregisterKey',
 }
 
 for i = 1, #exported do

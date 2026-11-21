@@ -1,6 +1,6 @@
 # rsg-core Developer Documentation
 
-> Version **3.4.0** · RedM · Lua 5.4 · Depends only on `oxmysql`
+> Version **3.5.0** · RedM · Lua 5.4 · Depends only on `oxmysql`
 > rsg-core has no **ox_lib** dependency and no ox_lib compatibility code: notifications, callbacks, progress bars, text UI, prompts, locales, `require` and asset loaders are all built in.
 
 ---
@@ -771,6 +771,8 @@ Signature: `Add(name, help, arguments, argsrequired, callback, permission?)`. Ch
 | `GetCardinalDirection(entity?)` | `'North'`, … |
 | `GetCurrentTime()` | `{ hour, min, formattedHour, formattedMin, ampm }` |
 | `GetGroundZCoord(coords)` / `GetGroundHash(entity)` | |
+| `RegisterKey(name, description, defaultKey, onPress?, onRelease?, opts?)` | Rebindable key (see below) |
+| `UnregisterKey(name)` | Stops a registered key from doing anything |
 | `RSGCore.Debug(...)` | Prints to F8 console |
 | `exports['rsg-core']:GenerateCSRFToken()` | Token for securing NUI callbacks |
 
@@ -779,6 +781,34 @@ Login check:
 ```lua
 if LocalPlayer.state.isLoggedIn then ... end
 ```
+
+### Rebindable keys (`RegisterKey`)
+
+`RegisterKey` wraps `RegisterKeyMapping` and a `+name` / `-name` command pair. The key you pass is only the **default**: players rebind it in the game's key settings, so a server owner can no longer force a key from a config file alone.
+
+```lua
+RSGCore.Functions.RegisterKey('myres_open', locale('key_open'), 'I',
+    function() OpenMenu() end,   -- key down
+    function() end,              -- key up (only called if the press was accepted)
+    { canTrigger = function() return not IsPauseMenuActive() end })
+```
+
+| Parameter | Description |
+|---|---|
+| `name` | Unique id. Becomes the command `+name` / `-name`. Use your resource name as a prefix |
+| `description` | Text in the key settings. Pass `locale('...')` |
+| `defaultKey` | Default key name: `'I'`, `'Z'`, `'1'`, `'F5'` |
+| `onPress` / `onRelease` | Callbacks. A release only fires if its press was accepted |
+| `opts.mapper` | Mapper, default `'keyboard'` |
+| `opts.requireLogin` | Default `true`: ignored until the player is logged in |
+| `opts.allowWhileNui` | Default `false`: ignored while a NUI has focus |
+| `opts.canTrigger` | Extra check, return `false` to ignore the press |
+
+Notes:
+- Registering the same `name` again replaces the handlers (restarts are safe). Handlers from a stopped resource are removed automatically.
+- A mapping does **not** stop the game's own action on that key. If the default key is also used by the game (for example `I` or `1`-`5`), keep calling `DisableControlAction` for it.
+- A key mapping cannot be removed during a session; `UnregisterKey` only stops the handler.
+- Keep a config switch (for example `Config.UseKeyMapping`) so servers can fall back to control-hash polling if mapping misbehaves on their build.
 
 ### Client function examples
 
