@@ -419,7 +419,7 @@ end
 
 - `bank` is kept for compatibility; **rsg-banking v3** forwards it to the player's home branch. Old `valbank`/`rhobank`/`blkbank`/`armbank` types are removed.
 - **Money items:** with `EnableMoneyItems = true`, `cash` and `bloodmoney` are mirrored as inventory items and kept in sync automatically (`server/moneyitems.lua`). Gold items are controlled by `RSGConfig.Gold.EnableGoldItems` + `Money.GoldItem`.
-- Paychecks every `PayCheckTimeOut` minutes use the grade `payment`; `offDutyPay` on the job decides if off-duty players are paid. `PayCheckSociety` is **not supported** with rsg-banking v3.
+- Paychecks every `PayCheckTimeOut` minutes use the grade `payment`; `offDutyPay` on the job decides if off-duty players are paid. With `PayCheckSociety = true` and rsg-society started, wages come out of the society account and are skipped when it is empty.
 - Hook changes: `RSGCore:Server:OnMoneyChange (src, moneytype, amount, operation, reason)` — `operation` is `'add' | 'remove' | 'set'`.
 - Amounts must be finite numbers `>= 0`. With `DontAllowMinus`, `RemoveMoney` returns `false` and changes nothing when the player cannot afford it.
 

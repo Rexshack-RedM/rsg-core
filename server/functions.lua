@@ -397,7 +397,7 @@ local function payWage(Player, payment)
 end
 
 if RSGCore.Config.Money.PayCheckSociety then
-    print('^3[rsg-core] PayCheckSociety is not supported with rsg-banking v3 - paying normally^7')
+    print('^2[rsg-core] PayCheckSociety on: wages are paid from rsg-society accounts (empty account = wage skipped)^7')
 end
 
 function PaycheckInterval()
@@ -412,8 +412,17 @@ function PaycheckInterval()
         local src = Player.PlayerData.source
 
         if jobInfo and payment > 0 and (jobInfo.offDutyPay or job.onduty) then
-            if payWage(Player, payment) then
-                notifyPaycheck(src, locale('info.received_paycheck', payment), 'inform')
+            local state = 'unmanaged'
+            if RSGCore.Config.Money.PayCheckSociety and GetResourceState('rsg-society') == 'started' then
+                local ok, res = pcall(function() return exports['rsg-society']:ProcessWage(src, job.name, payment) end)
+                if ok and res then state = res end
+            end
+            if state ~= 'skipped' then
+                if payWage(Player, payment) then
+                    notifyPaycheck(src, locale('info.received_paycheck', payment), 'inform')
+                elseif state == 'paid' then
+                    pcall(function() exports['rsg-society']:RefundWage(job.name, payment) end)
+                end
             end
         end
     end
