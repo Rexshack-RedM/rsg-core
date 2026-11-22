@@ -2,6 +2,11 @@
 
 All notable changes to rsg-core. Newest first.
 
+## 3.5.1
+
+### Removed
+- The `rsg-bossmenu:server:FireEmployee` net event, its boss check and the `EmployeeFired` job webhook. rsg-society replaces rsg-bossmenu and removes a fired employee's job directly with the `RemovePlayerJob` export, so nothing sends this event any more.
+
 ## 3.5.0
 
 ### Added

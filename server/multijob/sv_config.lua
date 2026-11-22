@@ -60,11 +60,5 @@ MultiJobWebhookConfig = {
             Title = '❌ Job Deleted From Server',
             Color = 15158332,
         },
-        EmployeeFired = {
-            Enabled = true,
-            URL = '',
-            Title = '🔥 Employee Fired',
-            Color = 10038562, -- dark red
-        },
     }
 }

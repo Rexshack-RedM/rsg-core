@@ -65,17 +65,6 @@ local function PlayerTag(Player, cid)
     return ('`%s`'):format(cid)
 end
 
--- Whether Player currently holds a boss grade in jobName
-local function IsBossOf(Player, jobName)
-    if not Player or Player.PlayerData.job.name ~= jobName then return false end
-
-    local job = JobRegistry.Get(jobName)
-    if not job then return false end
-
-    local grade = job.grades[tostring(Player.PlayerData.job.grade.level)]
-    return grade ~= nil and grade.isboss == true
-end
-
 -----------------------------------------------------------------------
 -- Database
 -----------------------------------------------------------------------
@@ -357,37 +346,6 @@ AddEventHandler('RSGCore:Server:OnJobUpdate', function(src)
     })
 
     PushJobs(Player)
-end)
-
------------------------------------------------------------------------
--- rsg-bossmenu sync: only a boss of the target's job who outranks (or
--- equals) the target can remove it from their multijob list.
------------------------------------------------------------------------
-
-RegisterNetEvent('rsg-bossmenu:server:FireEmployee', function(target)
-    local src = source
-    local Boss = RSGCore.Functions.GetPlayer(src)
-    if not Boss or type(target) ~= 'string' then return end
-
-    local bossJob = Boss.PlayerData.job.name
-    if not IsBossOf(Boss, bossJob) then return end
-
-    if target == Boss.PlayerData.citizenid then return end
-
-    local Employee = RSGCore.Functions.GetPlayerByCitizenId(target)
-    local targetLevel = GetStoredGrade(target, bossJob)
-
-    if targetLevel == nil or targetLevel > Boss.PlayerData.job.grade.level then return end
-    if not RemoveStoredJob(target, Employee, bossJob) then return end
-
-    MultiJobWebhook.Send('EmployeeFired', {
-        description = locale('wh_fired', GetCharName(Boss), Employee and GetCharName(Employee) or target, JobLabel(bossJob)),
-        fields = {
-            { name = locale('wh_field_fired_by'), value = PlayerTag(Boss), inline = true },
-            { name = locale('wh_field_employee'), value = PlayerTag(Employee, target), inline = true },
-            { name = locale('wh_field_job'), value = JobLabel(bossJob), inline = true },
-        }
-    })
 end)
 
 -----------------------------------------------------------------------
