@@ -726,9 +726,12 @@ RSGShared.Items = {
     resource_pot_distillery = { name = 'resource_pot_distillery',   label = 'Copper Pot Distillery',    weight = 5000, type = 'item', image = 'resource_pot_distillery.png',    unique = false, useable = true,  shouldClose = true, description = 'A copper part for making moonshine stills',                category = 'moonshine' },
     resource_rubbertube     = { name = 'resource_rubbertube',       label = 'Rubber Tube',              weight = 5000, type = 'item', image = 'resource_rubbertube.png',        unique = false, useable = true,  shouldClose = true, description = 'A rubber hose for making moonshine stills',                category = 'moonshine' },
 
-    -- other
-    firework_big   = { name = 'firework_big',   label = 'Big Firework',   weight = 1000, type = 'item', image = 'firework_big.png',   unique = false, useable = true, shouldClose = true, description = 'create explosions in the sky!', category = 'other' },
-    firework_small = { name = 'firework_small', label = 'Small Firework', weight = 500,  type = 'item', image = 'firework_small.png', unique = false, useable = true, shouldClose = true, description = 'create explosions in the sky!', category = 'other' },
+    -- misc
+    firework_big        = { name = 'firework_big',        label = 'Big Firework',    weight = 1000, type = 'item', image = 'firework_big.png',        unique = false, useable = true,  shouldClose = true, description = 'create explosions in the sky!',            category = 'misc' },
+    firework_small      = { name = 'firework_small',      label = 'Small Firework',  weight = 500,  type = 'item', image = 'firework_small.png',      unique = false, useable = true,  shouldClose = true, description = 'create explosions in the sky!',            category = 'misc' },
+    wanted_poster       = { name = 'wanted_poster',       label = 'Wanted Poster',   weight = 50,   type = 'item', image = 'wanted_poster.png',       unique = false, useable = false, shouldClose = true, description = 'A torn poster from a captured outlaw.',    category = 'misc' },
+    outlaw_pocketwatch  = { name = 'outlaw_pocketwatch',  label = 'Pocket Watch',    weight = 100,  type = 'item', image = 'outlaw_pocketwatch.png',  unique = false, useable = false, shouldClose = true, description = 'A pocket watch taken from an outlaw.',     category = 'misc' },
+    outlaw_signet_ring  = { name = 'outlaw_signet_ring',  label = 'Signet Ring',     weight = 50,   type = 'item', image = 'outlaw_signet_ring.png',  unique = false, useable = false, shouldClose = true, description = 'A gold signet ring taken from an outlaw.', category = 'misc' },
 
     -- rsg-cards
     card_storage_box        = {name = 'card_storage_box',       label = 'Card Storage Box',         weight = 50,  type = 'item',    image = 'card_storage_box.png',         unique = true,   useable = true,  shouldClose = false, combinable = nil, category = 'tool',    description = 'Used to store cigarette collector cards' },
