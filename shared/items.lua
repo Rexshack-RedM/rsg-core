@@ -951,4 +951,5 @@ RSGShared.Items = {
     card_cigcard_veh_c11  = {name = 'card_cigcard_veh_c11',     label = 'Marvels of Travel and Locomotion Nº11',     weight = 0, type = 'item',  image = 's_inv_cigcard_veh_11x.png',  unique = false,  useable = true,   shouldClose = true , combinable = nil, category = 'card',   description = 'Collectible card for sale or exchange'},
     card_cigcard_veh_c12  = {name = 'card_cigcard_veh_c12',     label = 'Marvels of Travel and Locomotion Nº12',     weight = 0, type = 'item',  image = 's_inv_cigcard_veh_12x.png',  unique = false,  useable = true,   shouldClose = true , combinable = nil, category = 'card',   description = 'Collectible card for sale or exchange'},
     ---------------------------------------
+    contract_paper = { name = 'contract_paper', label = 'Contract Paper', weight = 10, type = 'item', image = 'contract_paper.png', unique = true, useable = true, shouldClose = true, description = 'A signed contract', category = 'document' },
 }

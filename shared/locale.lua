@@ -8,7 +8,7 @@
 -- then call locale('key', ...) in client and server files.
 -- The file runs inside the including resource, so it reads THAT resource's locales/*.json.
 --
--- Language: convar 'rsg:locale' (falls back to 'en').
+-- Language: convar 'rsg:locale' (falls back to 'ox:locale', then 'en').
 -- Use setr in server.cfg so clients see the same language:  setr rsg:locale "en"
 --
 -- Locale file features:
@@ -56,6 +56,7 @@ end
 
 local function getLanguage()
     local lang = GetConvar('rsg:locale', '')
+    if lang == '' then lang = GetConvar('ox:locale', '') end
     if lang == '' then lang = 'en' end
     return lang
 end

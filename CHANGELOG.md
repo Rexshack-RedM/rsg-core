@@ -2,6 +2,11 @@
 
 All notable changes to rsg-core. Newest first.
 
+## 3.5.2
+
+### Fixed
+- The locale loader now falls back to the `ox:locale` convar when `rsg:locale` is not set (then `en`), matching the other RSG resources, so a server that only sets `ox:locale` no longer gets a mix of languages.
+
 ## 3.5.1
 
 ### Removed

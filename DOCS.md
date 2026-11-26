@@ -1,6 +1,6 @@
 # rsg-core Developer Documentation
 
-> Version **3.5.1** · RedM · Lua 5.4 · Depends only on `oxmysql`
+> Version **3.5.2** · RedM · Lua 5.4 · Depends only on `oxmysql`
 > rsg-core has no **ox_lib** dependency and no ox_lib compatibility code: notifications, callbacks, progress bars, text UI, prompts, locales, `require` and asset loaders are all built in.
 
 ---
@@ -110,7 +110,7 @@ ensure rsg-core
 Include `@rsg-core/shared/locale.lua` and ship `locales/<lang>.json` in your resource.
 
 ```cfg
-setr rsg:locale "en"   # falls back to en
+setr rsg:locale "en"   # falls back to ox:locale, then en
 ```
 
 ```lua

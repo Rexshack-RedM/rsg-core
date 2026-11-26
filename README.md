@@ -29,7 +29,7 @@ rsg-core has no ox_lib dependency or compatibility code. Notifications, callback
 Translations live in `locales/*.json`. Supported languages: `en`, `de`, `el`, `es`, `fr`, `ja`, `nl`, `pl`, `pt-br`, `ro`, `ru`.
 
 ```cfg
-setr rsg:locale en   # falls back to en
+setr rsg:locale en   # falls back to ox:locale, then en
 ```
 
 Notification labels (Success / Error / Warning / Notice) are translated through the `notify_label_*` keys. Missing keys fall back to English. To add a language, copy `locales/en.json` to `locales/<code>.json` and translate the values, keeping `%s` placeholders in the same order.
