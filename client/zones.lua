@@ -220,6 +220,13 @@ end
 
 ---------------------------------------------------------------- update loops
 
+-- callbacks may create zones, which would break an active pairs() loop, so the loops use a copy
+local function snapshot()
+    local list = {}
+    for _, z in pairs(Zones) do list[#list + 1] = z end
+    return list
+end
+
 local function hasActive()
     return next(Zones) ~= nil
 end
@@ -230,9 +237,11 @@ CreateThread(function()
         if hasActive() then
             local coords = GetEntityCoords(PlayerPedId())
 
-            for id, z in pairs(Zones) do
+            for _, z in ipairs(snapshot()) do
+                local id = z.id
                 z.distance = #(coords - z.coords)
-                local inside = z.distance <= z.near and z:contains(coords)
+                local registeredNow = Zones[id] == z -- may have been removed by an earlier callback
+                local inside = registeredNow and z.distance <= z.near and z:contains(coords)
 
                 if inside and not z.insideZone then
                     z.insideZone = true
@@ -255,8 +264,19 @@ CreateThread(function()
     while true do
         local busy = false
 
+        -- only copy the zones that need per-frame work (this runs every frame while busy)
+        local work
         for id, z in pairs(Zones) do
-            if z.debug and z.distance <= z.near then
+            if (z.debug and z.distance <= z.near) or (z.inside and insideZones[id]) then
+                work = work or {}
+                work[#work + 1] = z
+            end
+        end
+
+        for i = 1, work and #work or 0 do
+            local z = work[i]
+            local id = z.id
+            if z.debug and Zones[id] == z and z.distance <= z.near then
                 busy = true
                 z:draw()
             end

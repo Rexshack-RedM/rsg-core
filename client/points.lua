@@ -82,7 +82,14 @@ CreateThread(function()
             local coords = GetEntityCoords(PlayerPedId())
             local best, bestDist
 
-            for id, p in pairs(Points) do
+            -- loop over a copy: onEnter / onExit may create new points, which would break pairs()
+            local list = {}
+            for _, p in pairs(Points) do list[#list + 1] = p end
+
+            for i = 1, #list do
+                local p = list[i]
+                local id = p.id
+                if Points[id] ~= p then goto continue end -- removed by an earlier callback
                 local dist = #(coords - p.coords)
                 local near = dist <= p.distance
 
@@ -98,8 +105,10 @@ CreateThread(function()
                     p.currentDistance = nil
                     if p.onExit then pcall(p.onExit, p) end
                 end
+                ::continue::
             end
 
+            if best and Points[best.id] ~= best then best = nil end
             if closestPoint ~= best then
                 if closestPoint then closestPoint.isClosest = false end
                 if best then best.isClosest = true end
@@ -115,8 +124,13 @@ end)
 CreateThread(function()
     while true do
         local busy = false
+        local list = {}
         for _, p in pairs(nearbyPoints) do
-            if p.nearby then
+            if p.nearby then list[#list + 1] = p end
+        end
+        for i = 1, #list do
+            local p = list[i]
+            if nearbyPoints[p.id] == p then
                 busy = true
                 pcall(p.nearby, p)
             end

@@ -2,6 +2,7 @@
 RSGConfig.MultiJob = {
     MaxJobs = 3,
     JobSwitchCooldown = 3000, -- ms a player must wait between job switches
+    Key = '', -- default key for /myjobs ('' = unbound; players can bind it in the game's key settings)
 
     -- Job admin panel: create/edit/delete server jobs in-game.
     -- Job definitions are stored in the `multijob_jobs` table.

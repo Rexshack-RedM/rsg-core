@@ -197,7 +197,7 @@
         draft = {
             name: '', label: '', type: '', icon: DEFAULT_ICON,
             defaultDuty: true, offDutyPay: false,
-            grades: [{ name: 'Employee', payment: 0, isboss: false }, { name: 'Boss', payment: 0, isboss: true }],
+            grades: [{ name: t('adm_ui_default_grade_member'), payment: 0, isboss: false }, { name: t('adm_ui_default_grade_boss'), payment: 0, isboss: true }],
         };
         original = JSON.stringify(draft);
         renderList();
@@ -254,7 +254,6 @@
             return;
         }
 
-        const scrollTop = 0;
         const ed = el('div', 'adm-editor');
 
         const h = el('div', 'adm-heading');
@@ -361,7 +360,6 @@
         });
         ed.appendChild(list);
         ed.appendChild(el('div', 'adm-note', t('adm_ui_required_note')));
-        ed.scrollTop = scrollTop;
         mainEl.appendChild(ed);
 
         // footer

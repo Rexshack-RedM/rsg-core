@@ -20,6 +20,7 @@ local ACTION_THROTTLE_MS = 750
 -----------------------------------------------------------------------
 
 local function Notify(src, title, description, nType)
+    if src == 0 then return print(('[rsg-core:jobs] %s: %s'):format(title, description)) end -- console
     TriggerClientEvent('RSGCore:Client:Notify', src, {
         title = title,
         description = description,
@@ -107,10 +108,32 @@ local function BuildJobList(cid)
     return list
 end
 
+-- Job list as the /myjobs menu shows it: adds on-duty counts and the time to the next paycheck
+local function MenuJobList(cid)
+    local list = BuildJobList(cid)
+    local nextPaycheck = RSGCore.NextPaycheck and math.max(0, RSGCore.NextPaycheck - os.time()) or nil
+    for i = 1, #list do
+        list[i].onDutyCount = RSGCore.Functions.GetDutyCount(list[i].job)
+        list[i].nextPaycheck = nextPaycheck
+    end
+    return list
+end
+
+-- One change at a time per character, so two grants can't both pass the max jobs check
+local jobLocks = {}
+local function WithJobLock(cid, fn)
+    while jobLocks[cid] do Wait(0) end
+    jobLocks[cid] = true
+    local result = table.pack(pcall(fn))
+    jobLocks[cid] = nil
+    if not result[1] then error(result[2], 0) end
+    return table.unpack(result, 2, result.n)
+end
+
 -- Sends the current job list to an online player's open menu
 local function PushJobs(Player, currentJob)
     if not Player then return end
-    TriggerClientEvent('rsg-multijob:client:refreshJobs', Player.PlayerData.source, BuildJobList(Player.PlayerData.citizenid), currentJob or Player.PlayerData.job.name)
+    TriggerClientEvent('rsg-multijob:client:refreshJobs', Player.PlayerData.source, MenuJobList(Player.PlayerData.citizenid), currentJob or Player.PlayerData.job.name)
 end
 
 -- Offline player: if job is their saved active job, swap it to unemployed
@@ -121,18 +144,7 @@ local function SetOfflineUnemployedIfActive(cid, job)
     local ok, current = pcall(json.decode, raw)
     if not ok or type(current) ~= 'table' or current.name ~= job then return end
 
-    local unemployed = JobRegistry.Get('unemployed')
-    local grade = unemployed and unemployed.grades and unemployed.grades['0'] or {}
-
-    MySQL.update.await('UPDATE players SET job = ? WHERE citizenid = ?', { json.encode({
-        name = 'unemployed',
-        label = unemployed and unemployed.label or locale('unemployed_label'),
-        payment = grade.payment or 0,
-        type = unemployed and unemployed.type or nil,
-        onduty = false,
-        isboss = false,
-        grade = { name = grade.name or locale('unemployed_grade'), level = 0 },
-    }), cid })
+    MySQL.update.await('UPDATE players SET job = ? WHERE citizenid = ?', { JobRegistry.UnemployedJson(), cid })
 end
 
 -- Removes a stored job; drops the player to unemployed if it was active.
@@ -187,7 +199,7 @@ RSGCore.Commands.Add('removejob', locale('cmd_removejob_desc'), {
     { name = 'job', help = locale('cmd_removejob_job') },
 }, true, function(source, args)
     local src = source
-    local job = args[2]
+    local job = tostring(args[2]):lower()
     local cid, Player = ResolvePlayer(tonumber(args[1]) or args[1])
 
     if not cid then
@@ -221,7 +233,7 @@ registerCallback('rsg-multijob:server:myJobs', function(source)
     local Player = RSGCore.Functions.GetPlayer(source)
     if not Player then return {} end
 
-    return BuildJobList(Player.PlayerData.citizenid)
+    return MenuJobList(Player.PlayerData.citizenid)
 end)
 
 RegisterNetEvent('rsg-multijob:server:changeJob', function(job)
@@ -319,22 +331,23 @@ AddEventHandler('RSGCore:Server:OnJobUpdate', function(src)
 
     local cid = Player.PlayerData.citizenid
     local level = tonumber(job.grade and job.grade.level) or 0
-    local stored = GetStoredGrade(cid, job.name)
+    local outcome = WithJobLock(cid, function()
+        local stored = GetStoredGrade(cid, job.name)
+        if stored == level then return nil end -- nothing changed (duty toggle, switch, etc.)
+        if stored ~= nil then
+            MySQL.update.await('UPDATE player_jobs SET grade = ? WHERE citizenid = ? AND job = ?', { level, cid, job.name })
+            return 'regraded'
+        end
+        if GetJobCount(cid) >= Config.MaxJobs then return 'max' end
+        MySQL.insert.await('INSERT INTO player_jobs (citizenid, job, grade) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE grade = VALUES(grade)', { cid, job.name, level })
+        return 'added'
+    end)
 
-    if stored == level then return end -- nothing changed (duty toggle, switch, etc.)
-
-    if stored ~= nil then
-        MySQL.update.await('UPDATE player_jobs SET grade = ? WHERE citizenid = ? AND job = ?', { level, cid, job.name })
-        PushJobs(Player)
-        return
+    if not outcome then return end
+    if outcome == 'regraded' then return PushJobs(Player) end
+    if outcome == 'max' then
+        return Notify(src, locale('title_max_jobs'), locale('job_max'), 'error')
     end
-
-    if GetJobCount(cid) >= Config.MaxJobs then
-        Notify(src, locale('title_max_jobs'), locale('job_max'), 'error')
-        return
-    end
-
-    MySQL.insert.await('INSERT INTO player_jobs (citizenid, job, grade) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE grade = VALUES(grade)', { cid, job.name, level })
 
     MultiJobWebhook.Send('JobAdded', {
         description = locale('wh_granted', GetCharName(Player), JobLabel(job.name)),
@@ -405,18 +418,23 @@ local function AddJob(identifier, job, grade, bypassMax)
     local cid, Player = ResolvePlayer(identifier)
     if not cid then return false, 'player_not_found' end
 
-    local stored = GetStoredGrade(cid, job)
-
-    if stored == grade then return true, nil end
-
-    if stored ~= nil then
-        MySQL.update.await('UPDATE player_jobs SET grade = ? WHERE citizenid = ? AND job = ?', { grade, cid, job })
-        if Player and Player.PlayerData.job.name == job then
-            Player.Functions.SetJob(job, grade)
+    local stored, outcome = WithJobLock(cid, function()
+        local current = GetStoredGrade(cid, job)
+        if current == grade then return current, 'same' end
+        if current ~= nil then
+            MySQL.update.await('UPDATE player_jobs SET grade = ? WHERE citizenid = ? AND job = ?', { grade, cid, job })
+        else
+            if not bypassMax and GetJobCount(cid) >= Config.MaxJobs then return current, 'max' end
+            MySQL.insert.await('INSERT INTO player_jobs (citizenid, job, grade) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE grade = VALUES(grade)', { cid, job, grade })
         end
-    else
-        if not bypassMax and GetJobCount(cid) >= Config.MaxJobs then return false, 'max_jobs' end
-        MySQL.insert.await('INSERT INTO player_jobs (citizenid, job, grade) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE grade = VALUES(grade)', { cid, job, grade })
+        return current, 'saved'
+    end)
+
+    if outcome == 'same' then return true, nil end
+    if outcome == 'max' then return false, 'max_jobs' end
+    -- outside the lock: SetJob raises OnJobUpdate, which takes the same lock
+    if stored ~= nil and Player and Player.PlayerData.job.name == job then
+        Player.Functions.SetJob(job, grade)
     end
 
     MultiJobWebhook.Send('JobAdded', {

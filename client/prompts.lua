@@ -50,6 +50,7 @@ end
 local function deletePrompt(name)
     if Prompts[name] then
         safeDelete(Prompts[name].prompt)
+        Prompts[name].prompt = nil
         Prompts[name] = nil
     end
 end
@@ -58,6 +59,7 @@ local function deletePromptGroup(name)
     if PromptGroups[name] then
         for _, v in pairs(PromptGroups[name].prompts) do
             safeDelete(v.prompt)
+            v.prompt = nil
         end
         PromptGroups[name] = nil
     end
@@ -97,15 +99,6 @@ local function setupPromptGroup(pGroup)
     pGroup.created = true
 end
 
--- briefly hides a prompt after it fires so the hold has to be restarted
-local function resetPrompt(prompt)
-    UiPromptSetEnabled(prompt, false)
-    UiPromptSetVisible(prompt, false)
-    Wait(0)
-    UiPromptSetEnabled(prompt, true)
-    UiPromptSetVisible(prompt, true)
-end
-
 AddEventHandler('onResourceStop', function(resourceName)
     if GetCurrentResourceName() ~= resourceName then
         -- another resource stopped: free the prompts it forgot to delete
@@ -139,14 +132,15 @@ CreateThread(function()
             local coords = GetEntityCoords(PlayerPedId())
             local maxDist = RSGConfig.PromptDistance
 
+            -- prompts fire after both loops: waiting or adding prompts during pairs() can break the iteration
+            local fired = {}
+
             for _, v in pairs(Prompts) do
                 if #(coords - v.coords) < maxDist then
                     sleep = 0
                     if not v.prompt then setupPrompt(v) end
                     if UiPromptHasHoldModeCompleted(v.prompt) then
-                        executeOptions(v.options)
-                        resetPrompt(v.prompt)
-                        break
+                        fired[#fired + 1] = { entry = v, handle = v.prompt, options = v.options }
                     end
                 elseif v.prompt then
                     UiPromptDelete(v.prompt)
@@ -160,9 +154,8 @@ CreateThread(function()
                     if not pGroup.created then setupPromptGroup(pGroup) end
                     Citizen.InvokeNative(0xC65A45D4453C2627, pGroup.group, CreateVarString(10, 'LITERAL_STRING', pGroup.label), 1) -- UiPromptSetActiveGroupThisFrame
                     for _, v in pairs(pGroup.prompts) do
-                        if UiPromptHasHoldModeCompleted(v.prompt) then
-                            executeOptions(v.options)
-                            resetPrompt(v.prompt)
+                        if v.prompt and UiPromptHasHoldModeCompleted(v.prompt) then
+                            fired[#fired + 1] = { entry = v, handle = v.prompt, options = v.options }
                             break
                         end
                     end
@@ -172,6 +165,23 @@ CreateThread(function()
                         v.prompt = nil
                     end
                     pGroup.created = false
+                end
+            end
+
+            if #fired > 0 then
+                -- hide first (so the hold has to restart), then run the actions
+                for i = 1, #fired do
+                    UiPromptSetEnabled(fired[i].handle, false)
+                    UiPromptSetVisible(fired[i].handle, false)
+                end
+                for i = 1, #fired do executeOptions(fired[i].options) end
+                Wait(0)
+                for i = 1, #fired do
+                    local item = fired[i]
+                    if item.entry.prompt == item.handle then -- skip prompts deleted by an action
+                        UiPromptSetEnabled(item.handle, true)
+                        UiPromptSetVisible(item.handle, true)
+                    end
                 end
             end
         end

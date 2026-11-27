@@ -28,11 +28,7 @@ function RSGCore.Commands.Add(name, help, arguments, argsrequired, callback, per
 
     RegisterCommand(name, function(source, args, rawCommand) -- Register command within fivem
         if argsrequired and #args < #arguments then
-            return TriggerClientEvent('chat:addMessage', source, {
-                color = { 255, 0, 0 },
-                multiline = true,
-                args = { locale('info.system'), locale('error.missing_args2') }
-            })
+            return notify(source, locale('error.missing_args2'), 'error') -- prints when run from the console
         end
         callback(source, args, rawCommand)
     end, restricted)
@@ -286,6 +282,7 @@ RSGCore.Commands.Add('setmoney', locale('command.setmoney.help'), { { name = loc
     local Player = RSGCore.Functions.GetPlayer(tonumber(args[1]))
     if Player then
         if Player.Functions.SetMoney(tostring(args[2]), tonumber(args[3]), 'Admin set money') then
+            adminLog(source, 'setmoney', ('target %s, %s %s'):format(tostring(args[1]), tostring(args[2]), tostring(args[3])))
             notify(source, locale('success.money_set'), 'success')
         else
             notify(source, locale('error.invalid_money'), 'error')
@@ -368,10 +365,11 @@ RSGCore.Commands.Add('ooc', locale('command.ooc.help'), { { name = locale('comma
     local name = GetPlayerName(source) or ('ID ' .. source)
     local playerCoords = GetEntityCoords(GetPlayerPed(source))
     local sentToAdmin = false
+    local bucket = GetPlayerRoutingBucket(source)
 
     for _, v in pairs(RSGCore.Functions.GetPlayers()) do
         local prefix
-        if v == source or #(playerCoords - GetEntityCoords(GetPlayerPed(v))) < OOC_RANGE then
+        if v == source or (GetPlayerRoutingBucket(v) == bucket and #(playerCoords - GetEntityCoords(GetPlayerPed(v))) < OOC_RANGE) then
             prefix = locale('info.ooc_prefix')
         elseif RSGCore.Functions.IsOptin(v) then
             prefix = locale('info.ooc_proximity_prefix')
@@ -405,13 +403,15 @@ RSGCore.Commands.Add('me', locale('command.me.help'), { { name = locale('command
     end
     local now = GetGameTimer()
     if lastMe[source] and now - lastMe[source] < ME_COOLDOWN_MS then return end -- spam protection
+    local msg = table.concat(args, ' '):gsub('[~<].-[>~]', ''):sub(1, 128)
+    if msg == '' then return notify(source, locale('error.missing_args2'), 'error') end
     lastMe[source] = now
     local ped = GetPlayerPed(source)
     local pCoords = GetEntityCoords(ped)
-    local msg = table.concat(args, ' '):gsub('[~<].-[>~]', ''):sub(1, 128)
+    local bucket = GetPlayerRoutingBucket(source)
     for _, playerId in ipairs(RSGCore.Functions.GetPlayers()) do
         local target = GetPlayerPed(playerId)
-        if target == ped or #(pCoords - GetEntityCoords(target)) < OOC_RANGE then
+        if target == ped or (GetPlayerRoutingBucket(playerId) == bucket and #(pCoords - GetEntityCoords(target)) < OOC_RANGE) then
             TriggerClientEvent('RSGCore:Command:ShowMe3D', playerId, source, msg)
         end
     end

@@ -65,7 +65,8 @@ end
 
 function RSGCore.Player.GetOfflinePlayerByLicense(license)
     if license then
-        local PlayerData = MySQL.prepare.await('SELECT * FROM players where license = ?', { license })
+        -- one license can own several characters: take the most recently saved one
+        local PlayerData = MySQL.single.await('SELECT * FROM players WHERE license = ? ORDER BY last_updated DESC LIMIT 1', { license })
         if PlayerData then
             return RSGCore.Player.CheckPlayerData(nil, decodePlayerRow(PlayerData))
         end
@@ -346,8 +347,26 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         if not IsMoneyItemEnabled(moneytype) then
             TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, hudAmount, hudIsMinus)
         end
-        TriggerClientEvent('RSGCore:Client:OnMoneyChange', self.PlayerData.source, moneytype, amount, operation, reason)
         TriggerEvent('RSGCore:Server:OnMoneyChange', self.PlayerData.source, moneytype, amount, operation, reason)
+        TriggerClientEvent('RSGCore:Client:OnMoneyChange', self.PlayerData.source, moneytype, amount, operation, reason)
+    end
+
+    local function record(operation, moneytype, amount, reason)
+        Transactions.Record(self.PlayerData, moneytype, operation, amount, self.PlayerData.money[moneytype], reason)
+    end
+
+    local function publishMoneyChange(logAction, color, verb, moneytype, amount, operation, reason, hudAmount, hudIsMinus)
+        if IsMoneyItemEnabled(moneytype) then
+            -- items first: syncing before they exist reverted the balance (wrong HUD popups and log balances)
+            onMoneyChanged(moneytype, amount, operation, reason, hudAmount, hudIsMinus)
+            self.Functions.UpdatePlayerData()
+            moneyLog(self, logAction, color, moneytype, amount, reason, verb)
+        else
+            self.Functions.UpdatePlayerData()
+            moneyLog(self, logAction, color, moneytype, amount, reason, verb)
+            onMoneyChanged(moneytype, amount, operation, reason, hudAmount, hudIsMinus)
+        end
+        record(operation, moneytype, amount, reason)
     end
 
     function self.Functions.AddMoney(moneytype, amount, reason)
@@ -357,9 +376,9 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         self.PlayerData.money[moneytype] = self.PlayerData.money[moneytype] + amount
 
         if not self.Offline then
-            self.Functions.UpdatePlayerData()
-            moneyLog(self, 'AddMoney', 'lightgreen', moneytype, amount, reason, 'added')
-            onMoneyChanged(moneytype, amount, 'add', reason, amount, false)
+            publishMoneyChange('AddMoney', 'lightgreen', 'added', moneytype, amount, 'add', reason, amount, false)
+        else
+            record('add', moneytype, amount, reason)
         end
 
         return true
@@ -370,6 +389,8 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         moneytype, amount = prepMoney(moneytype, amount)
         if not moneytype then return false end
         local newBalance = self.PlayerData.money[moneytype] - amount
+        -- float noise (e.g. 0.1 + 0.2 - 0.3) must not make spending the exact balance fail
+        if math.abs(newBalance) < 1e-6 then newBalance = 0 end
         for _, mtype in pairs(RSGCore.Config.Money.DontAllowMinus) do
             if mtype == moneytype and newBalance < 0 then return false end
         end
@@ -377,9 +398,9 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         self.PlayerData.money[moneytype] = newBalance
 
         if not self.Offline then
-            self.Functions.UpdatePlayerData()
-            moneyLog(self, 'RemoveMoney', 'red', moneytype, amount, reason, 'removed')
-            onMoneyChanged(moneytype, amount, 'remove', reason, amount, true)
+            publishMoneyChange('RemoveMoney', 'red', 'removed', moneytype, amount, 'remove', reason, amount, true)
+        else
+            record('remove', moneytype, amount, reason)
         end
 
         return true
@@ -393,9 +414,9 @@ function RSGCore.Player.CreatePlayer(PlayerData, Offline)
         self.PlayerData.money[moneytype] = amount
 
         if not self.Offline then
-            self.Functions.UpdatePlayerData()
-            moneyLog(self, 'SetMoney', 'green', moneytype, amount, reason, 'set')
-            onMoneyChanged(moneytype, amount, 'set', reason, math.abs(difference), difference < 0)
+            publishMoneyChange('SetMoney', 'green', 'set', moneytype, amount, 'set', reason, math.abs(difference), difference < 0)
+        else
+            record('set', moneytype, amount, reason)
         end
 
         return true
@@ -578,6 +599,8 @@ local playertables = { -- Add tables as needed
     { table = 'address_book'},
     { table = 'telegrams'},
     { table = 'player_jobs'}, -- multi-job list (built into rsg-core)
+    { table = 'rsg_held_payouts'},
+    { table = 'rsg_playtime'}, -- rsg_transactions is kept as an audit trail (it expires by RetentionDays)
 }
 
 local function deleteCharacterRows(citizenid, onDone)
@@ -688,19 +711,19 @@ end
 
 PaycheckInterval() -- This starts the paycheck system
 
--- Server driven periodic save (RSGConfig.ServerSideSave): players are saved one by one, staggered to avoid database spikes
-if RSGCore.Config.ServerSideSave then
-    CreateThread(function()
-        local interval = 60000 * RSGCore.Config.UpdateInterval
-        while true do
-            Wait(interval)
-            for src, Player in pairs(RSGCore.Players) do
-                if Player then
-                    local ok, err = pcall(Player.Functions.Save)
-                    if not ok then print(('^1[rsg-core] periodic save failed for %s: %s^7'):format(tostring(src), tostring(err))) end
-                    Wait(250)
-                end
+-- Server driven periodic save: players are saved one by one, staggered to avoid database spikes
+CreateThread(function()
+    local interval = 60000 * RSGCore.Config.UpdateInterval
+    while true do
+        Wait(interval)
+        -- iterate a snapshot: players joining or leaving during the Wait must not break the loop
+        for _, src in ipairs(RSGCore.Functions.GetPlayers()) do
+            local Player = RSGCore.Players[src]
+            if Player then
+                local ok, err = pcall(Player.Functions.Save)
+                if not ok then print(('^1[rsg-core] periodic save failed for %s: %s^7'):format(tostring(src), tostring(err))) end
+                Wait(250)
             end
         end
-    end)
-end
+    end
+end)

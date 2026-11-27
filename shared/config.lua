@@ -94,7 +94,6 @@ RSGConfig.Player.PlayerDefaults = {
 RSGConfig.Server = {}                                    -- General server config
 RSGConfig.Server.Closed = false                          -- Set server closed (no one can join except people with ace permission 'rsgadmin.join')
 RSGConfig.Server.ClosedReason = 'Server Closed'          -- Reason message to display when people can't join the server
-RSGConfig.Server.Uptime = 0                              -- Time the server has been up.
 RSGConfig.Server.Whitelist = false                       -- Enable or disable whitelist on the server
 RSGConfig.Server.WhitelistPermission = 'admin'           -- Permission that's able to enter the server when the whitelist is on
 RSGConfig.Server.PVP = true                              -- Enable or disable pvp on the server (Ability to shoot other players)
@@ -164,8 +163,8 @@ RSGConfig.AutoDatabase = true
 
 -- Rate limits and distances used by server events and chat commands
 RSGConfig.Limits = {
-    SaveCooldown = 30,        -- seconds between client requested saves
     DutyCooldownMs = 2000,    -- duty toggle cooldown
+    SpawnPermission = 'admin', -- permission for the RSGCore:Server:SpawnVehicle callback (false = any player)
     SpawnCooldownMs = 5000,   -- vehicle spawn callback cooldown
     SpawnMaxDistance = 50.0,  -- max distance between player and requested spawn point
     MeCooldownMs = 2000,      -- /me cooldown
@@ -173,8 +172,16 @@ RSGConfig.Limits = {
     OocRange = 20.0,          -- /ooc chat range
 }
 
--- Saving: the server saves every player each UpdateInterval minutes instead of relying on the client
-RSGConfig.ServerSideSave = true
+-- Saving: the server saves every player each UpdateInterval minutes
+-- Money history in the rsg_transactions table (/transactions <id|citizenid> [count])
+RSGConfig.Transactions = {
+    Enabled = true,
+    RetentionDays = 30, -- older rows are deleted daily (0 = keep forever)
+}
+
+-- Character playtime in the rsg_playtime table (/playtime)
+RSGConfig.Playtime = { Enabled = true }
+
 RSGConfig.LogSaves = false -- print a console line on every player save
 
 -- Ban checks on join (license is always checked)

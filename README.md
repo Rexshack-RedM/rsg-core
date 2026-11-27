@@ -2,6 +2,8 @@
 
 # rsg-core
 
+> Version **3.7.0**
+
 The core framework for RSG RedM servers: players, characters, money, jobs (with built-in multi-job), gangs, permissions, commands, callbacks, notifications and shared data.
 
 Documentation: https://rsgcore.com/docs
@@ -15,7 +17,7 @@ rsg-core has no ox_lib dependency or compatibility code. Notifications, callback
 
 ## Installation
 
-1. Tables are created automatically on first start (`players`, `bans`, `multijob_jobs`, `player_jobs`, plus the `weight` / `slots` / `outlawstatus` columns). To install manually instead, set `RSGConfig.AutoDatabase = false` and import `install.sql`.
+1. Tables are created automatically on first start (`players`, `bans`, `multijob_jobs`, `player_jobs`, `rsg_held_payouts`, `rsg_transactions`, `rsg_playtime`, `rsg_whitelist`, plus the `weight` / `slots` / `outlawstatus` columns). To install manually instead, set `RSGConfig.AutoDatabase = false` and import `install.sql`.
 2. Remove `rsg-multijob` if you had it: it is built in now, and its tables are reused as they are.
 3. Ensure the resources in this order in `server.cfg`:
    ```cfg
@@ -62,7 +64,15 @@ add_principal identifier.license:xxxxxxxx rsgcore.god
 | `/setgang [id] [gang] [grade]` | admin | Set gang (gang and grade are validated) |
 | `/job` `/gang` `/id` `/cid` | user | Show your job, gang, server id, citizen id |
 | `/ooc [msg]` `/me [msg]` | user | Proximity OOC chat / 3D emote text |
-| `/myjobs` | user | Open your jobs menu (switch / leave jobs, toggle duty) |
+| `/myjobs` | user | Open your jobs menu (switch / leave jobs, toggle duty, on-duty counts, next paycheck). A key can be bound in the game's key settings |
+| `/claimmoney` | user | Collect money that could not be delivered |
+| `/playtime [target]` | user | Your playtime; admins can look up a server ID or citizen ID |
+| `/transactions [id \| citizenid] [count]` | admin | Recent money changes (up to 30) |
+| `/ban [id] [30m\|12h\|7d\|2w\|perm] [reason]` | admin | Ban an online player |
+| `/offlineban [citizenid] [duration] [reason]` | admin | Ban by citizen ID (matches the license) |
+| `/unban [ban id]` | admin | Remove a ban |
+| `/banlist [search]` | admin | List active bans (newest 15) |
+| `/whitelist [add\|remove\|list] [id \| citizenid \| license:...]` | admin | Manage the in-game whitelist |
 | `/jobadmin` | admin | Create, edit and delete server jobs, and give players jobs / set their grade (Employees tab) |
 | `/removejob [id \| citizenid] [job]` | admin | Remove a job from a player's job list |
 
@@ -154,6 +164,15 @@ local done = RSGCore.Functions.ProgressBar({      -- or exports['rsg-core']:Prog
 
 Runtime shared-data exports (`AddJob(s)`, `UpdateJob`, `RemoveJob`, `AddItem(s)`, `UpdateItem`, `RemoveItem`, `AddGang(s)`, `UpdateGang`, `RemoveGang`) sync to all clients, including players who join later. The batch versions are all-or-nothing.
 
+## Payouts, history and moderation
+
+- If a money item does not fit, the amount is held and the player collects it with `/claimmoney` after making room. `AddMoney` still returns `true`, because the money is safe.
+- Pay any character, online or offline: `exports['rsg-core']:QueuePayout(citizenid, 'cash', 25.50, 'my-resource reward')`.
+- `RSGConfig.Transactions = { Enabled = true, RetentionDays = 30 }` (`0` keeps rows forever). `RSGConfig.Playtime = { Enabled = true }`.
+- `/myjobs` key: `RSGConfig.MultiJob.Key = ''` (set a key name such as `'F6'` as the default; players can rebind it).
+- Only the console or a `god` can ban an `admin` or `god`. `/offlineban` can only check this if that license is connected.
+- With `RSGConfig.Server.Whitelist = true`, players with the whitelist ace or a `/whitelist add` entry can join.
+
 ## Security notes
 
 - Money and metadata are only changed on the server. Clients can only set the metadata keys listed in `RSGConfig.ClientWritableMetadata`, and the values are clamped.
@@ -163,8 +182,10 @@ Runtime shared-data exports (`AddJob(s)`, `UpdateJob`, `RemoveJob`, `AddItem(s)`
 - Ban checks look at every ban row for a license, `/ooc` is rate limited, and `RSGCore:CallCommand` only passes string/number arguments.
 - Admin commands (`/dvall`, `/dvp`, `/dvo`, `/setjob`, `/setgang`, `/givemoney`, `/addpermission`, `/removepermission`, `/openserver`, `/closeserver`, `/togglepvp`) write an audit entry to the console and to the rsg-log channel `RSGConfig.AdminLogChannel`.
 - Bans match by license, and optionally Discord and IP (`RSGConfig.Ban`).
-- Rate limits and distances are configurable in `RSGConfig.Limits`. Players are saved by the server every `UpdateInterval` minutes (`RSGConfig.ServerSideSave`).
-- A full inventory no longer silently swallows money: failed money item grants are logged and the player is notified.
+- Rate limits and distances are configurable in `RSGConfig.Limits`. Players are always saved by the server every `UpdateInterval` minutes.
+- The server vehicle spawn callback requires `RSGConfig.Limits.SpawnPermission` (default `admin`; `false` allows any player).
+- Money item sync is started by the server when a character loads, so a client cannot switch it off.
+- A full inventory no longer swallows money: failed money item grants are logged, held for `/claimmoney` and the player is notified.
 - `/tp` and `/tpm` freeze the entity, wait for collision, keep the heading and carry mounts/vehicles. `/tp x y` probes the ground.
 - Prompts left behind by a resource that stops are cleaned up automatically. Font Awesome ships locally in `html/vendor/fontawesome` (no CDN needed).
 - The `/myjobs` and `/jobadmin` menus keep push-to-talk working (`RSGConfig.AllowPushToTalkWhileOpen`).

@@ -6,20 +6,25 @@ AddEventHandler('chatMessage', function(_, _, message)
     end
 end)
 
-local lastSave = {} -- per-source timestamp of the last client-requested save
 local lastDuty = {} -- per-source timestamp of the last duty toggle
 local lastSpawn = {} -- per-source timestamp of the last vehicle spawn
 
 AddEventHandler('playerDropped', function(reason)
     local src = source
-    lastSave[src] = nil
     lastDuty[src] = nil
     lastSpawn[src] = nil
+    -- drop async client callbacks this player will never answer
+    local prefix = RSGCore.Functions.ClientCallbackKey(src, '')
+    for key in pairs(RSGCore.ClientCallbacks) do
+        if key:sub(1, #prefix) == prefix then RSGCore.ClientCallbacks[key] = nil end
+    end
     local Player = RSGCore.Players[src]
     if not Player then return end
     TriggerEvent('rsg-log:server:CreateLog', 'joinleave', 'Dropped', 'red', ('**%s** (%s) left..\n **Reason:** %s'):format(GetPlayerName(src) or 'unknown', Player.PlayerData.license, reason))
     TriggerEvent('RSGCore:Server:PlayerDropped', Player)
-    Player.Functions.Save()
+    -- a failed save must not leave a ghost entry in the player list
+    local ok, err = pcall(Player.Functions.Save)
+    if not ok then print(('^1[rsg-core] save on disconnect failed for %s: %s^7'):format(tostring(Player.PlayerData.citizenid), tostring(err))) end
     RSGCore.Player_Buckets[Player.PlayerData.license] = nil
     RSGCore.Players[src] = nil
 end)
@@ -69,6 +74,52 @@ CREATE TABLE IF NOT EXISTS `bans` (
   KEY `ip` (`ip`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
 ]],
+        [[
+CREATE TABLE IF NOT EXISTS `rsg_held_payouts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `citizenid` varchar(50) NOT NULL,
+  `moneytype` varchar(20) NOT NULL,
+  `amount` decimal(15,2) NOT NULL,
+  `reason` varchar(100) DEFAULT NULL,
+  `created` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `citizenid` (`citizenid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+]],
+        [[
+CREATE TABLE IF NOT EXISTS `rsg_transactions` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `citizenid` varchar(50) NOT NULL,
+  `moneytype` varchar(20) NOT NULL,
+  `operation` varchar(10) NOT NULL,
+  `amount` decimal(20,2) NOT NULL,
+  `balance` decimal(20,2) NOT NULL,
+  `reason` varchar(150) DEFAULT NULL,
+  `resource` varchar(60) DEFAULT NULL,
+  `created` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `citizenid` (`citizenid`),
+  KEY `created` (`created`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+]],
+        [[
+CREATE TABLE IF NOT EXISTS `rsg_playtime` (
+  `citizenid` varchar(50) NOT NULL,
+  `seconds` bigint(20) NOT NULL DEFAULT 0,
+  `first_seen` timestamp NOT NULL DEFAULT current_timestamp(),
+  `last_seen` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`citizenid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+]],
+        [[
+CREATE TABLE IF NOT EXISTS `rsg_whitelist` (
+  `license` varchar(60) NOT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `added_by` varchar(100) DEFAULT NULL,
+  `created` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`license`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+]],
     }
     local ok, err = pcall(function()
         for i = 1, #statements do MySQL.query.await(statements[i]) end
@@ -88,13 +139,11 @@ if MySQL.ready ~= nil then
 
         if RSGCore.Config.AutoDatabase then ensureDatabase() end
 
-        local DatabaseInfo = RSGCore.Functions.GetDatabaseInfo()
-        if not DatabaseInfo or not DatabaseInfo.exists then return end
-
-        local result = MySQL.query.await('SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME = "bans";', { DatabaseInfo.database })
+        -- DATABASE() asks the server; parsing the connection string could fail and block every join
+        local result = MySQL.query.await('SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = "bans";')
         bansTableExists = result and result[1] ~= nil
 
-        local resultColumns = MySQL.query.await('SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = "players" AND COLUMN_NAME IN ("weight", "slots", "outlawstatus");', { DatabaseInfo.database })
+        local resultColumns = MySQL.query.await('SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = "players" AND COLUMN_NAME IN ("weight", "slots", "outlawstatus");')
         local columnsExist = {}
         for _, column in ipairs(resultColumns or {}) do
             columnsExist[column.COLUMN_NAME] = true
@@ -171,45 +220,17 @@ end
 
 AddEventHandler('playerConnecting', onPlayerConnecting)
 
--- Open & Close Server (prevents players from joining)
-
-RegisterNetEvent('RSGCore:Server:CloseServer', function(reason)
-    local src = source
-    if not RSGCore.Functions.HasPermission(src, 'admin') then
-        return RSGCore.Functions.Kick(src, locale('error.no_permission'))
-    end
-    RSGCore.Functions.SetServerClosed(true, reason)
-    RSGCore.Functions.AdminLog(src, 'CloseServer (event)', tostring(reason))
-end)
-
-RegisterNetEvent('RSGCore:Server:OpenServer', function()
-    local src = source
-    if not RSGCore.Functions.HasPermission(src, 'admin') then
-        return RSGCore.Functions.Kick(src, locale('error.no_permission'))
-    end
-    RSGCore.Functions.SetServerClosed(false)
-    RSGCore.Functions.AdminLog(src, 'OpenServer (event)')
-end)
-
 -- Callback Events --
 
 -- Client Callback (response from a client to a server-initiated callback)
 -- Callbacks are keyed per source so a client can only resolve its own pending callbacks
-RegisterNetEvent('RSGCore:Server:TriggerClientCallback', function(name, ...)
-    local key = RSGCore.Functions.ClientCallbackKey(source, name)
+RegisterNetEvent('RSGCore:Server:TriggerClientCallback', function(requestId, ...)
+    if type(requestId) ~= 'number' then return end
+    local key = RSGCore.Functions.ClientCallbackKey(source, requestId)
     local cb = RSGCore.ClientCallbacks[key]
     if not cb then return end
     RSGCore.ClientCallbacks[key] = nil
     cb(...)
-end)
-
--- Server Callback (legacy, keyed by name only - kept for resources that trigger it directly)
-RegisterNetEvent('RSGCore:Server:TriggerCallback', function(name, ...)
-    local src = source
-    if type(name) ~= 'string' then return end
-    RSGCore.Functions.TriggerCallback(name, src, function(...)
-        TriggerClientEvent('RSGCore:Client:TriggerCallback', src, name, ...)
-    end, ...)
 end)
 
 -- Server Callback with a request id, so concurrent calls to the same callback each get their own response
@@ -222,18 +243,6 @@ RegisterNetEvent('RSGCore:Server:TriggerCallbackId', function(name, requestId, .
 end)
 
 -- Player
-
-local SAVE_COOLDOWN = RSGCore.Config.Limits.SaveCooldown -- seconds; prevents clients spamming database writes
-
-RegisterNetEvent('RSGCore:UpdatePlayer', function()
-    local src = source
-    local Player = RSGCore.Functions.GetPlayer(src)
-    if not Player then return end
-    local now = os.time()
-    if lastSave[src] and now - lastSave[src] < SAVE_COOLDOWN then return end
-    lastSave[src] = now
-    Player.Functions.Save()
-end)
 
 RegisterNetEvent('RSGCore:Server:SetMetaData', function(meta, data)
     local src = source
@@ -297,6 +306,10 @@ local SPAWN_MAX_DISTANCE = RSGCore.Config.Limits.SpawnMaxDistance
 
 RSGCore.Functions.CreateCallback('RSGCore:Server:SpawnVehicle', function(source, cb, model, coords, warp)
     if not RSGCore.Functions.GetPlayer(source) then return cb(nil) end
+    -- without this any player could spawn any registered vehicle for free
+    local permission = RSGCore.Config.Limits.SpawnPermission
+    if permission == nil then permission = 'admin' end -- older config without the option
+    if permission and not RSGCore.Functions.HasPermission(source, permission) then return cb(nil) end
     -- rate limit: stops a client flooding the world with networked vehicles
     local now = GetGameTimer()
     if lastSpawn[source] and now - lastSpawn[source] < SPAWN_COOLDOWN_MS then return cb(nil) end

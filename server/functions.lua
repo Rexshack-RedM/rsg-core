@@ -270,6 +270,11 @@ function RSGCore.Functions.SetEntityBucket(entity, bucket)
     end
 end
 
+-- forget entities once they are gone, otherwise the table grows until restart (and handles get reused)
+AddEventHandler('entityRemoved', function(entity)
+    RSGCore.Entity_Buckets[entity] = nil
+end)
+
 ---Will return an array of all the player ids inside the current bucket
 ---@param bucket number
 ---@return table|boolean
@@ -403,7 +408,12 @@ end
 function PaycheckInterval()
     -- schedule the next run first so an error below can never stop paychecks permanently
     SetTimeout(RSGCore.Config.Money.PayCheckTimeOut * (60 * 1000), PaycheckInterval)
-    for _, Player in pairs(RSGCore.Players) do
+    RSGCore.NextPaycheck = os.time() + math.floor(RSGCore.Config.Money.PayCheckTimeOut * 60) -- shown in /myjobs
+    -- snapshot: wage payments can yield (database / exports) while players join or leave
+    local online = {}
+    for _, Player in pairs(RSGCore.Players) do online[#online + 1] = Player end
+
+    for _, Player in ipairs(online) do
         local job = Player.PlayerData.job
         local jobInfo = job and RSGShared.Jobs[job.name]
         -- guard against jobs/grades removed from shared/jobs.lua (previously errored and killed the paycheck loop)
@@ -411,7 +421,7 @@ function PaycheckInterval()
         local payment = (gradeInfo and gradeInfo.payment) or (job and job.payment) or 0
         local src = Player.PlayerData.source
 
-        if jobInfo and payment > 0 and (jobInfo.offDutyPay or job.onduty) then
+        if RSGCore.Players[src] == Player and jobInfo and payment > 0 and (jobInfo.offDutyPay or job.onduty) then
             local state = 'unmanaged'
             if RSGCore.Config.Money.PayCheckSociety and GetResourceState('rsg-society') == 'started' then
                 local ok, res = pcall(function() return exports['rsg-society']:ProcessWage(src, job.name, payment) end)
@@ -430,9 +440,21 @@ end
 
 -- Callback Functions --
 
----Internal: key used to store a pending client callback for a specific player
-function RSGCore.Functions.ClientCallbackKey(source, name)
-    return ('%s:%s'):format(source, name)
+---Internal: key used to store a pending client callback for a specific player and request
+function RSGCore.Functions.ClientCallbackKey(source, requestId)
+    return ('%s:%s'):format(source, requestId)
+end
+
+-- each request has its own id: two pending calls with the same name used to overwrite each other,
+-- which left the first AwaitClientCallback hanging forever (e.g. two kill confirmations for one killer)
+local clientRequestId = 0
+
+local function sendClientCallback(name, source, cb, ...)
+    clientRequestId = clientRequestId + 1
+    local key = RSGCore.Functions.ClientCallbackKey(source, clientRequestId)
+    RSGCore.ClientCallbacks[key] = cb
+    TriggerClientEvent('RSGCore:Client:TriggerClientCallback', source, name, clientRequestId, ...)
+    return key
 end
 
 ---Trigger Client Callback
@@ -441,8 +463,7 @@ end
 ---@param cb function
 ---@param ... any
 function RSGCore.Functions.TriggerClientCallback(name, source, cb, ...)
-    RSGCore.ClientCallbacks[RSGCore.Functions.ClientCallbackKey(source, name)] = cb
-    TriggerClientEvent('RSGCore:Client:TriggerClientCallback', source, name, ...)
+    sendClientCallback(name, source, cb, ...)
 end
 
 ---Await a client callback (synchronous)
@@ -454,18 +475,14 @@ end
 ---@return ...
 function RSGCore.Functions.AwaitClientCallback(name, source, timeout, ...)
     local p = promise.new()
-    local key = RSGCore.Functions.ClientCallbackKey(source, name)
-    local handler
-    handler = function(...)
+    local key = sendClientCallback(name, source, function(...)
         p:resolve(table.pack(...))
-    end
-    RSGCore.ClientCallbacks[key] = handler
-    TriggerClientEvent('RSGCore:Client:TriggerClientCallback', source, name, ...)
+    end, ...)
 
     timeout = timeout == nil and 10000 or timeout
     if timeout and timeout > 0 then
         SetTimeout(timeout, function()
-            if RSGCore.ClientCallbacks[key] == handler then
+            if RSGCore.ClientCallbacks[key] then
                 RSGCore.ClientCallbacks[key] = nil
                 print(('^3[rsg-core] client callback "%s" for %s timed out after %dms^7'):format(name, source, timeout))
                 p:resolve(table.pack())
@@ -561,12 +578,18 @@ function RSGCore.Functions.SetServerClosed(closed, reason)
     end
 end
 
----Check if player is whitelisted, kept like this for backwards compatibility or future plans
+---Whitelisted = has the whitelist permission, or is listed in rsg_whitelist (/whitelist)
 ---@param source any
 ---@return boolean
 function RSGCore.Functions.IsWhitelisted(source)
     if not RSGCore.Config.Server.Whitelist then return true end
     if RSGCore.Functions.HasPermission(source, RSGCore.Config.Server.WhitelistPermission) then return true end
+    local license = RSGCore.Functions.GetIdentifier(source, 'license')
+    if not license then return false end
+    local ok, found = pcall(MySQL.scalar.await, 'SELECT 1 FROM rsg_whitelist WHERE license = ?', { license })
+    if ok and found then return true end
+    -- printed so an admin can add them with: whitelist add <license>
+    print(('[rsg-core] whitelist: refused %s (%s)'):format(GetPlayerName(source) or 'unknown', license))
     return false
 end
 
@@ -806,7 +829,7 @@ end
 ---@return boolean
 function RSGCore.Functions.CanCarryItem(source, item, amount)
     local Player = RSGCore.Functions.GetPlayer(source)
-    if not Player or type(item) ~= 'string' then return false end
+    if not Player or type(item) ~= 'string' or GetResourceState('rsg-inventory') ~= 'started' then return false end
 
     amount = tonumber(amount) or 1
     local itemData = RSGCore.Shared.Items[item:lower()]

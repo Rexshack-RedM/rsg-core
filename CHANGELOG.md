@@ -2,6 +2,66 @@
 
 All notable changes to rsg-core. Newest first.
 
+## 3.7.0
+
+### Added
+- **Held payouts.** Money that cannot be delivered as a money item (full inventory, including change) is stored in `rsg_held_payouts` and collected with `/claimmoney`. Players are reminded after loading in. New export `QueuePayout(citizenid, moneytype, amount, reason)` also pays offline characters.
+- **Transaction history** in `rsg_transactions`, with `/transactions` and `RSGConfig.Transactions`.
+- **Ban commands:** `/ban`, `/offlineban`, `/unban`, `/banlist`.
+- **In-game whitelist:** `/whitelist add|remove|list`, stored in `rsg_whitelist`. Used together with the ace permission when the whitelist is on. Refused players are printed to the console with their license.
+- **Playtime** in `rsg_playtime`, with `/playtime`, export `GetPlaytime(citizenid)` and `RSGConfig.Playtime`.
+- `/myjobs`: on-duty count for each job, next paycheck countdown, and a rebindable key (`RSGConfig.MultiJob.Key`, unbound by default).
+- 40 new locale keys in all 11 languages.
+
+### Fixed
+- Cash, change and other money items are no longer lost when the inventory is full.
+- Lowering or removing a grade in `/jobadmin` also updates offline holders.
+- Two job additions at the same moment can no longer exceed the job limit.
+- Prompts can be added or removed safely while another prompt is firing.
+- The two default grade names in the job editor are translated.
+
+### Changed
+- `GenerateCSRFToken` now allows several pending single-use tokens, each valid for 30 seconds. It is not a security boundary: the server must still validate every request.
+
+### Final review
+- Fixed: an extremely large `/ban` duration could overflow and create an already expired ban; it now caps at permanent.
+- Fixed: `GetOfflinePlayerByLicense` failed for licenses with more than one character; it now returns the most recently saved one.
+- Fixed: spending an exact balance could fail because of floating point rounding.
+- Fixed: a save error on disconnect could leave the player stuck in the online player list.
+- Security: the money item unload and disconnect handlers now ignore client-triggered calls.
+- Fixed: points and zones can be created or removed from inside their own callbacks.
+- `/myjobs` and `/jobadmin` close when the character unloads, and a failed admin menu load now shows a message.
+- Job webhooks retry when Discord rate limits them (HTTP 429).
+- Removed the unused `RSGConfig.Server.Uptime` setting and two unused locale keys.
+- Docs: added function examples, full database schema, death settings, architecture and persistence, internal events, server owner how-tos and troubleshooting; replaced the outdated auto-generated reference.
+
+## 3.6.0
+
+### Security
+- Money item sync now starts on the server when a character loads. It used to wait for the client's `OnPlayerLoaded` event, so a modified client could keep it off and duplicate money.
+- The `RSGCore:Server:SpawnVehicle` callback now requires `RSGConfig.Limits.SpawnPermission` (default `admin`).
+
+### Fixed
+- Money items are updated before player data is sent and logged, fixing wrong HUD popups and log balances. `RSGCore:Server:OnMoneyChange` now fires before the client event.
+- Two client callbacks with the same name running at once no longer leave the first waiting forever. Pending requests are dropped when the player leaves.
+- The periodic save and paycheck loops work on a copy of the player list.
+- The database column and table checks use `DATABASE()` instead of reading the database name from the connection string.
+- `/me` and `/ooc` respect routing buckets; a new `/me` message replaces the old one; empty messages are rejected.
+- Missing-argument messages work from the console, as do multi-job messages. `/removejob` ignores job name case.
+- `/setmoney` is written to the admin log. Long names no longer exceed the `bans.name` column.
+- `/myjobs` no longer opens over the job admin menu, and shows an error on timeout instead of an empty list.
+- Routing bucket records are cleared when an entity is removed, and `CanCarryItem` checks that rsg-inventory is running.
+- The default unemployed job has fallbacks when its text or type is missing.
+
+### Removed (check third-party scripts)
+- Events `RSGCore:Server:CloseServer`, `RSGCore:Server:OpenServer` (use the commands), `RSGCore:Server:TriggerCallback`, `RSGCore:Client:TriggerCallback`, `RSGCore:UpdatePlayer` and `RSGCore:Player:UpdatePlayerData`.
+- Config `RSGConfig.ServerSideSave` (server saving is always on) and `RSGConfig.Limits.SaveCooldown`.
+- `client/loops.lua`, dead code in the job admin script and three unused locale keys.
+
+### Changed
+- Internal client-callback events now carry a request id.
+- New locale key `menu_load_failed` in all 11 languages.
+
 ## 3.5.2
 
 ### Fixed

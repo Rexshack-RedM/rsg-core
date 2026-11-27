@@ -14,6 +14,7 @@ MultiJobWebhook = {}
 -- concurrent HTTP requests at once.
 local queue = {}
 local processing = false
+local MAX_RETRIES = 5 -- for Discord rate limits (HTTP 429)
 
 local function isValidUrl(url)
     return type(url) == 'string' and url ~= '' and url:find('^https?://')
@@ -27,15 +28,25 @@ local function processQueue()
         while #queue > 0 do
             local job = table.remove(queue, 1)
 
-            PerformHttpRequest(job.url, function(statusCode, _, _)
-                if statusCode ~= 200 and statusCode ~= 204 then
-                    print(('[rsg-core multijob] WARNING: Discord webhook "%s" returned HTTP %s'):format(job.eventName, tostring(statusCode)))
-                end
+            local response = promise.new()
+            PerformHttpRequest(job.url, function(statusCode, body, _, errorData)
+                response:resolve({ status = tonumber(statusCode) or 0, body = body or errorData })
             end, 'POST', json.encode(job.payload), { ['Content-Type'] = 'application/json' })
+            local result = Citizen.Await(response)
 
             -- Discord's webhook rate limit is ~5 requests / 2s per webhook,
             -- so a small delay between sends keeps this resource well clear of it.
-            Wait(300)
+            local delay = 400
+            if result.status == 429 and (job.retries or 0) < MAX_RETRIES then
+                job.retries = (job.retries or 0) + 1
+                local seconds = type(result.body) == 'string' and tonumber(result.body:match('"retry_after"%s*:%s*([%d%.]+)'))
+                delay = math.min(60000, math.ceil((seconds or 5) * 1000))
+                table.insert(queue, 1, job)
+            elseif result.status ~= 200 and result.status ~= 204 then
+                print(('[rsg-core multijob] WARNING: Discord webhook "%s" returned HTTP %s'):format(job.eventName, tostring(result.status)))
+            end
+
+            Wait(delay)
         end
 
         processing = false

@@ -3,7 +3,7 @@ RSGCore.PlayerData = {}
 RSGCore.Config = RSGConfig
 RSGCore.Shared = RSGShared
 RSGCore.ClientCallbacks = {}
-RSGCore.ServerCallbacks = {}
+RSGCore.ServerCallbacks = {} -- unused on the client, kept so scripts reading the core object don't get nil
 
 exports('GetCoreObject', function()
     return RSGCore

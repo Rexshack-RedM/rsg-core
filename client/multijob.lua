@@ -2,6 +2,7 @@
 local Config = RSGConfig.MultiJob
 
 local isUIOpen = false
+local isAdminOpen = false
 local uiFocus = false
 local uiLocales -- built once, locales don't change at runtime
 
@@ -21,6 +22,7 @@ local UI_KEYS = {
     'ui_job_actions', 'ui_select_action', 'ui_switch_job', 'ui_switch_desc', 'ui_delete_job',
     'ui_delete_desc', 'ui_confirm_title', 'ui_confirm_text', 'ui_confirm', 'ui_cancel',
     'ui_no_jobs_title', 'ui_no_jobs_sub', 'ui_current_pill', 'ui_grade', 'ui_salary',
+    'ui_next_paycheck', 'ui_on_duty_count',
     'ui_switch_confirm_title', 'ui_switch_confirm_text', 'ui_delete_confirm_title', 'ui_delete_confirm_text',
 }
 
@@ -72,14 +74,20 @@ local function closeUI()
 end
 
 local function openUI()
-    if isUIOpen then return end
+    if isUIOpen or isAdminOpen then return end
 
     local PlayerData = RSGCore.Functions.GetPlayerData()
     if not PlayerData or not PlayerData.job then return end
 
     isUIOpen = true
-    local jobs = withIcons(RSGCore.Functions.AwaitCallback('rsg-multijob:server:myJobs'))
+    local result = RSGCore.Functions.AwaitCallback('rsg-multijob:server:myJobs')
     if not isUIOpen then return end -- closed while waiting
+    if not result then -- timed out: say so instead of showing an empty job list
+        isUIOpen = false
+        RSGCore.Functions.Notify({ title = locale('title_error'), description = locale('menu_load_failed'), type = 'error' })
+        return
+    end
+    local jobs = withIcons(result)
 
     applyNuiFocus(true)
     SendNUIMessage({
@@ -118,6 +126,10 @@ end)
 
 RegisterNetEvent('rsg-multijob:client:openmenu', openUI)
 
+RSGCore.Functions.RegisterKey('rsgcore_myjobs', locale('key_myjobs'), Config.Key or '', function()
+    CreateThread(openUI) -- openUI waits for the server
+end)
+
 -- Server pushes the up-to-date list after any change (switch/add/delete/fire)
 RegisterNetEvent('rsg-multijob:client:refreshJobs', function(jobs, currentJobName)
     if not isUIOpen then return end
@@ -148,7 +160,6 @@ end)
 -- All checks happen on the server; these callbacks only relay.
 -----------------------------------------------------------------------
 
-local isAdminOpen = false
 local adminLocales
 
 -- Every adm_ui_* key in locales/en.json is sent to the admin NUI
@@ -175,8 +186,10 @@ RegisterNetEvent('rsg-multijob:client:openAdmin', function()
     isAdminOpen = true
 
     local jobs = RSGCore.Functions.AwaitCallback('rsg-multijob:server:admin:getJobs')
-    if not jobs or not isAdminOpen then
+    if not isAdminOpen then return end -- closed while waiting
+    if not jobs then
         isAdminOpen = false
+        RSGCore.Functions.Notify({ title = locale('title_error'), description = locale('menu_load_failed'), type = 'error' })
         return
     end
 

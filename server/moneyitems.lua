@@ -74,14 +74,30 @@ local function calculateTotal(dollars, cents)
     return tonumber(string.format("%.2f", dollars + (cents / 100)))
 end
 
--- AddItem returns ok, err; a full inventory used to silently lose the money, so report failures
+local initialized = {}
+local initializing = {} -- [citizenid] = true while the login reconciliation runs
+
+-- AddItem returns ok, err. Money that does not fit is held for the player to collect with /claimmoney.
 local function giveMoneyItem(player, itemName, amount)
     local ok, err = player.Functions.AddItem(itemName, amount)
     if ok == false then
         local src = player.PlayerData.source
         print(('^1[rsg-core] could not give %sx %s to %s (%s): %s^7'):format(amount, itemName, tostring(player.PlayerData.citizenid), tostring(src), tostring(err)))
         TriggerEvent('rsg-log:server:CreateLog', 'moneyitems', 'Money item failed', 'red', ('**%s** (%s) could not receive %sx %s: %s'):format(GetPlayerName(src) or 'unknown', player.PlayerData.citizenid, amount, itemName, tostring(err)))
-        TriggerClientEvent('RSGCore:Client:Notify', src, { title = locale('notify_label_error'), description = locale('error.money_item_failed'), type = 'error', duration = 7000 })
+        local citizenid = player.PlayerData.citizenid
+        local held = false
+        -- before the login reconciliation the balance still includes this money and it is retried there,
+        -- so holding it as well would duplicate it
+        if initialized[citizenid] or initializing[citizenid] then
+            local moneytype, value = 'gold', amount
+            if itemName == moneyItems.cash.dollar then moneytype = 'cash'
+            elseif itemName == moneyItems.cash.cent then moneytype, value = 'cash', amount / 100
+            elseif itemName == moneyItems.bloodmoney.dollar then moneytype = 'bloodmoney'
+            elseif itemName == moneyItems.bloodmoney.cent then moneytype, value = 'bloodmoney', amount / 100
+            end
+            held = Payouts.Queue(citizenid, moneytype, value, 'inventory-full')
+        end
+        TriggerClientEvent('RSGCore:Client:Notify', src, { title = locale('payout.title'), description = held and locale('payout.held') or locale('error.money_item_failed'), type = held and 'warning' or 'error', duration = 10000 })
         return false
     end
     return true
@@ -194,13 +210,15 @@ end
 -- If config changed, handle inventory items accordingly on login
 -----------------------------------------------------------------
 
-local initialized = {}
-RegisterNetEvent('RSGCore:Server:OnPlayerLoaded', function()
-    local src = source
+local applying = {} -- [src] = true while a money change is being turned into items (pauses the sync)
+
+local function initializeMoneyItems(src)
     local player = RSGCore.Functions.GetPlayer(src)
-    if not player then return end
+    if not player or not player.Functions.GetItemsByName then return end -- inventory not attached yet
     -- only run once per login; the client could otherwise re-trigger the item <-> balance reset at will
-    if initialized[player.PlayerData.citizenid] then return end
+    local citizenid = player.PlayerData.citizenid
+    if initialized[citizenid] or initializing[citizenid] then return end
+    initializing[citizenid] = true
 
     local money = getInventoryMoney(player.PlayerData)
 
@@ -231,7 +249,25 @@ RegisterNetEvent('RSGCore:Server:OnPlayerLoaded', function()
     end
 
     -- failsafe to prevent early override by synchronization
-    initialized[player.PlayerData.citizenid] = true
+    initialized[citizenid] = true
+    initializing[citizenid] = nil
+    -- match the balance to the items now (anything that did not fit is held, not left spendable)
+    player.Functions.UpdatePlayerData()
+end
+
+-- Started by the server. It used to wait for the client's OnPlayerLoaded, so a client that never sent it
+-- kept the item <-> balance sync switched off and could duplicate money.
+-- Deferred one tick so every PlayerLoaded handler (rsg-inventory adds the player item methods) has run.
+AddEventHandler('RSGCore:Server:PlayerLoaded', function(Player)
+    if (tonumber(source) or 0) > 0 then return end -- never from a client
+    local src = Player and Player.PlayerData and Player.PlayerData.source
+    if not src then return end
+    SetTimeout(0, function() initializeMoneyItems(src) end)
+end)
+
+-- fallback for load flows where the inventory attaches late
+RegisterNetEvent('RSGCore:Server:OnPlayerLoaded', function()
+    initializeMoneyItems(source)
 end)
 
 local function clearInitialized(src)
@@ -239,8 +275,13 @@ local function clearInitialized(src)
     if player then initialized[player.PlayerData.citizenid] = nil end
 end
 
-AddEventHandler('RSGCore:Server:OnPlayerUnload', clearInitialized)
+-- server only (see the guards below): re-running the login reconciliation on demand must not be possible
+AddEventHandler('RSGCore:Server:OnPlayerUnload', function(src)
+    if (tonumber(source) or 0) > 0 then return end
+    clearInitialized(src)
+end)
 AddEventHandler('RSGCore:Server:PlayerDropped', function(player)
+    if (tonumber(source) or 0) > 0 then return end
     initialized[player.PlayerData.citizenid] = nil
 end)
 
@@ -266,16 +307,21 @@ if RSGCore.Config.Money.EnableMoneyItems or RSGCore.Config.Gold.EnableGoldItems 
     }
 
     AddEventHandler('RSGCore:Server:OnMoneyChange', function(src, moneytype, amount, operation, reason)
+        -- server only: even if another resource net-registers this event, a client must not create money with it
+        if (tonumber(source) or 0) > 0 then return end
         if not IsMoneyItemEnabled(moneytype) then return end
         local handler = moneyHandlers[operation]
         if handler then
-            handler(src, moneytype, amount)
+            applying[src] = true
+            local ok, err = pcall(handler, src, moneytype, amount)
+            applying[src] = nil -- always cleared, even after an error
+            if not ok then print(('^1[rsg-core] money item %s failed for %s: %s^7'):format(operation, tostring(src), tostring(err))) end
             TriggerClientEvent('hud:client:OnMoneyChange', src, moneytype, amount, operation == 'remove')
         end
     end)
 
     function SynchronizeMoneyItems(playerData)
-        if not initialized[playerData.citizenid] then return playerData end
+        if not initialized[playerData.citizenid] or applying[playerData.source] then return playerData end
 
         local money = getInventoryMoney(playerData)
 
@@ -286,12 +332,14 @@ if RSGCore.Config.Money.EnableMoneyItems or RSGCore.Config.Gold.EnableGoldItems 
             if cash ~= playerData.money.cash then
                 local old = playerData.money.cash or 0
                 playerData.money.cash = cash
+                Transactions.Record(playerData, 'cash', 'items', cash - old, cash, 'inventory change')
                 TriggerClientEvent('hud:client:OnMoneyChange', playerData.source, 'cash', math.abs(cash - old), cash < old)
             end
 
             if bloodmoney ~= playerData.money.bloodmoney then
                 local old = playerData.money.bloodmoney or 0
                 playerData.money.bloodmoney = bloodmoney
+                Transactions.Record(playerData, 'bloodmoney', 'items', bloodmoney - old, bloodmoney, 'inventory change')
                 TriggerClientEvent('hud:client:OnMoneyChange', playerData.source, 'bloodmoney', math.abs(bloodmoney - old), bloodmoney < old)
             end
         end
@@ -299,6 +347,7 @@ if RSGCore.Config.Money.EnableMoneyItems or RSGCore.Config.Gold.EnableGoldItems 
         if RSGCore.Config.Gold.EnableGoldItems and money.gold ~= playerData.money.gold then
             local old = playerData.money.gold or 0
             playerData.money.gold = money.gold
+            Transactions.Record(playerData, 'gold', 'items', money.gold - old, money.gold, 'inventory change')
             TriggerClientEvent('hud:client:OnMoneyChange', playerData.source, 'gold', math.abs(money.gold - old), money.gold < old)
         end
 

@@ -217,6 +217,13 @@ function createJobCard(job, isCurrentJob) {
     rowMain.appendChild(gradeDesc);
     rowMain.appendChild(salaryDesc);
 
+    if (job.onDutyCount !== undefined) {
+        const dutyDesc = document.createElement('div');
+        dutyDesc.className = 'row-desc';
+        dutyDesc.textContent = fmt(t('ui_on_duty_count'), job.onDutyCount);
+        rowMain.appendChild(dutyDesc);
+    }
+
     card.appendChild(iconBadge);
     card.appendChild(rowMain);
 
@@ -242,6 +249,40 @@ function createJobCard(job, isCurrentJob) {
 
 let lastJobs = [];
 let lastCurrentJob = null;
+
+// ==================== NEXT PAYCHECK ====================
+let paycheckAt = null;
+let paycheckTimer = null;
+
+function stopPaycheckTimer() {
+    clearInterval(paycheckTimer);
+    paycheckTimer = null;
+}
+
+function drawPaycheck() {
+    const line = document.getElementById('paycheckLine');
+    const left = paycheckAt === null ? 0 : Math.max(0, Math.round((paycheckAt - Date.now()) / 1000));
+    // at zero the next time is unknown until the server sends a new list
+    if (left === 0) {
+        hide(line);
+        return;
+    }
+    const active = lastJobs.find(job => job.job === lastCurrentJob);
+    const time = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+    line.textContent = fmt(t('ui_next_paycheck'), time) + (active ? ` · $${active.salary}` : '');
+    show(line);
+}
+
+function updatePaycheck(jobs) {
+    const seconds = jobs && jobs.length ? jobs[0].nextPaycheck : undefined;
+    if (typeof seconds === 'number') paycheckAt = Date.now() + seconds * 1000;
+}
+
+function startPaycheckTimer() {
+    stopPaycheckTimer();
+    drawPaycheck();
+    paycheckTimer = setInterval(drawPaycheck, 1000);
+}
 
 function renderJobs(jobs, currentJobName) {
     lastJobs = jobs || [];
@@ -402,6 +443,7 @@ function openUI() {
 }
 
 function closeUI() {
+    stopPaycheckTimer();
     hide(document.getElementById('mainContainer'));
     hide(document.getElementById('choiceContainer'));
     hideConfirm();
@@ -420,7 +462,15 @@ window.addEventListener('message', function(event) {
         updateDutyStatus(data.onDuty);
         document.getElementById('maxJobs').textContent = data.maxJobs || 6;
         document.getElementById('maxJobsFooter').textContent = data.maxJobs || 6;
+        paycheckAt = null;
+        updatePaycheck(data.jobs);
         renderJobs(data.jobs, data.currentJob);
+        startPaycheckTimer();
+    }
+
+    // closed by the game side (character logged out)
+    if (data.action === 'multijob:close') {
+        closeUI();
     }
 
     if (data.action === 'multijob:updateDuty') {
@@ -431,6 +481,7 @@ window.addEventListener('message', function(event) {
     }
 
     if (data.action === 'multijob:refreshJobs') {
+        updatePaycheck(data.jobs);
         renderJobs(data.jobs, data.currentJob);
     }
 });

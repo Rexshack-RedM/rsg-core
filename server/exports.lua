@@ -159,8 +159,15 @@ exports('GetCoreVersion', GetCoreVersion)
 
 local function ExploitBan(playerId, origin)
     local name = GetPlayerName(playerId) or ('ID ' .. tostring(playerId))
+    -- bans.name is VARCHAR(50): a longer name could fail the insert, leaving the exploiter unbanned
+    local banName = name
+    if not utf8.len(banName) then banName = banName:sub(1, 50)
+    else
+        local cutAt = utf8.offset(banName, 51)
+        if cutAt then banName = banName:sub(1, cutAt - 1) end
+    end
     MySQL.insert('INSERT INTO bans (name, license, discord, ip, reason, expire, bannedby) VALUES (?, ?, ?, ?, ?, ?, ?)', {
-        name,
+        banName,
         RSGCore.Functions.GetIdentifier(playerId, 'license'),
         RSGCore.Functions.GetIdentifier(playerId, 'discord'),
         RSGCore.Functions.GetIdentifier(playerId, 'ip'),

@@ -228,25 +228,13 @@ RegisterNetEvent('RSGCore:Player:SetPlayerData', function(val)
     RSGCore.PlayerData = val
 end)
 
-RegisterNetEvent('RSGCore:Player:UpdatePlayerData', function()
-    TriggerServerEvent('RSGCore:UpdatePlayer')
-end)
-
 -- Callback Events --
 
 -- Client Callback
-RegisterNetEvent('RSGCore:Client:TriggerClientCallback', function(name, ...)
+RegisterNetEvent('RSGCore:Client:TriggerClientCallback', function(name, requestId, ...)
     RSGCore.Functions.TriggerClientCallback(name, function(...)
-        TriggerServerEvent('RSGCore:Server:TriggerClientCallback', name, ...)
+        TriggerServerEvent('RSGCore:Server:TriggerClientCallback', requestId, ...)
     end, ...)
-end)
-
--- Server Callback (legacy, keyed by name)
-RegisterNetEvent('RSGCore:Client:TriggerCallback', function(name, ...)
-    if RSGCore.ServerCallbacks[name] then
-        RSGCore.ServerCallbacks[name](...)
-        RSGCore.ServerCallbacks[name] = nil
-    end
 end)
 
 -- Server Callback (keyed by request id)
@@ -260,13 +248,16 @@ end)
 -- Me command
 local ME_DURATION = 10000
 local ME_MAX_DISTANCE = 25.0
+local meToken = {} -- [senderId] = latest message number, so a new /me replaces the old one instead of overlapping
 
 RegisterNetEvent('RSGCore:Command:ShowMe3D', function(senderId, msg)
     local sender = GetPlayerFromServerId(senderId)
     if sender == -1 then return end -- sender not in scope
+    local token = (meToken[senderId] or 0) + 1
+    meToken[senderId] = token
     CreateThread(function()
         local endTime = GetGameTimer() + ME_DURATION
-        while GetGameTimer() < endTime do
+        while meToken[senderId] == token and GetGameTimer() < endTime do
             local targetPed = GetPlayerPed(sender)
             if not DoesEntityExist(targetPed) then return end
             local tCoords = GetEntityCoords(targetPed)
@@ -307,29 +298,37 @@ end
 
 -- csrf protection
 
-local csrfToken = nil
+-- Note: this only protects NUI pages against replayed or mixed-up requests. It runs on the player's own
+-- machine, so it is not a security boundary: servers must still validate every event.
+local TOKEN_LIFETIME = 30000
+local csrfTokens = {} -- [token] = expiry; several requests can be pending at once
 
-local function GenerateCSRFToken() 
-    local timeout = 500
-    while csrfToken and timeout > 0 do
-        timeout = timeout - 1
-        Wait(0)
+local function hasPendingToken()
+    local now = GetGameTimer()
+    for token, expires in pairs(csrfTokens) do
+        if expires < now then csrfTokens[token] = nil end
     end
-    
-    local token = tostring(math.random(100000, 999999)) .. GetGameTimer()
-    csrfToken = token
+    return next(csrfTokens) ~= nil
+end
 
+local function GenerateCSRFToken()
+    local parts = {}
+    for i = 1, 4 do parts[i] = ('%08x'):format(math.random(0, 0x7fffffff)) end
+    local token = table.concat(parts)
+    csrfTokens[token] = GetGameTimer() + TOKEN_LIFETIME
     return token
 end
 exports('GenerateCSRFToken', GenerateCSRFToken)
 
 local csrfStrikes = 0
 RegisterNUICallback('validateCSRF', function(data, cb)
-    if csrfToken and csrfToken == data.clientToken then
-        csrfToken = nil
+    local pending = hasPendingToken()
+    local token = type(data) == 'table' and data.clientToken
+    if token and csrfTokens[token] then
+        csrfTokens[token] = nil -- single use
         csrfStrikes = 0
         cb({ valid = true })
-    elseif not csrfToken then
+    elseif not pending then
         -- no token pending: a duplicate or late callback, not an attack. Reject it without kicking.
         cb({ valid = false })
     else

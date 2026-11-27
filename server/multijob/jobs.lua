@@ -221,13 +221,16 @@ local function UnemployedJson()
     local g = u and u.grades['0'] or {}
     return json.encode({
         name = 'unemployed',
-        label = u and u.label or 'Civilian',
+        label = u and u.label or locale('unemployed_label'),
         payment = g.payment or 0,
+        type = u and u.type or nil,
         onduty = false,
         isboss = false,
-        grade = { name = g.name or 'Freelancer', level = 0 },
+        grade = { name = g.name or locale('unemployed_grade'), level = 0 },
     })
 end
+
+JobRegistry.UnemployedJson = UnemployedJson
 
 -- Re-applies the job to online holders so label/payment/grades refresh,
 -- clamping anyone whose grade no longer exists.
@@ -236,6 +239,20 @@ local function RefreshHolders(def)
     for k in pairs(def.grades) do maxLevel = math.max(maxLevel, tonumber(k)) end
 
     MySQL.update.await('UPDATE player_jobs SET grade = ? WHERE job = ? AND grade > ?', { maxLevel, def.name, maxLevel })
+
+    -- offline characters whose active grade was removed: clamp it too, or they load as unemployed
+    local rows = MySQL.query.await("SELECT citizenid, job FROM players WHERE JSON_UNQUOTE(JSON_EXTRACT(job, '$.name')) = ?", { def.name }) or {}
+    for _, row in ipairs(rows) do
+        local ok, saved = pcall(json.decode, row.job)
+        if ok and type(saved) == 'table' and type(saved.grade) == 'table' and (tonumber(saved.grade.level) or 0) > maxLevel
+            and not RSGCore.Functions.GetPlayerByCitizenId(row.citizenid) then
+            local grade = def.grades[tostring(maxLevel)]
+            saved.grade = { name = grade.name, level = maxLevel, isboss = grade.isboss == true }
+            saved.payment = grade.payment
+            saved.isboss = grade.isboss == true
+            MySQL.update.await('UPDATE players SET job = ? WHERE citizenid = ?', { json.encode(saved), row.citizenid })
+        end
+    end
 
     for _, Player in pairs(RSGCore.Functions.GetRSGPlayers() or {}) do
         local job = Player.PlayerData.job
